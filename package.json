@@ -3,10 +3,15 @@
   "version": "1.2.2",
   "description": "",
   "main": "src/Bot.ts",
+  "type": "module",
+  "engines": {
+    "node": "16.6.0",
+    "npm": "7.0.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/Bot.ts",
-    "dev": "ts-node-dev --respawn src/Bot.ts",
+    "dev": "ts-node-dev --require dotenv/config --respawn src/Bot.ts",
     "build": "tsc"
   },
   "repository": {
@@ -29,7 +34,6 @@
     "discord-akairo": "^8.1.0",
     "discord-paginationembed": "^2.1.0",
     "discord.js": "^12.5.1",
-    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "geo-tz": "^6.0.1",
     "geolib": "^3.3.1",
@@ -59,6 +63,7 @@
     "@types/node": "^14.14.22",
     "@types/puppeteer": "^5.4.2",
     "@types/sequelize": "^4.28.9",
+    "dotenv": "^8.2.0",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.1.1"
   }
