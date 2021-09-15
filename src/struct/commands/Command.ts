@@ -31,7 +31,7 @@ export default class Command extends BaseModule {
     public data: SlashCommandBuilder;
     public handler: CommandHandler;
 
-    constructor(id, options: CommandOptions) {
+    constructor(id: string, options: CommandOptions) {
         super(id, { category: options.category });
 
         const {
