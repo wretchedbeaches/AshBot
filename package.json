@@ -11,7 +11,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/Bot.ts",
-    "dev": "ts-node-dev --require dotenv/config --respawn src/Bot.ts",
+    "dev": "ts-node-dev --respawn src/Bot.ts",
     "build": "tsc"
   },
   "repository": {
