@@ -8,7 +8,7 @@ const AkairoModule = require('../AkairoModule');
 export interface ListenerOptions extends BaseModuleOptions {
     emitter: string | EventEmitter;
     event: string;
-    type: string;
+    type?: string;
 }
 
 export default class Listener extends BaseModule {
@@ -17,13 +17,13 @@ export default class Listener extends BaseModule {
     public type: string;
     public handler: ListenerHandler;
 
-    constructor(id, {
-        category,
-        emitter,
-        event,
-        type = 'on'
-    }: ListenerOptions) {
-        super(id, { category });
+    constructor(id, options: ListenerOptions) {
+        super(id, options);
+        const {
+            emitter,
+            event,
+            type = 'on'
+        } = options;
 
         this.emitter = emitter;
         this.event = event;

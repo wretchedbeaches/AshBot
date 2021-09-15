@@ -3,7 +3,7 @@ import BaseHandler from "./BaseHandler";
 import Category from "./Category";
 
 export interface BaseModuleOptions {
-  category: string;
+  category?: string;
 }
 
 export interface BaseModuleAttributes {
@@ -24,8 +24,11 @@ export default class BaseModule implements BaseModuleAttributes {
   public handler: BaseHandler;
 
   public constructor(id: string, options: BaseModuleOptions) {
+    const {
+      category = 'default'
+    } = options;
     this.id = id;
-    this.categoryID = options.category || 'default';
+    this.categoryID = category;
     this.filepath = null;
     this.handler = null;
     this.client = null;
