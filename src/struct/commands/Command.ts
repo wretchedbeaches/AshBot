@@ -7,7 +7,7 @@ import CommandHandler from "./CommandHandler";
 const AkairoError = require('../../util/AkairoError');
 
 export interface CommandOptions extends BaseModuleOptions {
-    channels?: ChannelTypes[];
+    channels?: Set<ChannelTypes>;
     ownerOnly?: boolean;
     cooldown?: number;
     ignoreCooldown?: Array<string> | ((interaction: Interaction, command: Command) => boolean);
@@ -19,7 +19,7 @@ export interface CommandOptions extends BaseModuleOptions {
 }
 
 export default class Command extends BaseModule {
-    public channels: ChannelTypes[];
+    public channels: Set<ChannelTypes>;
     public ownerOnly?: boolean;
     public cooldown?: number;
     public ignoreCooldown?: Array<string> | ((interaction: Interaction, command: Command) => boolean);
@@ -35,14 +35,14 @@ export default class Command extends BaseModule {
         super(id, { category: options.category });
 
         const {
-            channels = [],
+            channels = new Set(),
             ownerOnly = false,
             cooldown = null,
             ignoreCooldown = null,
             ratelimit = 1,
             description = '',
-            clientPermissions = this.clientPermissions,
-            userPermissions = this.userPermissions,
+            clientPermissions = new Set(),
+            userPermissions = new Set(),
             shouldDefer = true,
         } = options;
         this.channels = channels;
