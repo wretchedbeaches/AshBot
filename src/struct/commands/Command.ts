@@ -20,11 +20,11 @@ export interface CommandOptions extends BaseModuleOptions {
 
 export default class Command extends BaseModule {
     public channels: Set<ChannelTypes>;
-    public ownerOnly?: boolean;
-    public cooldown?: number;
-    public ignoreCooldown?: Array<string> | ((interaction: Interaction, command: Command) => boolean);
-    public ratelimit?: number;
-    public description?: string | Array<string>;
+    public ownerOnly: boolean;
+    public cooldown: number;
+    public ignoreCooldown: Array<string> | ((interaction: Interaction, command: Command) => boolean);
+    public ratelimit: number;
+    public description: string | Array<string>;
     public clientPermissions: Set<PermissionFlags>;
     public userPermissions: Set<PermissionFlags>;
     public shouldDefer: boolean;
