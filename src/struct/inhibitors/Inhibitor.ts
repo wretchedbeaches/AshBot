@@ -1,5 +1,6 @@
 import { Interaction } from "discord.js";
 import BaseModule, { BaseModuleOptions } from "../BaseModule";
+import InhibitorHandler from "./InhibitorHandler";
 
 interface InhibitorOptions extends BaseModuleOptions {
   reason: string;
@@ -8,6 +9,7 @@ interface InhibitorOptions extends BaseModuleOptions {
 export default class Inhibitor extends BaseModule {
   public id: string;
   public reason: string;
+  public handler: InhibitorHandler;
 
   public constructor(id: string, options: InhibitorOptions) {
     super(id, options);
