@@ -9,21 +9,13 @@ export default class ListenerHandler extends BaseHandler {
     public emitters: Collection<string, EventEmitter>;
     public modules: Collection<string, Listener>;
 
-    constructor(client, {
-        directory,
-        classToHandle = Listener,
-        automateCategories
-    }: BaseHandlerOptions) {
+    constructor(client, options: BaseHandlerOptions) {
         // TODO: throw equivalent error
-        if (!(classToHandle.prototype instanceof Listener || classToHandle === Listener)) {
-            throw new AkairoError('INVALID_CLASS_TO_HANDLE', classToHandle.name, Listener.name);
-        }
+        // if (!(options.classToHandle.prototype instanceof Listener || options.classToHandle === Listener)) {
+        //     throw new AkairoError('INVALID_CLASS_TO_HANDLE', classToHandle.name, Listener.name);
+        // }
 
-        super(client, {
-            directory,
-            classToHandle,
-            automateCategories,
-        });
+        super(client, options);
 
         this.emitters = new Collection();
         this.emitters.set('client', this.client);

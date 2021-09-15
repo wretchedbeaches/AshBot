@@ -7,21 +7,13 @@ export default class InhibitorHandler extends BaseHandler {
     public modules: Collection<string, Inhibitor>;
     public classToHandle: typeof Inhibitor;
     
-    constructor(client, {
-        directory,
-        classToHandle = Inhibitor,
-        automateCategories = false
-    }: BaseHandlerOptions) {
+    constructor(client, options: BaseHandlerOptions) {
         // TODO: ERROR OUT
         // if (!(classToHandle.prototype instanceof Inhibitor || classToHandle === Inhibitor)) {
         //     throw new AkairoError('INVALID_CLASS_TO_HANDLE', classToHandle.name, Inhibitor.name);
         // }
 
-        super(client, {
-            directory,
-            classToHandle,
-            automateCategories,
-        });
+        super(client, options);
     }
 
     // TODO: command type

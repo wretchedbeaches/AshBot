@@ -6,31 +6,39 @@ import fs from 'fs';
 import EventEmitter from 'events';
 
 export interface BaseHandlerOptions {
-    automateCategories: boolean,
-    directory: string,
+    automateCategories?: boolean;
+    directory: string;
     classToHandle: typeof BaseModule
 };
 
 export interface BaseHandlerAttributes {
-    client: Client;
     automateCategories: boolean;
-    directory: string;
     categories: Collection<string, Category>;
-    modules: Collection<string, BaseModule>;
     classToHandle: typeof BaseModule;
+    client: Client;
+    directory: string;
+    modules: Collection<string, BaseModule>;
 }
 
 export default class BaseHandler extends EventEmitter implements BaseHandlerAttributes {
-    public client: Client;
     public automateCategories: boolean;
-    public directory: string;
     public categories: Collection<string, Category>;
-    public modules: Collection<string, BaseModule>;
     public classToHandle: typeof BaseModule;
+    public client: Client;
+    public directory: string;
+    public modules: Collection<string, BaseModule>;
 
-    public constructor(client: Client, { directory, classToHandle, automateCategories = false }: BaseHandlerOptions) {
+    public constructor(client: Client, options: BaseHandlerOptions) {
         super();
+
         this.client = client;
+
+        const {
+            directory,
+            classToHandle,
+            automateCategories = false
+        } = options;
+
         this.automateCategories = automateCategories;
         this.directory = directory;
         this.modules = new Collection<string, BaseModule>();
