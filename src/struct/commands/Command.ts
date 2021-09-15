@@ -45,6 +45,7 @@ export default class Command extends BaseModule {
             userPermissions = new Set(),
             shouldDefer = true,
         } = options;
+
         this.channels = channels;
         this.ownerOnly = ownerOnly;
         this.cooldown = cooldown;
@@ -61,7 +62,7 @@ export default class Command extends BaseModule {
         return true;
     }
 
-    execute(interaction: Interaction): Promise<any> | any {
+    public execute(interaction: Interaction): Promise<any> | any {
         throw new AkairoError('NOT_IMPLEMENTED', this.constructor.name, 'exec');
     }
 };
