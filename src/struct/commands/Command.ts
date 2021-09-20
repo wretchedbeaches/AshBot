@@ -68,6 +68,7 @@ export default class Command extends BaseModule {
         this.userPermissions = userPermissions;
         this.ignoreCooldown = typeof ignoreCooldown === 'function' ? ignoreCooldown.bind(this) : ignoreCooldown;
         this.shouldDefer = shouldDefer;
+        this.data = new SlashCommandBuilder().setName(id).setDescription(this.description)
     }
 
     public shouldExecute(interaction: Interaction): Promise<boolean> | boolean {
