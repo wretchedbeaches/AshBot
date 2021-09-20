@@ -4,18 +4,19 @@ import Category from "./Category";
 import path from "path";
 import fs from 'fs';
 import EventEmitter from 'events';
+import BaseClient from "../client/BotClient";
+import { BaseHandlerEvents, ErrorMessages } from "./Util";
 
 export interface BaseHandlerOptions {
     automateCategories?: boolean;
-    directory: string;
-    classToHandle: typeof BaseModule
+    directory?: string;
 };
 
 export interface BaseHandlerAttributes {
     automateCategories: boolean;
     categories: Collection<string, Category>;
-    classToHandle: typeof BaseModule;
-    client: Client;
+    classToHandle: new(...args: any[]) => BaseModule;
+    client: BaseClient;
     directory: string;
     modules: Collection<string, BaseModule>;
 }
@@ -23,27 +24,20 @@ export interface BaseHandlerAttributes {
 export default class BaseHandler extends EventEmitter implements BaseHandlerAttributes {
     public automateCategories: boolean;
     public categories: Collection<string, Category>;
-    public classToHandle: typeof BaseModule;
-    public client: Client;
+    public classToHandle: new(...args: any[]) => BaseModule;
+    public client: BaseClient;
     public directory: string;
     public modules: Collection<string, BaseModule>;
 
-    public constructor(client: Client, options: BaseHandlerOptions) {
+    // TODO: determine a default directory
+    public constructor(client: BaseClient, { directory, automateCategories = false}: BaseHandlerOptions) {
         super();
-
         this.client = client;
-
-        const {
-            directory,
-            classToHandle,
-            automateCategories = false
-        } = options;
-
         this.automateCategories = automateCategories;
         this.directory = directory;
         this.modules = new Collection<string, BaseModule>();
         this.categories = new Collection();
-        this.classToHandle = classToHandle;
+        this.classToHandle = BaseModule;
     }
 
     public register(module: BaseModule, filepath: string): void {
@@ -89,13 +83,11 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
             return undefined;
         }
 
-        // TODO Emit equivalent of AkairoHandlerEvents.LOAD
-        // TODO: Throw error if already loaded.
-        if (!this.modules.has(module.id)) {
-            this.register(module, isClass ? null : thing);
-            return module;
-        }
-        return undefined;
+        if (this.modules.has(module.id)) throw new Error(ErrorMessages.ALREADY_LOADED(this.classToHandle.name, module.id));
+        
+        this.register(module, isClass ? null : thing);
+        this.emit(BaseHandlerEvents.LOAD, { module, isReload });
+        return module;
     }
 
     // TODO: Add a load filter?
@@ -107,16 +99,14 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
         }
         return this;
     }
-    
-    // TODO: Throw modul enot found error
-    // TODO: emit remove event
+
     public remove(id: string): BaseModule {
         const module = this.modules.get(id.toString());
-        // if (!module) throw new AkairoError('MODULE_NOT_FOUND', this.classToHandle.name, id);
+        if (!module) throw new Error(ErrorMessages.MODULE_NOT_FOUND(this.classToHandle.name, id));
         if (module) {
             this.deregister(module);
 
-            // this.emit(AkairoHandlerEvents.REMOVE, mod);
+            this.emit(BaseHandlerEvents.REMOVE, module);
             return module;
         }
         return undefined;
@@ -130,12 +120,10 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
         return this;
     }
     
-    // TODO: throw module not found error
-    // TODO: throw not reloadable error
     public reload(id: string): BaseModule {
         const module = this.modules.get(id.toString());
-        // if (!module) throw new AkairoError('MODULE_NOT_FOUND', this.classToHandle.name, id);
-        // if (!module.filepath) throw new AkairoError('NOT_RELOADABLE', this.classToHandle.name, id);
+        if (!module) throw new Error(ErrorMessages.MODULE_NOT_FOUND(this.classToHandle.name, id));
+        if (!module.filepath) throw new Error(ErrorMessages.NOT_RELOADABLE(this.classToHandle.name, id));
         if (module && module.filepath) {
             this.deregister(module);
 

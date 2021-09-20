@@ -1,30 +1,26 @@
 import { Collection, Interaction } from 'discord.js';
 import BaseHandler, { BaseHandlerOptions } from '../BaseHandler';
 import Inhibitor from './Inhibitor';
-import { isPromise } from '../Util';
+import { ErrorMessages, isPromise } from '../Util';
+import Command from '../commands/Command';
 
 export default class InhibitorHandler extends BaseHandler {
     public modules: Collection<string, Inhibitor>;
-    public classToHandle: typeof Inhibitor;
-    
-    constructor(client, options: BaseHandlerOptions) {
-        // TODO: ERROR OUT
-        // if (!(classToHandle.prototype instanceof Inhibitor || classToHandle === Inhibitor)) {
-        //     throw new AkairoError('INVALID_CLASS_TO_HANDLE', classToHandle.name, Inhibitor.name);
-        // }
+    public classToHandle: new (...args: any[]) => Inhibitor;
 
+    public constructor(client, options: BaseHandlerOptions) {
         super(client, options);
+        this.classToHandle = Inhibitor;
     }
 
-    // TODO: command type
-    public async test(interaction: Interaction, command: any): Promise<string|void> {
+    public async test(interaction: Interaction, command: Command): Promise<string|void> {
         if (!this.modules.size) return null;
 
         const promises = [];
         // TODO: assign an inhibitor a command cetagory and filter here?
         for (const inhibitor of this.modules.values()) {
             promises.push((async () => {
-                let inhibited = inhibitor.exec(interaction, command);
+                let inhibited = inhibitor.execute(interaction, command);
                 if (isPromise(inhibited)) inhibited = await inhibited;
                 if (inhibited) return inhibitor;
                 return null;
@@ -34,8 +30,7 @@ export default class InhibitorHandler extends BaseHandler {
         const inhibitedInhibitors = (await Promise.all(promises)).filter(r => r);
         if (!inhibitedInhibitors.length) return null;
 
-        // TODO: priority?
-        // inhibitedInhibitors.sort((a, b) => b.priority - a.priority);
+        inhibitedInhibitors.sort((a, b) => b.priority - a.priority);
         return inhibitedInhibitors[0].reason;
     }
 };

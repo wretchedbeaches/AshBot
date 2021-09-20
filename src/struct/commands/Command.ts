@@ -1,25 +1,34 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Interaction, PermissionFlags, PermissionResolvable } from "discord.js";
-import { ChannelTypes } from "discord.js/typings/enums";
-import BaseModule, { BaseModuleOptions } from "../BaseModule";
+import { APIApplicationCommandOption as v9APIApplicationCommandOption } from "discord-api-types/payloads/v9";
+import { APIApplicationCommandOption } from "discord-api-types";
+import { Interaction, PermissionFlags, ThreadChannelTypes } from "discord.js";
+import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from "../BaseModule";
 import CommandHandler from "./CommandHandler";
-
-const AkairoError = require('../../util/AkairoError');
+import { ErrorMessages } from "../Util";
 
 export interface CommandOptions extends BaseModuleOptions {
-    channels?: Set<ChannelTypes>;
+    channels?: CommandChannelType | CommandChannelType[];
     ownerOnly?: boolean;
     cooldown?: number;
     ignoreCooldown?: Array<string> | ((interaction: Interaction, command: Command) => boolean);
     ratelimit?: number;
-    description?: string;
+    description?: string | Array<string>;
     clientPermissions?: Set<PermissionFlags>;
     userPermissions?: Set<PermissionFlags>;
     shouldDefer?: boolean;
 }
 
+export type CommandDataType = {
+    name: string;
+    description: string;
+    options: v9APIApplicationCommandOption[] | APIApplicationCommandOption;
+    default_permission: boolean;
+}
+
+export type CommandChannelType = "DM" | "GUILD_TEXT" | "GUILD_NEWS" | ThreadChannelTypes;
+
 export default class Command extends BaseModule {
-    public channels: Set<ChannelTypes>;
+    public channels: Set<CommandChannelType>;
     public ownerOnly: boolean;
     public cooldown: number;
     public ignoreCooldown: Array<string> | ((interaction: Interaction, command: Command) => boolean);
@@ -31,22 +40,25 @@ export default class Command extends BaseModule {
     public data: SlashCommandBuilder;
     public handler: CommandHandler;
 
-    constructor(id: string, options: CommandOptions) {
-        super(id, { category: options.category });
-
-        const {
-            channels = new Set(),
-            ownerOnly = false,
-            cooldown = null,
-            ignoreCooldown = null,
-            ratelimit = 1,
-            description = '',
-            clientPermissions = new Set(),
-            userPermissions = new Set(),
-            shouldDefer = true,
-        } = options;
-
-        this.channels = channels;
+    public constructor(id: string, {
+        channels,
+        ownerOnly = false,
+        cooldown = null,
+        ignoreCooldown = null,
+        ratelimit = 1,
+        description = '',
+        clientPermissions = new Set(),
+        userPermissions = new Set(),
+        shouldDefer = true,
+        ...rest
+    }: CommandOptions) {
+        super(id, rest);
+        this.channels = new Set();
+        if (Array.isArray(channels))
+            for (const channel of channels)
+                this.channels.add(channel);
+        else
+            this.channels.add(channels);
         this.ownerOnly = ownerOnly;
         this.cooldown = cooldown;
         this.ignoreCooldown = ignoreCooldown;
@@ -63,6 +75,6 @@ export default class Command extends BaseModule {
     }
 
     public execute(interaction: Interaction): Promise<any> | any {
-        throw new AkairoError('NOT_IMPLEMENTED', this.constructor.name, 'exec');
+        throw new Error(ErrorMessages.NOT_IMPLEMENTED(this.constructor.name, "execute"));
     }
 };

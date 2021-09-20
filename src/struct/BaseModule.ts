@@ -1,4 +1,5 @@
 import { Client } from "discord.js";
+import BaseClient from "../client/BotClient";
 import BaseHandler from "./BaseHandler";
 import Category from "./Category";
 
@@ -7,7 +8,7 @@ export interface BaseModuleOptions {
 }
 
 export interface BaseModuleAttributes {
-  client: Client;
+  client: BaseClient;
   id: string;
   categoryID: string;
   category: Category;
@@ -16,17 +17,14 @@ export interface BaseModuleAttributes {
 }
 
 export default class BaseModule implements BaseModuleAttributes {
-  public client: Client;
+  public client: BaseClient;
   public id: string;
   public categoryID: string;
   public category: Category;
   public filepath: string;
   public handler: BaseHandler;
 
-  public constructor(id: string, options: BaseModuleOptions) {
-    const {
-      category = 'default'
-    } = options;
+  public constructor(id: string, { category = 'default' }: BaseModuleOptions) {
     this.id = id;
     this.categoryID = category;
     this.filepath = null;
