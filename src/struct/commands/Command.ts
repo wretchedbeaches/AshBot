@@ -2,9 +2,11 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { APIApplicationCommandOption as v9APIApplicationCommandOption } from "discord-api-types/payloads/v9";
 import { APIApplicationCommandOption } from "discord-api-types";
 import { Interaction, PermissionFlags, ThreadChannelTypes } from "discord.js";
-import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from "../BaseModule";
+import BaseModule, { BaseModuleOptions } from "../BaseModule";
 import CommandHandler from "./CommandHandler";
 import { ErrorMessages } from "../Util";
+
+export type CommandScope = "global" | "guild";
 
 export interface CommandOptions extends BaseModuleOptions {
     channels?: CommandChannelType | CommandChannelType[];
@@ -16,6 +18,7 @@ export interface CommandOptions extends BaseModuleOptions {
     clientPermissions?: Set<PermissionFlags>;
     userPermissions?: Set<PermissionFlags>;
     shouldDefer?: boolean;
+    scope?: CommandScope;
 }
 
 export type CommandDataType = {
@@ -37,6 +40,7 @@ export default class Command extends BaseModule {
     public clientPermissions: Set<PermissionFlags>;
     public userPermissions: Set<PermissionFlags>;
     public shouldDefer: boolean;
+    public scope: CommandScope;
     public data: SlashCommandBuilder;
     public handler: CommandHandler;
 
@@ -50,6 +54,7 @@ export default class Command extends BaseModule {
         clientPermissions = new Set(),
         userPermissions = new Set(),
         shouldDefer = true,
+        scope = "global",
         ...rest
     }: CommandOptions) {
         super(id, rest);
@@ -68,7 +73,8 @@ export default class Command extends BaseModule {
         this.userPermissions = userPermissions;
         this.ignoreCooldown = typeof ignoreCooldown === 'function' ? ignoreCooldown.bind(this) : ignoreCooldown;
         this.shouldDefer = shouldDefer;
-        this.data = new SlashCommandBuilder().setName(id).setDescription(this.description)
+        this.scope = scope;
+        this.data = new SlashCommandBuilder().setName(id).setDescription(this.description);
     }
 
     public shouldExecute(interaction: Interaction): Promise<boolean> | boolean {
