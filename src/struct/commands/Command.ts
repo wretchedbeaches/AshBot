@@ -1,20 +1,26 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { APIApplicationCommandOption as v9APIApplicationCommandOption } from "discord-api-types/payloads/v9";
 import { APIApplicationCommandOption } from "discord-api-types";
-import { Interaction, PermissionFlags, ThreadChannelTypes } from "discord.js";
+import { CommandInteraction, PermissionFlags, ThreadChannelTypes } from "discord.js";
 import BaseModule, { BaseModuleOptions } from "../BaseModule";
 import CommandHandler from "./CommandHandler";
 import { ErrorMessages } from "../Util";
 
 export type CommandScope = "global" | "guild";
+export type CommandHelpDescription = {
+    content?: string;
+    usage?: string,
+    examples?: string[]
+}
 
 export interface CommandOptions extends BaseModuleOptions {
     channels?: CommandChannelType | CommandChannelType[];
     ownerOnly?: boolean;
     cooldown?: number;
-    ignoreCooldown?: Array<string> | ((interaction: Interaction, command: Command) => boolean);
+    ignoreCooldown?: Array<string> | ((interaction: CommandInteraction, command: Command) => boolean);
     ratelimit?: number;
-    description?: string | Array<string>;
+    description?: string;
+    helpDescription?: CommandHelpDescription;
     clientPermissions?: Set<PermissionFlags>;
     userPermissions?: Set<PermissionFlags>;
     shouldDefer?: boolean;
@@ -34,9 +40,10 @@ export default class Command extends BaseModule {
     public channels: Set<CommandChannelType>;
     public ownerOnly: boolean;
     public cooldown: number;
-    public ignoreCooldown: Array<string> | ((interaction: Interaction, command: Command) => boolean);
+    public ignoreCooldown: Array<string> | ((interaction: CommandInteraction, command: Command) => boolean);
     public ratelimit: number;
-    public description: string | Array<string>;
+    public description: string;
+    public helpDescription: CommandHelpDescription;
     public clientPermissions: Set<PermissionFlags>;
     public userPermissions: Set<PermissionFlags>;
     public shouldDefer: boolean;
@@ -51,6 +58,7 @@ export default class Command extends BaseModule {
         ignoreCooldown = null,
         ratelimit = 1,
         description = '',
+        helpDescription = {},
         clientPermissions = new Set(),
         userPermissions = new Set(),
         shouldDefer = true,
@@ -68,7 +76,8 @@ export default class Command extends BaseModule {
         this.cooldown = cooldown;
         this.ignoreCooldown = ignoreCooldown;
         this.ratelimit = ratelimit;
-        this.description = Array.isArray(description) ? description.join('\n') : description;
+        this.helpDescription = helpDescription;
+        this.description = description;
         this.clientPermissions = clientPermissions;
         this.userPermissions = userPermissions;
         this.ignoreCooldown = typeof ignoreCooldown === 'function' ? ignoreCooldown.bind(this) : ignoreCooldown;
@@ -77,11 +86,11 @@ export default class Command extends BaseModule {
         this.data = new SlashCommandBuilder().setName(id).setDescription(this.description);
     }
 
-    public shouldExecute(interaction: Interaction): Promise<boolean> | boolean {
+    public shouldExecute(interaction: CommandInteraction): Promise<boolean> | boolean {
         return true;
     }
 
-    public execute(interaction: Interaction): Promise<any> | any {
+    public execute(interaction: CommandInteraction): Promise<any> | any {
         throw new Error(ErrorMessages.NOT_IMPLEMENTED(this.constructor.name, "execute"));
     }
 };

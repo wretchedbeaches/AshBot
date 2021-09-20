@@ -8,10 +8,10 @@ import { CommandHandlerEvents } from "../Util";
 import Command from "./Command";
 
 export interface CommandHandlerOptions extends BaseHandlerOptions {
-    blockClient: boolean;
-    blockBots: boolean;
-    defaultCooldown: number;
-    ignoreCooldown: string[];
+    blockClient?: boolean;
+    blockBots?: boolean;
+    defaultCooldown?: number;
+    ignoreCooldown?: string[];
 }
 
 export type CooldownData = {
@@ -174,7 +174,7 @@ export default class CommandHandler extends BaseHandler {
         return false;
     }
 
-    public runCooldowns(interaction: Interaction, command: Command): boolean {
+    public runCooldowns(interaction: CommandInteraction, command: Command): boolean {
         const ignorer = command.ignoreCooldown || this.ignoreCooldown;
         const isIgnored = Array.isArray(ignorer)
             ? ignorer.includes(interaction.user.id)
