@@ -1,21 +1,21 @@
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { CommandInteraction } from "discord.js";
+import Command from "../../struct/commands/Command";
 
 export default class PingCommand extends Command {
   public constructor() {
     super('ping', {
-      aliases: ['ping'],
       category: 'Public Commands',
-      description: {
+      helpDescription: {
         content: 'Check the latency of the ping to the Discord API',
         usage: 'ping',
         examples: ['ping'],
       },
+      description: 'Check the latency of the ping to the Discord APU',
       ratelimit: 3,
     });
   }
 
-  public exec(message: Message): Promise<Message> {
-    return message.util.send(`Pong! \`${this.client.ws.ping}ms\``);
+  public execute(interaction: CommandInteraction) {
+    return interaction.editReply({ content: `Pong! \`${this.client.ws.ping}ms\`` });
   }
 }

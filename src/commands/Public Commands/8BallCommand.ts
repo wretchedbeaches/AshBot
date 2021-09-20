@@ -1,5 +1,5 @@
-import { Command } from "discord-akairo";
-import { Message } from "discord.js";
+import { CommandInteraction, Interaction } from "discord.js";
+import Command from "../../struct/commands/Command";
 
 const responses = [
     "It is certain",
@@ -26,19 +26,18 @@ const responses = [
 
 export default class EightBall extends Command {
     public constructor() {
-        super("8ball", {
-            aliases: ["8ball", "8b"],
-            description: {
+        super('8ball', {
+            helpDescription: {
                 content: "Let the bot decide your future",
                 usage: "Fortune-Telling Game",
                 examples: ["8ball will i get a gf"],
             },
-            category: 'Public Commands',
-            ratelimit: 2,
+            description: 'Let the bot decide your future...',
         });
+        this.data.addStringOption(option => option.setName('question').setDescription('What would you like to ask the 8ball?'));
     }
 
-    public exec(message: Message) {
-        return message.channel.send(responses[Math.floor(Math.random() * responses.length)]);
+    public execute(interaction: CommandInteraction) {
+        return interaction.editReply({ content: responses[Math.floor(Math.random() * responses.length - 1)] });
     }
 }
