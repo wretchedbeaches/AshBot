@@ -3,6 +3,7 @@ import { REST } from '@discordjs/rest';
 import CommandHandler from "../struct/commands/CommandHandler";
 import InhibitorHandler from "../struct/inhibitors/InhibitorHandler";
 import ListenerHandler from "../struct/listeners/ListenerHandler";
+import { join } from "path";
 
 interface BotConfig {
   token?: string;
@@ -33,6 +34,22 @@ export default class BaseClient extends Client implements BaseClientAttributes {
     this.config = config;
     this.owners = config.owners;
     this.restApi = new REST({ version: '9' }).setToken(config.token);
+
+    this.listenerHandler =  new ListenerHandler(this, {
+      directory: join(__dirname, '..', 'listeners'),
+    });
+
+    this.commandHandler = new CommandHandler(this, {
+      directory: join(__dirname, '..', 'commands/Public Commands'),
+      defaultCooldown: 6e4
+    });
+    this.inhibitorHandler = new InhibitorHandler(this, {
+      directory: join(__dirname, '..', 'inhibitors'),
+    });
+
+    this.once('ready', () => {
+      this.commandHandler.loadAll();
+    });
   }
 
   private async _init(): Promise<void> {
