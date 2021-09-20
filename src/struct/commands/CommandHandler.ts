@@ -10,8 +10,6 @@ import Command from "./Command";
 export interface CommandHandlerOptions extends BaseHandlerOptions {
     blockClient: boolean;
     blockBots: boolean;
-    fetchMembers: boolean;
-    storeMessages: boolean;
     defaultCooldown: number;
     ignoreCooldown: string[];
 }
