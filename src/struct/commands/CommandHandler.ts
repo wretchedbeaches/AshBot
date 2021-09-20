@@ -71,7 +71,7 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public _registerCommandsGlobally(commands: any[]) {
-        return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId), { body: commands})
+        return this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId), { body: commands})
     }
 
     public registerCommandsForGuild(commands: Command[], guildId: string) {
@@ -79,11 +79,22 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public _registerCommandsForGuild(commands: Command[], guildId: string) {
-        return this.client.restApi.put(Routes.applicationGuildCommands(this.client.config.clientId, guildId), { body: commands });
+        return this.client.restApi.post(Routes.applicationGuildCommands(this.client.config.clientId, guildId), { body: commands });
     }
 
     private commandsToData(commands: Command[]): any[] {
         return commands.map(command => command.data.toJSON());
+    }
+
+    public async loadAll(directory: string = this.directory): Promise<CommandHandler> {
+        super.loadAll(directory);
+        const globalCommands = this.modules.filter(command => command.scope === 'global');
+        // TODO: guild restricted logic
+        // const guildCommands = this.modules.filter(command => command.scope !== 'global');
+        const promises = [];
+        promises.push(this.registerCommandsGlobally(Array.from(globalCommands.values())));
+        await Promise.all(promises);
+        return this;
     }
 
     // TODO: Deregister functions

@@ -91,7 +91,7 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
     }
 
     // TODO: Add a load filter?
-    public loadAll(directory: string = this.directory): BaseHandler {
+    public loadAll(directory: string = this.directory): BaseHandler | Promise<BaseHandler> {
         const filepaths = BaseHandler.readdirRecursive(directory);
         for (let filepath of filepaths) {
             filepath = path.resolve(filepath);
