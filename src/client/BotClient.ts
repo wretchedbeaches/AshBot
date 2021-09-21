@@ -46,20 +46,17 @@ export default class BaseClient extends Client implements BaseClientAttributes {
     this.inhibitorHandler = new InhibitorHandler(this, {
       directory: join(__dirname, '..', 'inhibitors'),
     });
-
-    this.once('ready', () => {
-      this.commandHandler.loadAll();
-    });
   }
 
   private async _init(): Promise<void> {
-    this.commandHandler.useListenerHandler(this.listenerHandler);
-    this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
     this.listenerHandler.setEmitters({
       commandHandler: this.commandHandler,
       listenerHandler: this.listenerHandler,
       process,
     });
+    this.listenerHandler.loadAll();
+    this.commandHandler.useListenerHandler(this.listenerHandler);
+    this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
   }
 
   public async start() {
