@@ -235,7 +235,6 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public async runCommand(interaction: CommandInteraction, command: Command): Promise<void> {
-        console.log("Running command..");
         this.emit(CommandHandlerEvents.STARTED, { interaction, command });
         const result = await command.execute(interaction);
         this.emit(CommandHandlerEvents.ENDED, { interaction, command, result });
