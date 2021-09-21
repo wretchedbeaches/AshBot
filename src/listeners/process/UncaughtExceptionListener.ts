@@ -1,6 +1,6 @@
 import Listener from "../../struct/listeners/Listener";
 
-export default class ReadyListener extends Listener {
+export default class UncaughtExceptionListener extends Listener {
   public constructor() {
     super('processUncaughtException', {
       emitter: 'process',
@@ -9,7 +9,8 @@ export default class ReadyListener extends Listener {
     });
   }
 
-  public execute(error): void {  
+  public execute(error): void {
+    // TODO: Update logging
     console.log("UNCAUGHT EXCEPTION");
     console.log(error);
   }
