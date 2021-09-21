@@ -1,4 +1,4 @@
-import { Listener } from 'discord-akairo';
+import Listener from "../../struct/listeners/Listener";
 
 export default class ReadyListener extends Listener {
   public constructor() {
@@ -9,7 +9,7 @@ export default class ReadyListener extends Listener {
     });
   }
 
-  public exec(): void {  
+  public execute(): void {  
     console.log(`[Bot] ${this.client.user.tag} is now online and ready!`);
   }
 }
