@@ -1,4 +1,4 @@
-import { Client, Collection } from "discord.js";
+import { Collection } from "discord.js";
 import BaseModule from "./BaseModule";
 import Category from "./Category";
 import path from "path";
@@ -68,24 +68,24 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 
     public load(thing: string | Function, isReload: boolean = false): BaseModule {
         const isClass = typeof thing === 'function';
-        if (!isClass && path.extname(thing) !== '.ts') return undefined;
+        if (!isClass && path.extname(thing as string) !== '.ts') return undefined;
 
         let module = isClass ? thing : function findExport(m) {
             if (!m) return null;
-            if (m.prototype instanceof this.classToHandle) return module;
+            if (m.prototype instanceof this.classToHandle) return m;
             return m.default ? findExport.call(this, m.default) : null;
-        }.call(this, require(thing));
+        }.call(this, require(thing as string));
 
         if (module && module.prototype instanceof this.classToHandle) {
             module = new module(this);
         } else {
-            if (!isClass) delete require.cache[require.resolve(thing)];
+            if (!isClass) delete require.cache[require.resolve(thing as string)];
             return undefined;
         }
 
         if (this.modules.has(module.id)) throw new Error(ErrorMessages.ALREADY_LOADED(this.classToHandle.name, module.id));
         
-        this.register(module, isClass ? null : thing);
+        this.register(module, isClass ? null : thing as string);
         this.emit(BaseHandlerEvents.LOAD, { module, isReload });
         return module;
     }
