@@ -1,11 +1,11 @@
-import { Routes } from "discord-api-types";
+import { APIApplicationCommand, Routes } from "discord-api-types/v9";
 import { Collection, CommandInteraction, Interaction } from "discord.js";
 import BaseClient from "../../client/BotClient";
 import BaseHandler, { BaseHandlerOptions } from "../BaseHandler";
 import InhibitorHandler from "../inhibitors/InhibitorHandler";
 import ListenerHandler from "../listeners/ListenerHandler";
 import { CommandHandlerEvents } from "../Util";
-import Command from "./Command";
+import Command, { CommandDataType } from "./Command";
 
 export interface CommandHandlerOptions extends BaseHandlerOptions {
     blockClient?: boolean;
@@ -18,6 +18,12 @@ export type CooldownData = {
     timer?: NodeJS.Timeout;
     end?: number;
     uses?: number;
+}
+
+export type CommandBlockedData = {
+    interaction: Interaction;
+    command: Command;
+    reason: string;
 }
 
 export default class CommandHandler extends BaseHandler {
@@ -54,16 +60,25 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public setup(): void {
-        this.once('ready', () => {
+        this.client.once('ready', async () => {
             this.client.on('interactionCreate', (interaction: Interaction) => {
                 if (interaction.isCommand())
                     this.handle(interaction);
             });
+            await this.loadAll();
         });
     }
 
-    public registerCommandGlobally(command: Command) {
-        return this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId), { body: command.data.toJSON() });
+    public getGlobalCommands(): Promise<APIApplicationCommand[]> {
+       return this.client.restApi.get(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`) as Promise<APIApplicationCommand[]>;
+    }
+
+    public getGuildCommands(guildId: string): Promise<APIApplicationCommand[]> {
+        return this.client.restApi.get(Routes.applicationGuildCommands(this.client.config.clientId, guildId) as unknown as `/${string}`) as Promise<APIApplicationCommand[]>;
+    }
+
+    public registerCommandGlobally(command: Command): Promise<APIApplicationCommand> {
+        return this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, { body: command.data.toJSON() }) as Promise<APIApplicationCommand>;
     }
 
     public async registerCommandsGlobally(commands: Command[]) {
@@ -71,25 +86,27 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public _registerCommandsGlobally(commands: any[]) {
-        return this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId), { body: commands})
+        return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, { body: commands})
     }
 
     public registerCommandsForGuild(commands: Command[], guildId: string) {
         return this._registerCommandsForGuild(this.commandsToData(commands), guildId);
     }
 
-    public _registerCommandsForGuild(commands: Command[], guildId: string) {
-        return this.client.restApi.post(Routes.applicationGuildCommands(this.client.config.clientId, guildId), { body: commands });
-    }
-
-    private commandsToData(commands: Command[]): any[] {
-        return commands.map(command => command.data.toJSON());
+    public _registerCommandsForGuild(commands: any[], guildId: string) {
+        return this.client.restApi.put(Routes.applicationGuildCommands(this.client.config.clientId, guildId) as unknown as `/${string}`, { body: commands });
     }
 
     public async loadAll(directory: string = this.directory): Promise<CommandHandler> {
         super.loadAll(directory);
+        // TODO: WIll need to update the global registration logic
+        // Filter all global commands with the names of the registered commands.
+        // For any that aren't registered, register them each individually instead
+        const registeredCommands = await this.getGlobalCommands();
         const globalCommands = this.modules.filter(command => command.scope === 'global');
+        if (registeredCommands.length === globalCommands.size) return this;
         // TODO: guild restricted logic
+        // Guild restricted commands should be registered against a list of guilds in the DB to load them for.
         // const guildCommands = this.modules.filter(command => command.scope !== 'global');
         const promises = [];
         promises.push(this.registerCommandsGlobally(Array.from(globalCommands.values())));
@@ -106,17 +123,13 @@ export default class CommandHandler extends BaseHandler {
         if (!this.modules.has(commandName)) return;
 
         command = this.modules.get(commandName);
-        
         if (command.shouldDefer)
             await interaction.deferReply();
-        
         if (await this.runCommandInhibitors(interaction, command)) {
             return false;
         }
-
         if (await this.runInhibitors(interaction, command))
             return false;
-        
         if (await command.shouldExecute(interaction)) {
             await this.runCommand(interaction, command);
             return true;
@@ -131,7 +144,7 @@ export default class CommandHandler extends BaseHandler {
         }
     }
 
-    async runCommandInhibitors(interaction: CommandInteraction, command: Command) {
+    public async runCommandInhibitors(interaction: CommandInteraction, command: Command) {
         if (this.blockClient && interaction.user.id === this.client.user.id) {
             this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'self'})
         }
@@ -161,13 +174,13 @@ export default class CommandHandler extends BaseHandler {
         return false;
     }
 
-    async runInhibitors(interaction: CommandInteraction, command: Command) {
+    public async runInhibitors(interaction: CommandInteraction, command: Command) {
         const reason = this.inhibitorHandler
             ? await this.inhibitorHandler.test(interaction, command)
             : null;
 
         if (reason !== null) {
-            this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, reason});
+            this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason});
             return true;
         }
 
@@ -222,6 +235,7 @@ export default class CommandHandler extends BaseHandler {
     }
 
     public async runCommand(interaction: CommandInteraction, command: Command): Promise<void> {
+        console.log("Running command..");
         this.emit(CommandHandlerEvents.STARTED, { interaction, command });
         const result = await command.execute(interaction);
         this.emit(CommandHandlerEvents.ENDED, { interaction, command, result });
@@ -245,5 +259,9 @@ export default class CommandHandler extends BaseHandler {
         }
 
         throw error;
+    }
+
+    private commandsToData(commands: Command[]) {
+        return commands.map(command => command.data.toJSON());
     }
 };

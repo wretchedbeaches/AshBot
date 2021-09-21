@@ -1,9 +1,8 @@
-import { RateLimitData, TextChannel } from 'discord.js';
 import { CommandBlockedData } from '../../struct/commands/CommandHandler';
 import Listener from '../../struct/listeners/Listener';
 import { CommandHandlerEvents } from '../../struct/Util';
 
-export default class RateLimitListener extends Listener {
+export default class CommandBlockedListener extends Listener {
   public constructor() {
     super('commandBlocked', {
       emitter: 'commandHandler',
