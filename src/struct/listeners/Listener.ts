@@ -22,7 +22,7 @@ export default class Listener extends BaseModule {
         this.type = type;
     }
 
-    public execute(): any {
+    public execute(...args: any[]): any {
         throw new Error(ErrorMessages.NOT_IMPLEMENTED(this.constructor.name, 'execute'));
     }
 };
