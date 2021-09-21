@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { APIApplicationCommandOption as v9APIApplicationCommandOption } from "discord-api-types/payloads/v9";
-import { APIApplicationCommandOption } from "discord-api-types";
+import type { APIApplicationCommandOption } from 'discord-api-types/v9';
 import { CommandInteraction, PermissionFlags, ThreadChannelTypes } from "discord.js";
 import BaseModule, { BaseModuleOptions } from "../BaseModule";
 import CommandHandler from "./CommandHandler";
@@ -14,7 +13,7 @@ export type CommandHelpDescription = {
 }
 
 export interface CommandOptions extends BaseModuleOptions {
-    channels?: CommandChannelType | CommandChannelType[];
+    channels?: CommandChannelType[];
     ownerOnly?: boolean;
     cooldown?: number;
     ignoreCooldown?: Array<string> | ((interaction: CommandInteraction, command: Command) => boolean);
@@ -30,8 +29,8 @@ export interface CommandOptions extends BaseModuleOptions {
 export type CommandDataType = {
     name: string;
     description: string;
-    options: v9APIApplicationCommandOption[] | APIApplicationCommandOption;
-    default_permission: boolean;
+    options: APIApplicationCommandOption[];
+    default_permission: boolean | undefined;
 }
 
 export type CommandChannelType = "DM" | "GUILD_TEXT" | "GUILD_NEWS" | ThreadChannelTypes;
@@ -52,7 +51,7 @@ export default class Command extends BaseModule {
     public handler: CommandHandler;
 
     public constructor(id: string, {
-        channels,
+        channels = [],
         ownerOnly = false,
         cooldown = null,
         ignoreCooldown = null,
@@ -70,8 +69,6 @@ export default class Command extends BaseModule {
         if (Array.isArray(channels))
             for (const channel of channels)
                 this.channels.add(channel);
-        else
-            this.channels.add(channels);
         this.ownerOnly = ownerOnly;
         this.cooldown = cooldown;
         this.ignoreCooldown = ignoreCooldown;
