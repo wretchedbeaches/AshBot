@@ -6,11 +6,11 @@ export function isPromise(value: any): boolean {
 };
 
 export const CommandHandlerEvents = {
-  COMMAND_BLOCKED: 'commandBlocked',
+  COMMAND_BLOCKED: 'blocked',
   COOLDOWN: 'cooldown',
-  ENDED: 'commandEnded',
+  ENDED: 'ended',
   ERROR: 'error',
-  STARTED: 'commandStarted',
+  STARTED: 'started',
 };
 
 export const BaseHandlerEvents = {
