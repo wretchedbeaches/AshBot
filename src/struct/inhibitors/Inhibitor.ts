@@ -7,7 +7,7 @@ import InhibitorHandler from './InhibitorHandler';
 
 interface InhibitorOptions extends BaseModuleOptions {
 	reason: string;
-	priority: number;
+	priority?: number;
 }
 
 export default class Inhibitor extends BaseModule {
