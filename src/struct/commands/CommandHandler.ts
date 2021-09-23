@@ -84,6 +84,18 @@ export default class CommandHandler extends BaseHandler {
 		) as Promise<APIApplicationCommand[]>;
 	}
 
+	public getGlobalCommand(command: Command) {
+		if (command.registeredId)
+			return this.client.restApi.get(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+	}
+
+	public getGuildCommand(command: Command, guildId: string) {
+		if (command.registeredId)
+			return this.client.restApi.get(
+				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+			);
+	}
+
 	public registerCommandGlobally(command: Command): Promise<APIApplicationCommand> {
 		return this.client.restApi.post(
 			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
@@ -91,40 +103,72 @@ export default class CommandHandler extends BaseHandler {
 		) as Promise<APIApplicationCommand>;
 	}
 
-	public async registerCommandsGlobally(commands: Command[]) {
-		return this._registerCommandsGlobally(this.commandsToData(commands));
+	public async registerGlobalCommands(commands: Command[]) {
+		return this._registerGlobalCommands(this.commandsToData(commands));
 	}
 
-	public _registerCommandsGlobally(commands: any[]) {
+	public _registerGlobalCommands(commands: any[]) {
 		return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
 			body: commands,
 		});
 	}
 
-	public registerCommandsForGuild(commands: Command[], guildId: string) {
-		return this._registerCommandsForGuild(this.commandsToData(commands), guildId);
+	public registerGuildCommands(commands: Command[], guildId: string) {
+		return this._registerGuildCommands(this.commandsToData(commands), guildId);
 	}
 
-	public _registerCommandsForGuild(commands: any[], guildId: string) {
+	public _registerGuildCommands(commands: any[], guildId: string) {
 		return this.client.restApi.put(
 			Routes.applicationGuildCommands(this.client.config.clientId, guildId) as unknown as `/${string}`,
 			{ body: commands },
 		);
 	}
 
+	public updateGlobalCommand(command: Command) {
+		if (command.registeredId)
+			return this.client.restApi.put(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+	}
+
+	public updateGuildCommand(command: Command, guildId: string) {
+		if (command.registeredId)
+			return this.client.restApi.patch(
+				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+			);
+	}
+
+	public unregisterGlobalCommand(command: Command) {
+		if (command.registeredId)
+			return this.client.restApi.delete(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+	}
+
+	public unregisterGuildCommand(command: Command, guildId: string) {
+		if (command.registeredId)
+			return this.client.restApi.delete(
+				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+			);
+	}
+
+	// TODO: Permission based calls - may need to update Command class types.
+
 	public async loadAll(directory: string = this.directory): Promise<CommandHandler> {
 		await super.loadAll(directory);
 		// TODO: WIll need to update the global registration logic
 		// Filter all global commands with the names of the registered commands.
 		// For any that aren't registered, register them each individually instead
-		const registeredCommands = await this.getGlobalCommands();
+		const registeredGlobalCommands = await this.getGlobalCommands();
+		for (const registeredGlobalCommand of registeredGlobalCommands) {
+			if (this.modules.has(registeredGlobalCommand.name)) {
+				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
+			}
+		}
 		const globalCommands = this.modules.filter((command) => command.scope === 'global');
-		if (registeredCommands.length === globalCommands.size) return this;
+		if (registeredGlobalCommands.length === globalCommands.size) return this;
+
 		// TODO: guild restricted logic
 		// Guild restricted commands should be registered against a list of guilds in the DB to load them for.
 		// const guildCommands = this.modules.filter(command => command.scope !== 'global');
 		const promises: Promise<unknown>[] = [];
-		promises.push(this.registerCommandsGlobally(Array.from(globalCommands.values())));
+		promises.push(this.registerGlobalCommands(Array.from(globalCommands.values())));
 		await Promise.all(promises);
 		return this;
 	}
