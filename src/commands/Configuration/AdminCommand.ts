@@ -1,41 +1,43 @@
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { APIMessage } from 'discord-api-types/v9';
+import { CommandInteraction, Message } from 'discord.js';
+import Command from '../../struct/commands/Command';
 
+// TODO: Need to setup Command Permissions stuff.
 export default class AdminCommand extends Command {
-  public constructor() {
-    super('admin', {
-      aliases: ['admin', 'adminRole'],
-      category: 'Configuration',
-      description: {
-        content: 'Configure the admin role.',
-        usage: 'admin',
-        examples: ['admin'],
-      },
-      ratelimit: 3,
-      userPermissions: ['MANAGE_GUILD'],
-      args: [
-        {
-          id: 'adminRole',
-          type: 'role',
-          prompt: {
-            optional: false,
-            start: (msg: Message) =>
-              `${msg.author}, please provide a valid admin role.`,
-            retry: (msg: Message) =>
-              `${msg.author}, please provide a valid admin role.`,
-          },
-          match: 'rest',
-        },
-      ],
-    });
-  }
+	public constructor() {
+		super('admin', {
+			category: 'Configuration',
+			helpDescription: {
+				content: 'Access admin commands.',
+				usage: 'admin <command> [options]',
+				examples: ['admin roles admin <role>', 'admin roles mod <role>'],
+			},
+			description: 'Access admin commands.',
+			ratelimit: 3,
+		});
+		this.data.addSubcommand((subcommand) =>
+			subcommand
+				.setName('roles')
+				.setDescription('Manage the admin, moderator, or mute roles.')
+				.addStringOption((option) =>
+					option
+						.setName('type')
+						.setDescription('The role type to manage: admin | mod | mute')
+						.addChoices([
+							['admin', 'admin'],
+							['mod', 'mod'],
+							['mute', 'mute'],
+						])
+						.setRequired(true),
+				)
+				.addRoleOption((option) => option.setName('role').setDescription('The role to use').setRequired(true)),
+		);
+	}
 
-  public async exec(message: Message, { adminRole }): Promise<Message> {
-    await this.client.settings.set(
-      message.guild.id,
-      'adminRoleId',
-      adminRole.id
-    );
-    return message.channel.send(`Successfully set admin role to ${adminRole}`);
-  }
+	public async execute(interaction: CommandInteraction): Promise<Message | APIMessage> {
+		const roleType = interaction.options.getString('type', true);
+		const role = interaction.options.getRole('role', true);
+		await this.client.settings.set(interaction.guild!.id, `${roleType}RoleId`, role.id);
+		return interaction.editReply(`Successfully set ${roleType} role to ${role.name}`) as Promise<Message | APIMessage>;
+	}
 }
