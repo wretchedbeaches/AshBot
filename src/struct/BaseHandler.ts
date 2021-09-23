@@ -12,7 +12,7 @@ import { BaseHandlerEvents, ErrorMessages } from './Util';
 
 export interface BaseHandlerOptions {
 	automateCategories?: boolean;
-	directory?: string;
+	directory: string;
 }
 
 export interface BaseHandlerAttributes {
@@ -29,7 +29,7 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	public categories: Collection<string, Category>;
 	public classToHandle: new (...args: any[]) => BaseModule;
 	public client: BaseClient;
-	public directory?: string;
+	public directory: string;
 	public modules: Collection<string, BaseModule>;
 
 	// TODO: determine a default directory
