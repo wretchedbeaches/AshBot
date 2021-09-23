@@ -1,8 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, PermissionFlags, ThreadChannelTypes } from 'discord.js';
-import BaseModule, { BaseModuleOptions } from '../BaseModule';
+import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from '../BaseModule';
 import CommandHandler from './CommandHandler';
 import { ErrorMessages } from '../Util';
+import BotClient from '../../client/BotClient';
 
 export type CommandScope = 'global' | 'guild';
 export interface CommandHelpDescription {
@@ -20,14 +21,19 @@ export interface CommandOptions extends BaseModuleOptions {
 	description?: string;
 	helpDescription: CommandHelpDescription;
 	clientPermissions?: Set<PermissionFlags>;
-	userPermissions?: Set<PermissionFlags>;
+	userPermissions?: PermissionFlags[];
+	defaultPermission?: boolean;
 	shouldDefer?: boolean;
 	scope?: CommandScope;
 }
 
+export interface CommandAttributes extends BaseModuleAttributes {
+	client: BotClient;
+}
+
 export type CommandChannelType = 'DM' | 'GUILD_TEXT' | 'GUILD_NEWS' | ThreadChannelTypes;
 
-export default class Command extends BaseModule {
+export default class Command extends BaseModule implements CommandAttributes {
 	public channels: Set<CommandChannelType>;
 	public ownerOnly: boolean;
 	public cooldown: number;
@@ -36,11 +42,12 @@ export default class Command extends BaseModule {
 	public description: string;
 	public helpDescription: CommandHelpDescription;
 	public clientPermissions: Set<PermissionFlags>;
-	public userPermissions: Set<PermissionFlags>;
+	public userPermissions: PermissionFlags[];
 	public shouldDefer: boolean;
 	public scope: CommandScope;
 	public data: SlashCommandBuilder;
 	public handler: CommandHandler;
+	public client: BotClient;
 
 	public constructor(
 		id: string,
@@ -52,8 +59,9 @@ export default class Command extends BaseModule {
 			ratelimit = 1,
 			description = '',
 			helpDescription,
+			defaultPermission = true,
 			clientPermissions = new Set(),
-			userPermissions = new Set(),
+			userPermissions = [],
 			shouldDefer = true,
 			scope = 'global',
 			...rest
@@ -72,7 +80,10 @@ export default class Command extends BaseModule {
 		this.userPermissions = userPermissions;
 		this.shouldDefer = shouldDefer;
 		this.scope = scope;
-		this.data = new SlashCommandBuilder().setName(id).setDescription(this.description);
+		this.data = new SlashCommandBuilder()
+			.setName(id)
+			.setDescription(this.description)
+			.setDefaultPermission(defaultPermission);
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
