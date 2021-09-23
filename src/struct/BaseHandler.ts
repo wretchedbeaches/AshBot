@@ -84,6 +84,8 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 
 		if (module && module.prototype instanceof this.classToHandle) {
 			module = new module(this);
+			// TODO: is the client property not being set on commands?
+			// Does this need to be done here?
 		} else {
 			if (!isClass) delete require.cache[require.resolve(thing as string)];
 			return undefined;
