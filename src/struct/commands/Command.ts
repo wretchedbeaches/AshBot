@@ -48,6 +48,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public data: SlashCommandBuilder;
 	public handler: CommandHandler;
 	public client: BotClient;
+	public registeredId?: string;
 
 	public constructor(
 		id: string,
