@@ -31,13 +31,13 @@ export default class BaseModule implements BaseModuleAttributes {
 		this.client = null;
 	}
 
-	public reload(): BaseModule | null {
-		if (this.handler === null) return null;
+	public reload(): BaseModule | undefined {
+		if (this.handler === null) return undefined;
 		return this.handler.reload(this.id);
 	}
 
-	public remove(): BaseModule | null {
-		if (this.handler === null) return null;
+	public remove(): BaseModule | undefined {
+		if (this.handler === null) return undefined;
 		return this.handler.remove(this.id);
 	}
 
