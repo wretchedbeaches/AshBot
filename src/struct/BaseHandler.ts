@@ -107,7 +107,7 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	}
 
 	public remove(id: string): BaseModule {
-		const module = this.modules.get(id.toString());
+		const module = this.modules.get(id);
 		if (!module) throw new Error(ErrorMessages.MODULE_NOT_FOUND(this.classToHandle.name, id));
 		this.deregister(module);
 		this.emit(BaseHandlerEvents.REMOVE, module);
@@ -123,7 +123,7 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	}
 
 	public reload(id: string): BaseModule | undefined {
-		const module = this.modules.get(id.toString());
+		const module = this.modules.get(id);
 		if (!module) throw new Error(ErrorMessages.MODULE_NOT_FOUND(this.classToHandle.name, id));
 		if (!module.filepath) throw new Error(ErrorMessages.NOT_RELOADABLE(this.classToHandle.name, id));
 		this.deregister(module);
