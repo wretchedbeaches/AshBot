@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, PermissionFlags, ThreadChannelTypes } from 'discord.js';
+import { CommandInteraction, ThreadChannelTypes } from 'discord.js';
 import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from '../BaseModule';
 import CommandHandler from './CommandHandler';
 import { ErrorMessages } from '../Util';
@@ -20,8 +20,8 @@ export interface CommandOptions extends BaseModuleOptions {
 	ratelimit?: number;
 	description?: string;
 	helpDescription: CommandHelpDescription;
-	clientPermissions?: Set<PermissionFlags>;
-	userPermissions?: PermissionFlags[];
+	clientPermissions?: bigint[];
+	userPermissions?: bigint[];
 	defaultPermission?: boolean;
 	shouldDefer?: boolean;
 	scope?: CommandScope;
@@ -41,8 +41,8 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public ratelimit: number;
 	public description: string;
 	public helpDescription: CommandHelpDescription;
-	public clientPermissions: Set<PermissionFlags>;
-	public userPermissions: PermissionFlags[];
+	public clientPermissions: bigint[];
+	public userPermissions: bigint[];
 	public shouldDefer: boolean;
 	public scope: CommandScope;
 	public data: SlashCommandBuilder;
@@ -60,7 +60,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 			description = '',
 			helpDescription,
 			defaultPermission = true,
-			clientPermissions = new Set(),
+			clientPermissions = [],
 			userPermissions = [],
 			shouldDefer = true,
 			scope = 'global',

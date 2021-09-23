@@ -155,9 +155,21 @@ export default class CommandHandler extends BaseHandler {
 		}
 	}
 
-	public runCommandInhibitors(interaction: CommandInteraction, command: Command) {
-		if (this.blockClient && !(this.client.user === null) && interaction.user.id === this.client.user.id) {
+	public async runCommandInhibitors(interaction: CommandInteraction, command: Command) {
+		// Ensure the bot has appropriate permissions for the command
+		if (interaction.guild && command.clientPermissions.length > 0) {
+			const botMember = await interaction.guild.members.fetch(this.client.user!);
+			for (const requiredPermission of command.clientPermissions) {
+				if (!botMember.permissions.has(requiredPermission)) {
+					this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'clientPermission' });
+					return true;
+				}
+			}
+		}
+
+		if (this.blockClient && interaction.user.id === this.client.user!.id) {
 			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'self' });
+			return true;
 		}
 
 		if (this.blockBots && interaction.user.bot) {
