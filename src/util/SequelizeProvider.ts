@@ -34,7 +34,7 @@ class SequelizeProvider implements SequelizeProviderAttributes {
 		}
 	}
 
-	public get(id: ModelIdentifier, key: string, defaultValue: any): typeof this.table {
+	public get(id: ModelIdentifier, key: string, defaultValue: any): any {
 		if (this.items.has(id)) {
 			const value = this.items.get(id)[key];
 			return value == null ? defaultValue : value;

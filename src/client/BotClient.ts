@@ -15,6 +15,8 @@ import { join } from 'path';
 import express from 'express';
 import hookRouter from '../routes/hook';
 import cors from 'cors';
+import CooldownManager from '../struct/commands/CooldownManager';
+import LogManager from '../util/LogManager';
 
 interface BotConfig {
 	token: string;
@@ -43,9 +45,11 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	public settings: SequelizeProvider;
 	public embedQueue: Collection<string, MessageEmbed[]>;
 	public intervals: Collection<string, NodeJS.Timeout>;
+	public logger: LogManager;
 
 	public constructor(config: BotConfig, options: ClientOptions) {
 		super(options);
+		this.logger = new LogManager(this);
 		this.config = config;
 		this.owners = config.owners;
 		this.restApi = new REST({ version: '9' }).setToken(config.token);
@@ -56,7 +60,7 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 
 		this.commandHandler = new CommandHandler(this, {
 			directory: join(__dirname, '..', 'commands/Public Commands'),
-			defaultCooldown: 6e4,
+			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 		});
 		this.inhibitorHandler = new InhibitorHandler(this, {
 			directory: join(__dirname, '..', 'inhibitors'),
@@ -74,6 +78,8 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 			listenerHandler: this.listenerHandler,
 			process,
 		});
+		if (this.commandHandler.cooldownManager !== undefined)
+			this.listenerHandler.emitters.set('cooldownManager', this.commandHandler.cooldownManager);
 		await this.listenerHandler.loadAll();
 		this.commandHandler.useListenerHandler(this.listenerHandler);
 		this.commandHandler.useInhibitorHandler(this.inhibitorHandler);

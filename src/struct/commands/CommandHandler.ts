@@ -141,9 +141,12 @@ export default class CommandHandler extends BaseHandler {
 
 	public unregisterGlobalCommand(command: Command) {
 		if (command.registeredId)
-			return this.client.restApi.delete(
-				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
-			);
+			return this.client.restApi
+				.delete(Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`)
+				.then((result) => {
+					this.deregister(command);
+					return result;
+				});
 	}
 
 	public unregisterGuildCommand(command: Command, guildId: string) {

@@ -28,6 +28,7 @@ export default class CooldownManager extends EventEmitter {
 	}
 
 	public async runCooldowns(interaction: CommandInteraction, command: Command): Promise<boolean> {
+		if (command.cooldown <= 0) return false;
 		const cooldownIdentifier = this.getCooldownIdentifier(interaction, command);
 		if (cooldownIdentifier) {
 			const ignorer: CooldownIgnorer = command.ignoreCooldown;
