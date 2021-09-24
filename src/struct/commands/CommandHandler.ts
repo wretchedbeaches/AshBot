@@ -77,13 +77,19 @@ export default class CommandHandler extends BaseHandler {
 
 	public getGlobalCommand(command: Command) {
 		if (command.registeredId)
-			return this.client.restApi.get(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+			return this.client.restApi.get(
+				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
+			);
 	}
 
 	public getGuildCommand(command: Command, guildId: string) {
 		if (command.registeredId)
 			return this.client.restApi.get(
-				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+				Routes.applicationGuildCommand(
+					this.client.config.clientId,
+					guildId,
+					command.registeredId,
+				) as unknown as `/${string}`,
 			);
 	}
 
@@ -117,25 +123,37 @@ export default class CommandHandler extends BaseHandler {
 
 	public updateGlobalCommand(command: Command) {
 		if (command.registeredId)
-			return this.client.restApi.put(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+			return this.client.restApi.put(
+				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
+			);
 	}
 
 	public updateGuildCommand(command: Command, guildId: string) {
 		if (command.registeredId)
 			return this.client.restApi.patch(
-				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+				Routes.applicationGuildCommand(
+					this.client.config.clientId,
+					guildId,
+					command.registeredId,
+				) as unknown as `/${string}`,
 			);
 	}
 
 	public unregisterGlobalCommand(command: Command) {
 		if (command.registeredId)
-			return this.client.restApi.delete(Routes.applicationCommand(this.client.config.clientId, command.registeredId));
+			return this.client.restApi.delete(
+				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
+			);
 	}
 
 	public unregisterGuildCommand(command: Command, guildId: string) {
 		if (command.registeredId)
 			return this.client.restApi.delete(
-				Routes.applicationGuildCommand(this.client.config.clientId, guildId, command.registeredId),
+				Routes.applicationGuildCommand(
+					this.client.config.clientId,
+					guildId,
+					command.registeredId,
+				) as unknown as `/${string}`,
 			);
 	}
 
@@ -147,9 +165,17 @@ export default class CommandHandler extends BaseHandler {
 		// Filter all global commands with the names of the registered commands.
 		// For any that aren't registered, register them each individually instead
 		const registeredGlobalCommands = await this.getGlobalCommands();
+
 		for (const registeredGlobalCommand of registeredGlobalCommands) {
 			if (this.modules.has(registeredGlobalCommand.name)) {
 				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
+				const wrapper = '===============';
+				console.log(`${wrapper} REGISTERED COMMAND ${wrapper}`);
+				console.log(registeredGlobalCommand);
+				console.log(`${wrapper} END REGISTERED COMMAND ${wrapper}`);
+				console.log(`\n\n${wrapper} COMMAND DATA ${wrapper}`);
+				console.log(registeredGlobalCommand);
+				console.log(`${wrapper} END COMMAND DATA ${wrapper}`);
 			}
 		}
 		const globalCommands = this.modules.filter((command) => command.scope === 'global');
@@ -163,8 +189,6 @@ export default class CommandHandler extends BaseHandler {
 		await Promise.all(promises);
 		return this;
 	}
-
-	// TODO: Deregister functions
 
 	public async handle(interaction: CommandInteraction): Promise<boolean | null> {
 		const { commandName } = interaction;
