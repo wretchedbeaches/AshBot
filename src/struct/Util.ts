@@ -4,10 +4,13 @@ export function isPromise(value: any): boolean {
 
 export const CommandHandlerEvents = {
 	COMMAND_BLOCKED: 'blocked',
-	COOLDOWN: 'cooldown',
 	ENDED: 'ended',
 	ERROR: 'error',
 	STARTED: 'started',
+};
+
+export const CooldownManagerEvents = {
+	COOLDOWN: 'cooldown',
 };
 
 export const BaseHandlerEvents = {

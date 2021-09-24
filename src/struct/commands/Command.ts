@@ -4,6 +4,7 @@ import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from '../BaseModu
 import CommandHandler from './CommandHandler';
 import { ErrorMessages } from '../Util';
 import BotClient from '../../client/BotClient';
+import { CooldownScope } from './CooldownManager';
 
 export type CommandScope = 'global' | 'guild';
 export interface CommandHelpDescription {
@@ -12,11 +13,17 @@ export interface CommandHelpDescription {
 	examples?: string[];
 }
 
+export interface InteractionCommandArgs {
+	interaction: CommandInteraction;
+	command: Command;
+}
+
 export interface CommandOptions extends BaseModuleOptions {
 	channels?: CommandChannelType[];
 	ownerOnly?: boolean;
 	cooldown?: number;
-	ignoreCooldown?: Array<string> | ((interaction: CommandInteraction, command: Command) => boolean);
+	cooldownScope?: CooldownScope;
+	ignoreCooldown?: CooldownIgnorer;
 	ratelimit?: number;
 	description?: string;
 	helpDescription: CommandHelpDescription;
@@ -33,11 +40,14 @@ export interface CommandAttributes extends BaseModuleAttributes {
 
 export type CommandChannelType = 'DM' | 'GUILD_TEXT' | 'GUILD_NEWS' | ThreadChannelTypes;
 
+export type CooldownIgnorer = Array<string> | ((args: InteractionCommandArgs) => Promise<boolean>);
+
 export default class Command extends BaseModule implements CommandAttributes {
 	public channels: Set<CommandChannelType>;
 	public ownerOnly: boolean;
 	public cooldown: number;
-	public ignoreCooldown?: Array<string> | ((interaction: CommandInteraction, command: Command) => boolean);
+	public cooldownScope: CooldownScope;
+	public ignoreCooldown: CooldownIgnorer;
 	public ratelimit: number;
 	public description: string;
 	public helpDescription: CommandHelpDescription;
@@ -56,6 +66,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 			channels = [],
 			ownerOnly = false,
 			cooldown = 0,
+			cooldownScope = CooldownScope.USER,
 			ignoreCooldown,
 			ratelimit = 1,
 			description = '',
@@ -73,7 +84,8 @@ export default class Command extends BaseModule implements CommandAttributes {
 		if (Array.isArray(channels)) for (const channel of channels) this.channels.add(channel);
 		this.ownerOnly = ownerOnly;
 		this.cooldown = cooldown;
-		this.ignoreCooldown = typeof ignoreCooldown === 'function' ? ignoreCooldown.bind(this) : ignoreCooldown;
+		this.cooldownScope = cooldownScope;
+		this.ignoreCooldown = ignoreCooldown ?? [];
 		this.ratelimit = ratelimit;
 		this.helpDescription = helpDescription;
 		this.description = description;

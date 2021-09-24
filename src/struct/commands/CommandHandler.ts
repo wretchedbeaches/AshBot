@@ -6,12 +6,12 @@ import InhibitorHandler from '../inhibitors/InhibitorHandler';
 import ListenerHandler from '../listeners/ListenerHandler';
 import { CommandHandlerEvents } from '../Util';
 import Command from './Command';
+import CooldownManager from './CooldownManager';
 
 export interface CommandHandlerOptions extends BaseHandlerOptions {
 	blockClient?: boolean;
 	blockBots?: boolean;
-	defaultCooldown?: number;
-	ignoreCooldown?: string[];
+	cooldownManager?: CooldownManager;
 }
 
 export interface CooldownData {
@@ -29,8 +29,7 @@ export interface CommandBlockedData {
 export default class CommandHandler extends BaseHandler {
 	public blockClient: boolean;
 	public blockBots: boolean;
-	public defaultCooldown: number;
-	public ignoreCooldown: string[];
+	public cooldownManager?: CooldownManager;
 	public cooldowns: Collection<string, Collection<string, CooldownData>>;
 	public inhibitorHandler?: InhibitorHandler;
 	public listenerHandler: ListenerHandler;
@@ -39,14 +38,7 @@ export default class CommandHandler extends BaseHandler {
 
 	public constructor(
 		client: BaseClient,
-		{
-			directory,
-			automateCategories,
-			blockClient = true,
-			blockBots = true,
-			defaultCooldown = 0,
-			ignoreCooldown = client.owners,
-		}: CommandHandlerOptions,
+		{ directory, automateCategories, blockClient = true, blockBots = true, cooldownManager }: CommandHandlerOptions,
 	) {
 		super(client, {
 			directory,
@@ -56,8 +48,7 @@ export default class CommandHandler extends BaseHandler {
 		this.blockClient = blockClient;
 		this.blockBots = blockBots;
 		this.cooldowns = new Collection();
-		this.defaultCooldown = defaultCooldown;
-		this.ignoreCooldown = ignoreCooldown;
+		this.cooldownManager = cooldownManager;
 		this.inhibitorHandler = undefined;
 		this.setup();
 	}
@@ -237,7 +228,7 @@ export default class CommandHandler extends BaseHandler {
 			return true;
 		}
 
-		if (this.runCooldowns(interaction, command)) {
+		if (this.cooldownManager !== undefined && (await this.cooldownManager.runCooldowns(interaction, command))) {
 			return true;
 		}
 
@@ -252,56 +243,6 @@ export default class CommandHandler extends BaseHandler {
 			return true;
 		}
 
-		return false;
-	}
-
-	public runCooldowns(interaction: CommandInteraction, command: Command): boolean {
-		const ignorer = command.ignoreCooldown ?? this.ignoreCooldown;
-		const isIgnored = Array.isArray(ignorer) ? ignorer.includes(interaction.user.id) : ignorer(interaction, command);
-		// Store just the id string so the entire command object reference
-		// isn't kept in the setTimeout below
-		const commandId = command.id;
-		if (isIgnored) return false;
-
-		const time = command.cooldown >= 0 ? command.cooldown : this.defaultCooldown;
-		if (!time) return false;
-
-		const endTime = interaction.createdTimestamp + time;
-
-		const userId = interaction.user.id;
-		// If user cooldowns don't exist create them.
-		if (!this.cooldowns.has(userId)) this.cooldowns.set(userId, new Collection());
-
-		const userCooldowns = this.cooldowns.get(userId) as Collection<string, CooldownData>;
-		// If a cooldown for the command doesn't exist yet create it.
-		if (!userCooldowns.has(commandId)) {
-			userCooldowns.set(commandId, {
-				timer: setTimeout(() => {
-					if (userCooldowns.has(commandId)) {
-						const commandCooldownData = userCooldowns.get(commandId);
-						if (commandCooldownData) clearTimeout(commandCooldownData.timer);
-					}
-					userCooldowns.get(command.id);
-
-					if (userCooldowns.size === 0) {
-						this.cooldowns.delete(userId);
-					}
-				}, time),
-				end: endTime,
-				uses: 0,
-			});
-		}
-
-		const entry = userCooldowns.get(commandId) as CooldownData;
-
-		if (entry.uses >= command.ratelimit) {
-			const diff = entry.end - interaction.createdTimestamp;
-
-			this.emit(CommandHandlerEvents.COOLDOWN, { interaction, command, remainingTime: diff });
-			return true;
-		}
-
-		entry.uses++;
 		return false;
 	}
 
