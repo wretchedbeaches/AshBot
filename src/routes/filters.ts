@@ -2,9 +2,10 @@ import { getPreciseDistance } from 'geolib';
 import inside from 'point-in-polygon';
 import BotClient from '../client/BotClient';
 import config from '../config.json';
+import util from '../util/util.json';
 
-const isUndefined = (value: any): boolean => {
-	return value === undefined;
+export const isInvalid = (value: any): boolean => {
+	return value === undefined || value === null;
 };
 
 const isZero = (value: any): boolean => {
@@ -21,30 +22,30 @@ const lessThanOrEqualTo = (a: number, b: number): boolean => {
 
 export const filterBoosted = (channelConfig, isBoosted?: boolean) => {
 	const { IsBoosted: configIsBoosted } = channelConfig;
-	if (isUndefined(configIsBoosted) || isUndefined(isBoosted)) {
+	if (isInvalid(configIsBoosted) || isInvalid(isBoosted)) {
 		return true;
 	}
 	return configIsBoosted === isBoosted;
 };
 
 const filterMin = (val: number, min?: number) => {
-	return isUndefined(min) || greaterThanOrEqualTo(val, min!);
+	return isInvalid(min) || greaterThanOrEqualTo(val, min!);
 };
 
 const filterMax = (val: number, max?: number) => {
-	return isUndefined(max) || lessThanOrEqualTo(val, max!);
+	return isInvalid(max) || lessThanOrEqualTo(val, max!);
 };
 
-const filterNumber = (val?: number, min?: number, max?: number): boolean => {
-	if (isUndefined(val) || isZero(val)) return true;
+const filterNumber = (val?: number | null, min?: number, max?: number): boolean => {
+	if (isInvalid(val) || isZero(val)) return true;
 	return filterMin(val!, min) && filterMax(val!, max);
 };
 
-export const filterCP = (channelConfig, cp?: number) => {
+export const filterCP = (channelConfig, cp?: number | null) => {
 	return filterNumber(cp, channelConfig.mincp, channelConfig.maxcp);
 };
 
-export const filterLevel = (channelConfig, level?: number) => {
+export const filterLevel = (channelConfig, level?: number | null) => {
 	return filterNumber(level, channelConfig.minlevel, channelConfig.maxlevel);
 };
 
@@ -54,7 +55,7 @@ export const filterIV = (channelConfig, iv?: number) => {
 
 export const filterRawIV = (channelConfig, ivs): boolean => {
 	const { rawiv: configiv } = channelConfig;
-	if (isUndefined(configiv)) return true;
+	if (isInvalid(configiv)) return true;
 	return (
 		ivs.individual_attack === configiv.attack &&
 		ivs.individual_defense === configiv.defense &&
@@ -64,23 +65,23 @@ export const filterRawIV = (channelConfig, ivs): boolean => {
 
 export const filterName = (channelConfig, name) => {
 	const { name: configName } = channelConfig;
-	if (isUndefined(configName)) return true;
+	if (isInvalid(configName)) return true;
 	return configName.includes(name.toLowerCase());
 };
 
 export const filterLongLat = (latitude, longitude) => {
-	return isUndefined(latitude) || isUndefined(longitude);
+	return isInvalid(latitude) || isInvalid(longitude);
 };
 
 export const filterGeo = (channelConfig, location) => {
-	if (isUndefined(channelConfig.geofilter)) return true;
+	if (isInvalid(channelConfig.geofilter)) return true;
 	const {
 		radius,
 		geofilter: { center },
 	} = channelConfig;
 	const { longitude, latitude } = location;
 	if (
-		!isUndefined(radius) &&
+		!isInvalid(radius) &&
 		getPreciseDistance(location, {
 			latitude: center[0],
 			longitude: center[1],
@@ -111,4 +112,14 @@ export const filterShiny = (channelConfig, username, shiny) => {
 		return shiny && config.shinyMentions[username] && config.shinyMentions[username].length === 21;
 	}
 	return true;
+};
+
+export const filterExRaid = (channelConfig, isEligible) => {
+	if (isInvalid(channelConfig.ex)) return true;
+	return channelConfig.ex === isEligible;
+};
+
+export const filterTeam = (channelConfig, teamId?: number) => {
+	if (isInvalid(channelConfig) || isInvalid(teamId)) return true;
+	return util.teams[`${teamId!}`]?.name.toLowerCase() === channelConfig.team;
 };
