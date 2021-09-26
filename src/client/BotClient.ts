@@ -34,6 +34,11 @@ export interface BaseClientAttributes extends Client {
 	isOwner(user: User): boolean;
 }
 
+export interface ChannelEmbed {
+	coordinates?: any;
+	embed: MessageEmbed;
+}
+
 export default class BaseClient extends Client implements BaseClientAttributes {
 	public owners: string[];
 	public config: BotConfig;
@@ -43,8 +48,9 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	public inhibitorHandler: InhibitorHandler;
 	public nestMigrationDate: Date;
 	public settings: SequelizeProvider;
-	public embedQueue: Collection<string, MessageEmbed[]>;
+	public embedQueue: Collection<string, ChannelEmbed[]>;
 	public intervals: Collection<string, NodeJS.Timeout>;
+	public trains: Collection<string, { longitude: number; latitude: number }>;
 	public logger: LogManager;
 
 	public constructor(config: BotConfig, options: ClientOptions) {
@@ -53,6 +59,9 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		this.config = config;
 		this.owners = config.owners;
 		this.restApi = new REST({ version: '9' }).setToken(config.token);
+		this.embedQueue = new Collection();
+		this.intervals = new Collection();
+		this.trains = new Collection();
 
 		this.listenerHandler = new ListenerHandler(this, {
 			directory: join(__dirname, '..', 'listeners'),
@@ -140,6 +149,12 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		// Seems to come from hook.ts - no object types defined there.
 		// await this.initGuilds();
 		await this.initServer();
+	}
+
+	public embed(guildId: string): MessageEmbed {
+		return new MessageEmbed()
+			.setFooter(this.settings.get(guildId, 'footer', ''), this.settings.get(guildId, 'footerImage', ''))
+			.setColor(this.settings.get(guildId, 'color', process.env.EMBED_COLOR));
 	}
 
 	// private async initGuilds(): Promise<void> {
