@@ -11,8 +11,8 @@ import { stripIndents } from 'common-tags';
 import proto from './en.json';
 import masterfile from '../util/masterfile.json';
 import util from '../util/util.json';
-import { PokemonEventData } from '../routes/hook copy';
-import { isValid } from '../routes/filters';
+import { PokemonEventData, QuestEventData, QuestEventRewards, RaidEventData } from '../routes/hook copy';
+import { isInvalid, isValid } from '../routes/filters';
 
 export interface LocationEmoji {
 	name: string;
@@ -288,9 +288,9 @@ export function parsePokemon(
 
 	description += `${emoji(
 		config.statsEmojis.google,
-	)!}[[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
+	)!}[[**Google**](https://www.google.com/maps?q=${latitude!},${longitude!})] ${emoji(
 		config.statsEmojis.apple,
-	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`;
+	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude!},${longitude!}&z=10&t=s&dirflg=d)]`;
 
 	embed.setDescription(description);
 	return {
@@ -316,21 +316,28 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 		move_2,
 		disappear_time,
 	} = pokemon;
-	const iv = (((individual_attack + individual_defense + individual_stamina) / 45) * 100).toFixed(1);
-	const pokemonData = masterfile.pokemon[`${pokemon_id}`];
+	let iv = '';
+	if (isValid(individual_attack) && isValid(individual_defense) && isValid(individual_stamina)) {
+		iv = (((individual_attack! + individual_defense! + individual_stamina!) / 45) * 100).toFixed(1);
+	}
+	const pokemonData: PokemonDataType = masterfile.pokemon[`${pokemon_id!}`];
 	const user = config.shinyMentions[username];
 	let member;
-	if (user) member = await client.guilds.cache.get(guildId).members.fetch(user.substring(2, user.length - 1));
+	if (user) member = await client.guilds.cache.get(guildId)?.members.fetch(user.substring(2, user.length - 1));
 
+	if (isInvalid(member)) return null;
 	// calculating time when pokemon expires and remaining time until pokemon expires
-	const dissapearTime = moment.utc(disappear_time * 1000).tz(geoTz(latitude, longitude).toString());
+	const dissapearTime = moment.utc(disappear_time ?? 0 * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
 	const duration = moment.preciseDiff(dissapearTime, now);
 
 	const embed = client.embed(guildId);
-	if (pokemonData && pokemonData.types) embed.setColor(`#${util.types[pokemonData.types[0]].color.toString(16)}`);
+	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
+		const color: number = util.types[pokemonData.types![0]].color;
+		embed.setColor(`#${color.toString(16)}`);
+	}
 	embed
-		.setAuthor(`${member.user.username} found shiny ${pokemonData.name}`)
+		.setAuthor(`${member.user.username as string} found shiny ${pokemonData.name}`)
 		.setThumbnail(
 			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.toLowerCase().split(' ').join('')}.gif`,
 		)
@@ -338,8 +345,8 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 			stripIndents`${emoji(config.statsEmojis.shiny.cp)} ${cp} ${emoji(config.statsEmojis.shiny.iv)} ${iv} ${emoji(
 				config.statsEmojis.shiny.level,
 			)} ${pokemon_level} ${emoji(config.statsEmojis.shiny.shiny)}
-    ${emoji(config.statsEmojis.shiny.moveset)} ${masterfile.moves[`${move_1}`].name} | ${
-				masterfile.moves[`${move_2}`].name
+    ${emoji(config.statsEmojis.shiny.moveset)} ${masterfile.moves[`${move_1!}`].name} | ${
+				masterfile.moves[`${move_2!}`].name
 			}
       ${emoji(config.statsEmojis.shiny.despawn)} ${duration}
       ${emoji(
@@ -351,7 +358,7 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 
 	return {
 		embed: embed,
-		message: `${latitude.toFixed(5)},${longitude.toFixed(5)} | ${user} | ${masterfile.pokemon[pokemon_id].name}`,
+		message: `${latitude!.toFixed(5)},${longitude!.toFixed(5)} | ${user as string} | ${pokemonData.name}`,
 		shiny: true,
 		user: user,
 	};
@@ -369,7 +376,7 @@ export function parsePokemonDb(pokemon, guildId: string, webhook: boolean): Mess
 	pokemon.dataValues.pvp_rankings_ultra_league = JSON.parse(pokemon.dataValues.pvp_rankings_ultra_league);
 	return parsePokemon(pokemon.dataValues, guildId, webhook).embed;
 }
-export function parseNestDb(nest): Object {
+export function parseNestDb(nest): { value: string } {
 	const { lat, lon } = nest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
@@ -378,21 +385,23 @@ export function parseNestDb(nest): Object {
     [**[${lat.toFixed(5)},${lon.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`,
 	};
 }
-export function parseQuestDb(quest): Object {
+export function parseQuestDb(quest): { value: string } {
 	const { lat, lon, quest_type, quest_target } = quest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
 	return {
-		value: stripIndents`**Type:** ${masterfile.quest_types[`${quest_type}`].type.split('{0}').join(quest_target)}
+		value: stripIndents`**Type:** ${masterfile.quest_types[`${quest_type as number}`].type
+			.split('{0}')
+			.join(quest_target)}
     ${emoji.emoji} ${emoji.name}
     [**[${lat.toFixed(5)},${lon.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`,
 	};
 }
 export function parseRaid(
-	raid,
+	raid: RaidEventData,
 	guildId: string,
 	webhook: boolean,
-	distanceFromPrevious: number,
+	distanceFromPrevious: number | null,
 ): {
 	embed: MessageEmbed;
 	coordinates: number[];
@@ -413,7 +422,7 @@ export function parseRaid(
 		ex_raid_eligible,
 	} = raid;
 
-	const pokemonData = masterfile.pokemon[`${pokemon_id}`];
+	const pokemonData: PokemonDataType = masterfile.pokemon[`${pokemon_id ?? ''}`];
 
 	// calculating time when pokemon expires and remaining time until pokemon expires
 	const dissapearTime = moment.utc(end * 1000).tz(geoTz(latitude, longitude).toString());
@@ -425,72 +434,87 @@ export function parseRaid(
 		latitude: latitude,
 		longitude: longitude,
 	})[0];
-	const locationEmoji = countryFlagEmoji.get(city.country);
+	const locationEmoji: LocationEmoji | undefined = countryFlagEmoji.get(city.country);
 
 	const embed = client.embed(guildId);
-	if (pokemonData && pokemonData.types) embed.setColor(`#${util.types[pokemonData.types[0]].color.toString(16)}`);
+	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
+		const color: number = util.types[pokemonData.types![0]].color;
+		embed.setColor(`#${color.toString(16)}`);
+	}
+
+	// line 1: name and gender
+	let description = `${`**${pokemonData.name}**`}`;
+	if (isValid(gender)) {
+		const genderEmojiName: string | undefined = config.genderEmojis[`${gender!}`];
+		let genderEmoji = emoji(genderEmojiName);
+		// If no custom emoji found, name may be undefined,
+		// or emoji will return the gender number as a string.
+		if (genderEmojiName === undefined || genderEmoji === `${gender!}`) {
+			switch (gender!) {
+				case 1:
+					genderEmoji = ':male_sign';
+					break;
+				case 2:
+					genderEmoji = ':female_sign:';
+					break;
+				case 3:
+					genderEmoji = 'genderless ⚧';
+					break;
+			}
+		}
+		description = `${description} ${genderEmoji!}`.trim();
+	}
+
+	// location emoji + city & name
+	if (isValid(locationEmoji)) {
+		description += `**${locationEmoji!.emoji} ${(city?.name as string | undefined) ?? 'unknown'}, ${
+			locationEmoji!.name
+		}**\n`;
+	}
+
+	// line 4: moveset
+	if (isValid(move_1) && isValid(move_2)) {
+		description += `${emoji(config.statsEmojis.moveset)!} ${masterfile.moves[`${move_1!}`].name as string}/${
+			masterfile.moves[`${move_2!}`].name as string
+		}\n`;
+	}
+
+	if (isValid(cp)) {
+		description += `${emoji(config.statsEmojis.cp)!} ${cp!} | **Ends At:** ${dissapearTime.format(
+			'hh:mm:ss A',
+		)} (${duration} left)\n`;
+	}
+
+	if (isValid(pokemonData.types)) {
+		description += `**Types:** ${pokemonData
+			.types!.map((type) => {
+				const weaknesses: string[] = util.typeWeaknesses[type].weaknesses;
+				return `${emoji(config.typeEmojis[type])!} (**Weaknesses**: ${weaknesses
+					.map((weakness: string) => emoji(config.typeEmojis[weakness])!)
+					.join(' ')})`;
+			})
+			.join(', ')}\n`;
+	}
+
+	if (isValid(level)) description += `**Level:** ${level!} | `;
+	if (isValid(team_id)) description += `${emoji(config.teamEmojis[util.teams[`${team_id!}`].name])!}`;
+	if (isValid(ex_raid_eligible)) description += emoji('ex');
+	description += `Gym\n`;
+	if (isValid(distanceFromPrevious)) description += `**Distance From Previous**: ${distanceFromPrevious!}\n`;
+	description += `${emoji(
+		config.statsEmojis.google,
+	)!}[[**Google**](https://www.google.com/maps?q=${latitude!},${longitude!})] ${emoji(
+		config.statsEmojis.apple,
+	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude!},${longitude!}&z=10&t=s&dirflg=d)]`;
+
 	embed
-		.setURL(gym_url)
+		.setURL(gym_url!)
 		.setThumbnail(
 			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.split(' ').join('').toLowerCase()}.gif`,
 		)
-		.setAuthor(gym_name, gym_url)
-		.setDescription(
-			// line 1: name and gender
-			`${
-				pokemonData
-					? `**${pokemonData.name}** ${
-							gender
-								? `${
-										config.genderEmojis
-											? emoji(config.genderEmojis[`${gender}`])
-											: gender === 1
-											? ':male_sign:'
-											: gender === 2
-											? ':female_sign:'
-											: gender === 3
-											? 'genderless ⚧'
-											: ''
-								  }\n`
-								: ''
-					  }`
-					: ''
-				// actual line 2: location: emoji flag and city, country
-			}${locationEmoji.emoji} ${city.name}, ${locationEmoji.name}\n${
-				// line 2: moveset
-				move_1 !== null && move_2 !== null && masterfile.moves[`${move_1}`] && masterfile.moves[`${move_2}`]
-					? `${emoji(config.statsEmojis.moveset)} ${masterfile.moves[`${move_1}`].name}/${
-							masterfile.moves[`${move_2}`].name
-					  }\n`
-					: ''
-				// line 3: cp, ending time, and time remaining
-			}${cp !== null ? `${emoji(config.statsEmojis.cp)} ${cp} | ` : ''}**Ends At:** ${dissapearTime.format(
-				'hh:mm:ss A',
-			)} (${duration} left)\n${
-				// line 4: types
-				pokemonData && pokemonData.types
-					? `**Types:** ${pokemonData.types
-							.map((type) =>
-								config.typeEmojis
-									? `${emoji(config.typeEmojis[type])} (**Weaknesses**: ${util.typeWeaknesses[type].weaknesses
-											.map((weakness) => emoji(config.typeEmojis[weakness]))
-											.join(' ')})`
-									: util.types[type].emoji,
-							)
-							.join(', ')}\n`
-					: ''
-				// line 5: level, team, and ex eligibility
-			}${level ? `**Level:** ${level} | ` : ''}${
-				team_id ? `${emoji(config.teamEmojis[util.teams[`${team_id}`].name])} ` : ''
-			}${ex_raid_eligible ? emoji('ex') : ''} Gym\n${
-				distanceFromPrevious ? `**Distance From Previous**: ${distanceFromPrevious}\n` : ''
-			}${emoji(
-				config.statsEmojis.google,
-			)}[[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
-				config.statsEmojis.apple,
-			)} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`,
-		);
-	return { embed: embed, coordinates: [latitude, longitude] };
+		.setAuthor(gym_name!, gym_url)
+		.setDescription(description);
+	return { embed: embed, coordinates: [latitude!, longitude!] };
 }
 
 export function parseRaidDb(raid, guildId: string): MessageEmbed {
@@ -509,9 +533,10 @@ export function parseRaidDb(raid, guildId: string): MessageEmbed {
 }
 
 export function parseQuest(
-	quest,
+	quest: QuestEventData,
 	guildId: string,
 	webhook: boolean,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	expiryDate?: number,
 ): {
 	embed: MessageEmbed;
@@ -519,15 +544,15 @@ export function parseQuest(
 } {
 	const { latitude, longitude, type, pokestop_name, rewards } = quest;
 
-	const questData = masterfile.quest_types[`${type}`];
-	let dissapearTime: Moment;
-	let now: Moment;
-	let duration: string;
-	if (expiryDate) {
-		dissapearTime = moment.utc(expiryDate * 1000).tz(geoTz(latitude, longitude).toString());
-		now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-		duration = moment.preciseDiff(dissapearTime, now);
-	}
+	const questData = masterfile.quest_types[`${type!}`];
+	// let dissapearTime: Moment;
+	// let now: Moment;
+	// let duration: string;
+	// if (expiryDate) {
+	// 	dissapearTime = moment.utc(expiryDate * 1000).tz(geoTz(latitude, longitude).toString());
+	// 	now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
+	// 	duration = moment.preciseDiff(dissapearTime, now);
+	// }
 
 	// looking up city, country and emoji location data
 	const city = nearbyCities({
@@ -538,34 +563,66 @@ export function parseQuest(
 
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${pokestop_name}`);
-	if (questData && questData.type && util.types[questData.type])
-		embed.setColor(`#${util.types[questData.type].color.toString(16)}`);
-	embed.setURL(`https://www.google.com/maps?q=${latitude},${longitude})`);
-	switch (rewards[0].type) {
-		case 2:
-			embed.setThumbnail(
-				`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${quest.rewards[0].info.item_id}_1.png`,
-			);
-			break;
-		case 3:
-			embed.setThumbnail(
-				`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_stardust_${quest.rewards[0].info.amount}.png`,
-			);
-			break;
-		case 7:
-			if (quest.rewards[0].info.pokemon_id)
+	const questTypeColor: number | undefined = isValid(questData?.type) ? util.types[questData.type].color : undefined;
+	if (isValid(questTypeColor)) embed.setColor(`#${questTypeColor!.toString(16)}`);
+	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
+	if (Array.isArray(rewards) && rewards.length > 0) {
+		const reward: QuestEventRewards = rewards[0];
+		switch (reward.type) {
+			case 2:
 				embed.setThumbnail(
-					`https://raw.githubusercontent.com/nileplumb/PkmnHomeIcons/master/RDM_OS_128/pokemon/${quest.rewards[0].info.pokemon_id}.png`,
+					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${reward.info.item_id!}_1.png`,
 				);
-			break;
-		case 12:
-			if (quest.rewards[0].info.pokemon_id)
+				break;
+			case 3:
 				embed.setThumbnail(
-					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${quest.rewards[0].info.pokemon_id}.png`,
+					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_stardust_${reward.info.amount!}.png`,
 				);
-			break;
+				break;
+			case 7:
+				if (reward.info.pokemon_id)
+					embed.setThumbnail(
+						`https://raw.githubusercontent.com/nileplumb/PkmnHomeIcons/master/RDM_OS_128/pokemon/${reward.info.pokemon_id!}.png`,
+					);
+				break;
+			case 12:
+				if (reward.info.pokemon_id)
+					embed.setThumbnail(
+						`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${reward.info.pokemon_id!}.png`,
+					);
+				break;
+		}
 	}
 
+	let description = '';
+	if (isValid(questData)) {
+		const { gender, type, } = questData;
+		if (isValid(gender)) {
+			description += `**Gender** `;
+			const genderEmojiName: string | undefined = config.genderEmojis[`${gender!}`];
+			let genderEmoji = emoji(genderEmojiName);
+			if (genderEmojiName === undefined || genderEmoji === `${gender!}`) {
+				switch (gender!) {
+					case 1:
+						genderEmoji = ':male_sign';
+						break;
+					case 2:
+						genderEmoji = ':female_sign:';
+						break;
+					case 3:
+						genderEmoji = 'genderless ⚧';
+						break;
+				}
+			}
+		}
+	}
+	if (isValid(gender)) {
+
+		// If no custom emoji found, name may be undefined,
+		// or emoji will return the gender number as a string.
+
+		description = `${description} ${genderEmoji!}`.trim();
+	}
 	embed.setDescription(
 		// line 1: gender
 		`${
