@@ -74,6 +74,15 @@ export type EventType = 'pokemon' | 'raid' | 'quest' | 'invasion';
   }
 }
 */
+
+export interface PokemonRanking {
+	pokemon: number;
+	rank?: number;
+	cp?: number;
+	level?: number;
+	percentage?: number;
+}
+
 export interface PokemonEventData {
 	cp?: number | null;
 	pokemon_level?: number | null;
@@ -96,8 +105,8 @@ export interface PokemonEventData {
 	gender?: number | null;
 	is_event?: boolean | null;
 	disappear_time?: number | null;
-	pvp_rankings_great_league?: any | null;
-	pvp_rankings_ultra_league?: any | null;
+	pvp_rankings_great_league?: PokemonRanking[] | null;
+	pvp_rankings_ultra_league?: PokemonRanking[] | null;
 	iv?: number | null;
 	pokestop?: any | null;
 }

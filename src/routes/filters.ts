@@ -8,6 +8,10 @@ export const isInvalid = (value: any): boolean => {
 	return value === undefined || value === null;
 };
 
+export const isValid = (value: any): boolean => {
+	return !isInvalid(value);
+};
+
 const isZero = (value: any): boolean => {
 	return value === 0;
 };
