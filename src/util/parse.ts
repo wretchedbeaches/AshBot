@@ -11,13 +11,7 @@ import { stripIndents } from 'common-tags';
 import proto from './en.json';
 import masterfile from '../util/masterfile.json';
 import util from '../util/util.json';
-import {
-	InvasionEventData,
-	PokemonEventData,
-	QuestEventData,
-	QuestEventRewards,
-	RaidEventData,
-} from '../routes/hook copy';
+import { InvasionEventData, PokemonEventData, QuestEventData, QuestEventRewards, RaidEventData } from '../routes/hook';
 import { isInvalid, isNonEmptyArray, isValid } from '../routes/filters';
 
 export interface LocationEmoji {
