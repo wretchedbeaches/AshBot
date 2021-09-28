@@ -131,3 +131,10 @@ export const filterTeam = (channelConfig, teamId?: number) => {
 	if (isInvalid(channelConfig) || isInvalid(teamId)) return true;
 	return util.teams[`${teamId!}`]?.name.toLowerCase() === channelConfig.team;
 };
+
+export const filterLeader = (channelConfig, gruntType: number): boolean => {
+	if (typeof channelConfig.leader === 'boolean' && channelConfig.leader) {
+		return gruntType >= 40 && gruntType <= 44;
+	}
+	return true;
+};
