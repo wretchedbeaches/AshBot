@@ -12,6 +12,10 @@ export const isValid = (value: any): boolean => {
 	return !isInvalid(value);
 };
 
+export const isNonEmptyArray = (value: any): boolean => {
+	return Array.isArray(value) && value.length > 0;
+};
+
 const isZero = (value: any): boolean => {
 	return value === 0;
 };
