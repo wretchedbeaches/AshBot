@@ -22,6 +22,7 @@ import {
 	filterShiny,
 	filterTeam,
 	filterTrain,
+	isInvalid,
 } from './filters';
 
 const boosted = {
@@ -115,10 +116,10 @@ export interface RaidEventData {
 	gym_name?: string;
 	latitude?: number;
 	longitude?: number;
-	gender?: any;
+	gender?: number;
 	gym_url?: string;
 	level?: number;
-	end?: any;
+	end: number;
 	cp?: number;
 	pokemon_id?: number;
 	team_id?: number;
@@ -127,19 +128,48 @@ export interface RaidEventData {
 	ex_raid_eligible?: boolean;
 }
 
+export interface QuestEventRewardInfo {
+	item_id?: number;
+	amount?: number;
+	pokemon_id?: number;
+}
+export interface QuestEventRewards {
+	type: number;
+	info: QuestEventRewardInfo;
+}
+
+export interface PokemonConditionInfo {
+	pokemon_ids?: number[];
+	pokemon_type_ids?: number[];
+	hit?: boolean;
+	throw_type_id?: number;
+	raid_levels?: any;
+}
+
+export interface PokemonCondition {
+	type?: number;
+	info: PokemonConditionInfo;
+}
+
 export interface QuestEventData {
 	pokestop_id?: string;
 	latitude?: number;
 	longitude?: number;
-	type?: any;
+	type?: number;
+	target?: number;
+	gender?: number;
 	pokestop_name?: string;
-	rewards?: any;
+	rewards?: QuestEventRewards[];
+	updated?: number;
+	template?: string;
+	ar_scan_eligible?: boolean;
+	conditions: PokemonCondition[];
 }
 
 export interface InvasionEventData {
 	latitude?: number;
 	longitude?: number;
-	grunt_type?: any;
+	grunt_type: number;
 	name?: string;
 	url?: string;
 	incident_expire_timestamp?: number;
@@ -176,7 +206,7 @@ const handlePokemon = (client: BotClient, event: PokemonEventData) => {
 
 				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 				const pokemonData = masterfile.pokemon[`${pokemon_id}`];
-				if (!pokemonData || capture_1 === 0 || cp === undefined) {
+				if (isInvalid(pokemonData) || capture_1 === 0 || cp === undefined) {
 					break;
 				}
 
@@ -234,7 +264,7 @@ const handleRaid = (client: BotClient, event: RaidEventData) => {
 				if (channelConfig.type !== 'raid') continue;
 				const { cp, pokemon_id, latitude, longitude, team_id, level, ex_raid_eligible } = event;
 				const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
-				if (!pokemonData) {
+				if (isInvalid(pokemonData)) {
 					break;
 				}
 				if (
@@ -278,8 +308,8 @@ const handleQuest = async (client, event: QuestEventData): Promise<void> => {
 				const channelConfig = channels[channelId];
 				if (
 					channelConfig.rewardType !== undefined ||
-					(masterfile.quest_reward_types[rewards[0].type] &&
-						masterfile.quest_reward_types[rewards[0].type].text.toLowerCase() === channelConfig.rewardType &&
+					(masterfile.quest_reward_types[rewards![0].type] &&
+						masterfile.quest_reward_types[rewards![0].type].text.toLowerCase() === channelConfig.rewardType &&
 						(filterLongLat(latitude, longitude) || filterGeo(channelConfig, { latitude, longitude })))
 				) {
 					const questEmbed = parseQuest(event, guildId, true, dbPokestop?.incident_expire_timestamp);

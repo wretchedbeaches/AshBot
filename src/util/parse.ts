@@ -11,8 +11,14 @@ import { stripIndents } from 'common-tags';
 import proto from './en.json';
 import masterfile from '../util/masterfile.json';
 import util from '../util/util.json';
-import { PokemonEventData, QuestEventData, QuestEventRewards, RaidEventData } from '../routes/hook copy';
-import { isInvalid, isValid } from '../routes/filters';
+import {
+	InvasionEventData,
+	PokemonEventData,
+	QuestEventData,
+	QuestEventRewards,
+	RaidEventData,
+} from '../routes/hook copy';
+import { isInvalid, isNonEmptyArray, isValid } from '../routes/filters';
 
 export interface LocationEmoji {
 	name: string;
@@ -80,6 +86,43 @@ const emoji = (name: string | undefined) => {
 	}
 };
 
+const parseGender = (gender?: number | null): string => {
+	if (isValid(gender)) {
+		const genderEmojiName: string | undefined = config.genderEmojis[`${gender!}`];
+		let genderEmoji = emoji(genderEmojiName);
+		if (genderEmojiName === undefined || genderEmoji === `${gender!}`) {
+			switch (gender!) {
+				case 1:
+					genderEmoji = ':male_sign';
+					break;
+				case 2:
+					genderEmoji = ':female_sign:';
+					break;
+				case 3:
+					genderEmoji = 'genderless ⚧';
+					break;
+			}
+		}
+		return genderEmoji ?? '';
+	}
+	return '';
+};
+
+const parseLocation = (locationEmoji: LocationEmoji | undefined, city) => {
+	if (isValid(locationEmoji)) {
+		return `**${locationEmoji!.emoji} ${(city?.name as string | undefined) ?? 'unknown'}, ${locationEmoji!.name}**\n`;
+	}
+	return '';
+};
+
+const parseAppleGoogle = (latitude: number, longitude: number) => {
+	return `${emoji(
+		config.statsEmojis.google,
+	)!} [[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
+		config.statsEmojis.apple,
+	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`;
+};
+
 export function parsePokemon(
 	pokemon: PokemonEventData,
 	guildId: string,
@@ -113,9 +156,9 @@ export function parsePokemon(
 	} = pokemon;
 	const pokemonData: PokemonDataType | undefined = masterfile.pokemon[`${pokemon_id!}`];
 	// calculating time when pokemon expires and remaining time until pokemon expires
-	const dissapearTime = moment.utc(disappear_time! * 1000).tz(geoTz(latitude, longitude).toString());
+	const disappearTime = moment.utc(disappear_time! * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-	const duration = moment.preciseDiff(dissapearTime, now);
+	const duration = moment.preciseDiff(disappearTime, now);
 
 	// looking up city, country and emoji location data
 	const city = nearbyCities({
@@ -141,26 +184,7 @@ export function parsePokemon(
 
 	// line 1: name and gender
 	let description = `${pokemonData ? `**${pokemonData.name}**` : ''}`;
-	if (gender !== undefined && gender !== null) {
-		const genderEmojiName: string | undefined = config.genderEmojis[`${gender}`];
-		let genderEmoji = emoji(genderEmojiName);
-		// If no custom emoji found, name may be undefined,
-		// or emoji will return the gender number as a string.
-		if (genderEmojiName === undefined || genderEmoji === `${gender}`) {
-			switch (gender) {
-				case 1:
-					genderEmoji = ':male_sign';
-					break;
-				case 2:
-					genderEmoji = ':female_sign:';
-					break;
-				case 3:
-					genderEmoji = 'genderless ⚧';
-					break;
-			}
-		}
-		description = `${description} ${genderEmoji!}`.trim();
-	}
+	description = `${description} ${parseGender(gender)}`.trim();
 
 	// line 2, 3: cp, iv and 1v1
 	if (isValid(cp) && isValid(iv) && isValid(pokemon_level)) {
@@ -234,11 +258,7 @@ export function parsePokemon(
 	}
 
 	// location emoji + city & name
-	if (isValid(locationEmoji)) {
-		description += `**${locationEmoji!.emoji} ${(city?.name as string | undefined) ?? 'unknown'}, ${
-			locationEmoji!.name
-		}**\n`;
-	}
+	description += parseLocation(locationEmoji, city);
 
 	// remaining lines: pvp data
 	const hasGreatLeagueRankings = isValid(pvp_rankings_great_league) && pvp_rankings_great_league!.length >= 0;
@@ -286,11 +306,7 @@ export function parsePokemon(
 		description += `\n**Distance From Previous**: ${distanceFromPrevious!}`;
 	}
 
-	description += `${emoji(
-		config.statsEmojis.google,
-	)!}[[**Google**](https://www.google.com/maps?q=${latitude!},${longitude!})] ${emoji(
-		config.statsEmojis.apple,
-	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude!},${longitude!}&z=10&t=s&dirflg=d)]`;
+	description += parseAppleGoogle(latitude!, longitude!);
 
 	embed.setDescription(description);
 	return {
@@ -327,9 +343,9 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 
 	if (isInvalid(member)) return null;
 	// calculating time when pokemon expires and remaining time until pokemon expires
-	const dissapearTime = moment.utc(disappear_time ?? 0 * 1000).tz(geoTz(latitude, longitude).toString());
+	const disappearTime = moment.utc(disappear_time ?? 0 * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-	const duration = moment.preciseDiff(dissapearTime, now);
+	const duration = moment.preciseDiff(disappearTime, now);
 
 	const embed = client.embed(guildId);
 	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
@@ -349,11 +365,7 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 				masterfile.moves[`${move_2!}`].name
 			}
       ${emoji(config.statsEmojis.shiny.despawn)} ${duration}
-      ${emoji(
-				config.statsEmojis.google,
-			)} [[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
-				config.statsEmojis.ipogo,
-			)} [[**iPogo**](https://ipogo.app/?coords=${latitude},${longitude})]`,
+      ${parseAppleGoogle(latitude!, longitude!)} [[**iPogo**](https://ipogo.app/?coords=${latitude},${longitude})]`,
 		);
 
 	return {
@@ -425,9 +437,9 @@ export function parseRaid(
 	const pokemonData: PokemonDataType = masterfile.pokemon[`${pokemon_id ?? ''}`];
 
 	// calculating time when pokemon expires and remaining time until pokemon expires
-	const dissapearTime = moment.utc(end * 1000).tz(geoTz(latitude, longitude).toString());
+	const disappearTime = moment.utc(end * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-	const duration = moment.preciseDiff(dissapearTime, now);
+	const duration = moment.preciseDiff(disappearTime, now);
 
 	// looking up city, country and emoji location data
 	const city = nearbyCities({
@@ -466,11 +478,7 @@ export function parseRaid(
 	}
 
 	// location emoji + city & name
-	if (isValid(locationEmoji)) {
-		description += `**${locationEmoji!.emoji} ${(city?.name as string | undefined) ?? 'unknown'}, ${
-			locationEmoji!.name
-		}**\n`;
-	}
+	description += parseLocation(locationEmoji, city);
 
 	// line 4: moveset
 	if (isValid(move_1) && isValid(move_2)) {
@@ -480,7 +488,7 @@ export function parseRaid(
 	}
 
 	if (isValid(cp)) {
-		description += `${emoji(config.statsEmojis.cp)!} ${cp!} | **Ends At:** ${dissapearTime.format(
+		description += `${emoji(config.statsEmojis.cp)!} ${cp!} | **Ends At:** ${disappearTime.format(
 			'hh:mm:ss A',
 		)} (${duration} left)\n`;
 	}
@@ -545,13 +553,13 @@ export function parseQuest(
 	const { latitude, longitude, type, pokestop_name, rewards } = quest;
 
 	const questData = masterfile.quest_types[`${type!}`];
-	// let dissapearTime: Moment;
+	// let disappearTime: Moment;
 	// let now: Moment;
 	// let duration: string;
 	// if (expiryDate) {
-	// 	dissapearTime = moment.utc(expiryDate * 1000).tz(geoTz(latitude, longitude).toString());
+	// 	disappearTime = moment.utc(expiryDate * 1000).tz(geoTz(latitude, longitude).toString());
 	// 	now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-	// 	duration = moment.preciseDiff(dissapearTime, now);
+	// 	duration = moment.preciseDiff(disappearTime, now);
 	// }
 
 	// looking up city, country and emoji location data
@@ -559,106 +567,65 @@ export function parseQuest(
 		latitude: latitude,
 		longitude: longitude,
 	})[0];
-	const locationEmoji = countryFlagEmoji.get(city.country);
+	const locationEmoji: LocationEmoji | undefined = countryFlagEmoji.get(city.country);
 
 	const embed = client.embed(guildId);
-	if (webhook) embed.setTitle(`${pokestop_name}`);
+	if (webhook) embed.setTitle(`${pokestop_name ?? 'Unknown Pokestop'}`);
 	const questTypeColor: number | undefined = isValid(questData?.type) ? util.types[questData.type].color : undefined;
 	if (isValid(questTypeColor)) embed.setColor(`#${questTypeColor!.toString(16)}`);
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
-	if (Array.isArray(rewards) && rewards.length > 0) {
-		const reward: QuestEventRewards = rewards[0];
+	if (isNonEmptyArray(quest.rewards)) {
+		const reward: QuestEventRewards = rewards![0];
 		switch (reward.type) {
 			case 2:
 				embed.setThumbnail(
-					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${reward.info.item_id!}_1.png`,
+					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${reward
+						.info.item_id!}_1.png`,
 				);
 				break;
 			case 3:
 				embed.setThumbnail(
-					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_stardust_${reward.info.amount!}.png`,
+					`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_stardust_${reward
+						.info.amount!}.png`,
 				);
 				break;
 			case 7:
 				if (reward.info.pokemon_id)
 					embed.setThumbnail(
-						`https://raw.githubusercontent.com/nileplumb/PkmnHomeIcons/master/RDM_OS_128/pokemon/${reward.info.pokemon_id!}.png`,
+						`https://raw.githubusercontent.com/nileplumb/PkmnHomeIcons/master/RDM_OS_128/pokemon/${reward.info.pokemon_id}.png`,
 					);
 				break;
 			case 12:
 				if (reward.info.pokemon_id)
 					embed.setThumbnail(
-						`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${reward.info.pokemon_id!}.png`,
+						`https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${reward.info.pokemon_id}.png`,
 					);
 				break;
 		}
 	}
 
 	let description = '';
-	if (isValid(questData)) {
-		const { gender, type, } = questData;
-		if (isValid(gender)) {
-			description += `**Gender** `;
-			const genderEmojiName: string | undefined = config.genderEmojis[`${gender!}`];
-			let genderEmoji = emoji(genderEmojiName);
-			if (genderEmojiName === undefined || genderEmoji === `${gender!}`) {
-				switch (gender!) {
-					case 1:
-						genderEmoji = ':male_sign';
-						break;
-					case 2:
-						genderEmoji = ':female_sign:';
-						break;
-					case 3:
-						genderEmoji = 'genderless ⚧';
-						break;
-				}
-			}
-		}
-	}
-	if (isValid(gender)) {
+	if (isValid(quest.gender)) description += `**Gender** ${parseGender(quest.gender)!}`.trim();
+	if (isNonEmptyArray(quest.rewards)) description += `\n**Reward:** ${getQuestReward(quest)}\n`;
+	if (isValid(quest.template)) description += `**Task**: ${getQuestTask(quest)}\n`;
+	else description += '\n';
 
-		// If no custom emoji found, name may be undefined,
-		// or emoji will return the gender number as a string.
+	if (isValid(locationEmoji))
+		description += `${locationEmoji!.emoji} ${(city?.name as string) || 'Unknown City'}, ${locationEmoji!.name}\n`;
 
-		description = `${description} ${genderEmoji!}`.trim();
-	}
-	embed.setDescription(
-		// line 1: gender
-		`${
-			questData && questData.gender
-				? `**Gender** ${
-						questData.gender
-							? `${
-									config.genderEmojis
-										? emoji(config.genderEmojis[`${questData.gender}`])
-										: questData.gender === 1
-										? ':male_sign:'
-										: questData.gender === 2
-										? ':female_sign:'
-										: questData.gender === 3
-										? 'genderless ⚧'
-										: ''
-							  }\n`
-							: ''
-				  }`
-				: ''
-		}\n${
-			// remaining lines: encounter reward chances
-			questData && questData.type ? `**Reward:** ${getQuestReward(quest)}\n **Task**: ${getQuestTask(quest)}\n` : ''
-		}${locationEmoji.emoji} ${city.name}, ${locationEmoji.name}\n` +
-			`${emoji(
-				config.statsEmojis.google,
-			)} [[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
-				config.statsEmojis.apple,
-			)} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`,
-	);
+	description += `${emoji(
+		config.statsEmojis.google,
+	)!}[[**Google**](https://www.google.com/maps?q=${latitude!},${longitude!})] ${emoji(
+		config.statsEmojis.apple,
+	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude!},${longitude!}&z=10&t=s&dirflg=d)]`;
 
-	return { embed: embed, coordinates: [latitude, longitude] };
+	embed.setDescription(description);
+
+	return { embed: embed, coordinates: [latitude!, longitude!] };
 }
 
 export function parseInvasion(
-	invasion,
+	invasion: InvasionEventData,
 	guildId: string,
 	webhook: boolean,
 ): {
@@ -668,13 +635,13 @@ export function parseInvasion(
 	const { latitude, longitude, grunt_type, name, url, incident_expire_timestamp } = invasion;
 
 	const invasionData = masterfile.grunt_types[`${grunt_type}`];
-	let dissapearTime: Moment;
+	let disappearTime: Moment;
 	let now: Moment;
 	let duration: string;
 	if (incident_expire_timestamp) {
-		dissapearTime = moment.utc(incident_expire_timestamp * 1000).tz(geoTz(latitude, longitude).toString());
+		disappearTime = moment.utc(incident_expire_timestamp * 1000).tz(geoTz(latitude, longitude).toString());
 		now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-		duration = moment.preciseDiff(dissapearTime, now);
+		duration = moment.preciseDiff(disappearTime, now);
 	}
 
 	// looking up city, country and emoji location data
@@ -685,268 +652,295 @@ export function parseInvasion(
 	const locationEmoji = countryFlagEmoji.get(city.country);
 
 	const embed = client.embed(guildId);
-	if (webhook) embed.setTitle(`${city.name}: ${name}`);
-	if (invasionData && invasionData.type && util.types[invasionData.type])
-		embed.setColor(`#${util.types[invasionData.type].color.toString(16)}`);
-	embed.setURL(`https://www.google.com/maps?q=${latitude},${longitude})`);
+	if (webhook) embed.setTitle(`${(city?.name as string | undefined) ?? 'Unknown'}: ${name!}`);
+	if (isValid(invasionData?.type) && invasionData.types[invasionData.type]) {
+		const color: number = util.types[invasionData.type!].color;
+		embed.setColor(`#${color.toString(16)}`);
+	}
+	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (url) embed.setThumbnail(url);
 	if (invasionData && util.gruntImages[invasionData.grunt]) embed.setThumbnail(util.gruntImages[invasionData.grunt]);
 	if (invasionData && util.gruntImages[invasionData.type]) embed.setThumbnail(util.gruntImages[invasionData.type]);
 
-	embed.setDescription(
-		// line 1: expiry date
-		`${
-			incident_expire_timestamp ? `**Expires**: ${dissapearTime.format('hh:mm:ss A')} (${duration} left)\n` : ''
-			// line 2: type and gender
-		}${
-			invasionData && invasionData.type
-				? `**Type:** ${
-						config.typeEmojis[invasionData.type] ? emoji(config.typeEmojis[invasionData.type]) : invasionData.type
-				  }`
-				: ''
-		} ${
-			invasionData && invasionData.gender
-				? `**Gender** ${
-						invasionData.gender
-							? `${
-									config.genderEmojis
-										? emoji(config.genderEmojis[`${invasionData.gender}`])
-										: invasionData.gender === 1
-										? ':male_sign:'
-										: invasionData.gender === 2
-										? ':female_sign:'
-										: invasionData.gender === 3
-										? 'genderless ⚧'
-										: ''
-							  }\n`
-							: ''
-				  }`
-				: ''
-		}${
-			// remaining lines: encounter reward chances
-			invasionData && invasionData.grunt ? `**Grunt Type:** ${invasionData.grunt}\n` : ''
-		}${locationEmoji.emoji} ${city.name}, ${locationEmoji.name}\n` +
-			`${emoji(
-				config.statsEmojis.google,
-			)} [[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
-				config.statsEmojis.apple,
-			)} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`,
-	);
+	let description = '';
+	if (incident_expire_timestamp)
+		description = `**Expires**: ${disappearTime!.format('hh:mm:ss A')} (${duration!} left)\n`;
+	if (isValid(invasionData?.type)) {
+		const typeOutput = config.typeEmojis[invasionData.type]
+			? emoji(config.typeEmojis[invasionData.type])
+			: invasionData.type;
+		description += `**Type:** ${typeOutput as string}`;
+	}
 
-	return { embed: embed, coordinates: [latitude, longitude] };
+	description += `**Gender** ${parseGender(invasionData.gender)}`;
+
+	if (isValid(invasionData?.grunt)) description += `**Grunt Type:** ${invasionData.grunt as string}\n`;
+
+	description += parseLocation(locationEmoji, city);
+	description += parseAppleGoogle(latitude!, longitude!);
+
+	embed.setDescription(description);
+
+	return { embed: embed, coordinates: [latitude!, longitude!] };
 }
 
-export function getQuestReward(quest): string {
-	if (quest.rewards[0].type == 7) {
-		return `Pokemon: ${proto.values[`poke_${quest.rewards[0].info.pokemon_id}`]}`;
+export function getQuestReward(quest: QuestEventData): string {
+	const questReward = quest.rewards![0];
+	switch (questReward.type) {
+		case 7:
+			return `Pokemon: ${proto.values[`poke_${questReward.info.pokemon_id!}`] as string}`;
+		case 2:
+			return `Item: ${questReward.info.item_id!}`;
+		case 3:
+			return `Stardust: ${questReward.info.amount!}`;
+		case 12:
+			return `Mega Energy: ${questReward.info.amount!} ${
+				proto.values[`poke_${questReward.info.pokemon_id!}`] as string
+			}`;
 	}
-	if (quest.rewards[0].type == 2) {
-		return `Item: ${quest.rewards[0].info.item_id}`;
-	}
-	if (quest.rewards[0].type == 3) {
-		return `Stardust: ${quest.rewards[0].info.amount}`;
-	}
-	if (quest.rewards[0].type == 12) {
-		return `Mega Energy: ${quest.rewards[0].info.amount} ${proto.values[`poke_${quest.rewards[0].info.pokemon_id}`]}`;
-	}
+	return '';
 }
 
-export function getQuestTask(quest): string {
-	switch (true) {
-		// CATCHING SPECIFIC POKEMON
-		case quest.template.indexOf('catch_specific') >= 0:
-			if (quest.conditions[0].info && quest.conditions[0].info.pokemon_ids) {
-				return `Catch ${quest.target} ${masterfile.pokemon[quest.conditions[0].info.pokemon_ids[0]].name}.`;
+export function getQuestTask(quest: QuestEventData): string {
+	const questTemplate: string = quest.template!.toLowerCase();
+	const validConditions = isNonEmptyArray(quest.conditions);
+	const validTargetAndConditions = validConditions && isValid(quest.target);
+	const questTarget = quest.target ?? 'unknown target';
+	// CATCHING SPECIFIC POKEMON
+	if (questTemplate.includes('catch_specific')) {
+		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_ids))
+			return `Catch ${quest.target!} ${
+				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]!]!.name! as string
+			}`;
+	}
+	// CATCH POKEMON TYPES
+	if (questTemplate.includes('catch_types')) {
+		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_type_ids)) {
+			let catch_types = '';
+			quest.conditions[0].info.pokemon_type_ids!.forEach((type) => {
+				catch_types += `${proto.values[`poke_type_${type}`] as string}, `;
+			});
+			catch_types = catch_types.slice(0, -2);
+			return `Catch ${questTarget} ${catch_types} Type Pokémon.`;
+		}
+	}
+
+	// CATCH WEATHER BOOSTED
+	// This works for both catch_weather and jan_2021_catch_weather
+	if (questTemplate.includes('catch_weather')) return `Catch ${questTarget} Weather Boosted Pokémon.`;
+	if (questTemplate.includes('challenge_anniversary2020_weather'))
+		return `Catch ${questTarget} Pokémon with Weather Boost.`;
+	// CATCH POKEMON OTHER
+	if (questTemplate.includes('catch')) {
+		if (validConditions) {
+			if (isNonEmptyArray(quest.conditions[0].info?.pokemon_type_ids)) {
+				return `Catch ${questTarget} ${
+					proto.values[`poke_type_${quest.conditions[0]!.info.pokemon_type_ids![0]!}`] as string
+				} Type Pokémon.`;
 			}
+			return `Catch ${questTarget} ${proto.values[`quest_condition_${quest.conditions[0].type!}`] as string} Pokémon.`;
+		}
+		return `Catch ${questTarget} Pokémon.`;
+	}
 
-		// CATCH POKEMON TYPES
-		case quest.template.indexOf('catch_types') >= 0:
-			if (quest.conditions[0].info && quest.conditions[0].info.pokemon_type_ids) {
-				let catch_types = '';
-				quest.conditions[0].info.pokemon_type_ids.forEach((type, index) => {
-					catch_types += `${proto.values[`poke_type_${type}`]}, `;
-				});
-				catch_types = catch_types.slice(0, -2);
-				return `Catch ${quest.target} ${catch_types} Type Pokémon.`;
-			}
+	if (questTemplate.includes('challenge_catch_easy')) {
+		return `Catch ${questTarget} Pokémon.`;
+	}
 
-		// CATCH WEATHER BOOSTED
-		case quest.template.indexOf('catch_weather') >= 0:
-		case quest.template.indexOf('jan_2021_catch_weather') >= 0:
-			return `Catch ${quest.target} Weather Boosted Pokémon.`;
-		case quest.template.indexOf('challenge_anniversary2020_weather') >= 0:
-			return `Catch ${quest.target} Pokémon with Weather Boost.`;
-		// CATCH POKEMON OTHER
-		case quest.template.indexOf('catch') >= 0:
-			if (quest.conditions && quest.conditions[0]) {
-				if (quest.conditions[0].info && quest.conditions[0].info.pokemon_type_ids[0]) {
-					return `Catch ${quest.target} ${
-						proto.values[`poke_type_${quest.conditions[0].info.pokemon_type_ids[0]}`]
-					} Type Pokémon.`;
-				}
-				return `Catch ${quest.target} ${proto.values[`quest_condition_${quest.conditions[0].type}`]} Pokémon.`;
-			}
-			return `Catch ${quest.target} Pokémon.`;
+	// LANDING SPECIFIC THROWS
+	if (questTemplate.includes('land')) {
+		let curveball = '';
+		let throw_type = '';
+		if (validConditions && isValid(quest.conditions[0].info?.throw_type_id)) {
+			throw_type = proto.values[`throw_type_${quest.conditions[0].info.throw_type_id!}`];
+		}
+		if (questTemplate.includes('curve')) {
+			curveball = ' Curveball';
+		}
+		if (questTemplate.includes('inarow')) {
+			return `Perform ${questTarget} ${throw_type}${curveball} Throw(s) in a Row.`;
+		}
+		return `Perform ${questTarget} ${throw_type}${curveball} Throw(s).`;
+	}
 
-		case quest.template.indexOf('challenge_catch_easy') >= 0:
-			return `Catch ${quest.target} pokemon`;
+	// COMPLETE RAIDS
+	if (questTemplate.includes('raid')) {
+		if (validConditions) {
+			if (quest.conditions[0].type === 6) return `Battle in ${questTarget} Raid(s).`;
+			return `Win ${questTarget} Level ${quest.conditions[0]!.info.raid_levels as string} Raid(s).`;
+		}
+		return `Battle in ${questTarget} Raid.`;
+	}
 
-		// LANDING SPECIFIC THROWS
-		case quest.template.indexOf('land') >= 0:
-			let curveball = '';
-			let throw_type = '';
-			if (proto.values[`throw_type_${quest.conditions[0].info.throw_type_id}`]) {
-				throw_type = proto.values[`throw_type_${quest.conditions[0].info.throw_type_id}`];
-			}
-			if (quest.template.indexOf('curve') >= 0) {
-				curveball = ' Curveball';
-			}
-			if (quest.template.indexOf('inarow') >= 0) {
-				return `Perform ${quest.target} ${throw_type}${curveball} Throw(s) in a Row.`;
-			}
-			return `Perform ${quest.target} ${throw_type}${curveball} Throw(s).`;
+	// SEND GIFTS TO FRIENDS
+	if (questTemplate.includes('gifts')) {
+		return `Send ${questTarget} Gift(s) to Friends.`;
+	}
+	if (questTemplate.includes('gift')) {
+		return `Send ${questTarget} Gift to a Friend.`;
+	}
 
-		// COMPLETE RAIDS
-		case quest.template.indexOf('raid') >= 0:
-			if (!quest.conditions[0]) {
-				return `Battle in ${quest.target} Raid.`;
-			} else if (quest.conditions[0].type == 6) {
-				return `Battle in ${quest.target} Raid(s).`;
-			}
-			return `Win ${quest.target} Level ${quest.conditions[0].info.raid_levels} Raid(s).`;
+	// NEW 2021-Quests
+	if (questTemplate.includes('quest_gen2_jan21_grass')) {
+		return `Catch ${questTarget}Grass Type Pokémon.`;
+	}
+	if (questTemplate.includes('jan_2021_catch_fire')) {
+		return `Catch ${questTarget}Fire Type Pokémon.`;
+	}
 
-		// SEND GIFTS TO FRIENDS
-		case quest.template.indexOf('gifts') >= 0:
-			return `Send ${quest.target} Gift(s) to Friends.`;
-		case quest.template.indexOf('challenge_anniversary2020_gift') >= 0:
-			return `Send ${quest.target} Gift to a Friend.`;
-		// NEW 2021-Quests
-		case quest.template.indexOf('quest_gen2_jan21_grass') >= 0:
-			return `Catch ${quest.target}Grass` + ` Type Pokémon.`;
-		case quest.template.indexOf('jan_2021_catch_fire') >= 0:
-			return `Catch ${quest.target}Fire` + ` Type Pokémon.`;
-		case quest.template.indexOf('challenge_catch_easy') >= 0:
-			return `Catch ${quest.target} Pokémon.`;
-		// GYM BATTLING
-		case quest.template.indexOf('gym_easy') >= 0:
-		case quest.template.indexOf('gym_try') >= 0:
-			return `Battle ${quest.target} Time(s) in a Gym.`;
-		case quest.template.indexOf('gym_win') >= 0:
-			return `Win ${quest.target} Gym Battle(s).`;
+	if (questTemplate.includes('challenge_catch_easy')) {
+		return `Catch ${questTarget} Pokémon.`;
+	}
 
-		// CATCH WITH PINAP
-		case quest.template.indexOf('berry_pinap') >= 0:
-			return `Catch ${quest.target} Pokémon With a Pinap Berry.`;
+	if (questTemplate.includes('gym')) {
+		if (questTemplate.includes('easy') || questTemplate.includes('try')) {
+			return `Battle ${questTarget} Time(s) in a Gym.`;
+		}
+		if (questTemplate.includes('win')) {
+			return `Win ${questTarget} Gym Battle(s).`;
+		}
+	}
 
-		// CATCH WITH NANAB
-		case quest.template.indexOf('t2_2019_berry_nanab_pkmn') >= 0:
-			return `Catch ${quest.target} Pokémon With a Nanab Berry.`;
-		case quest.template.indexOf('t3_2019__berry_nanab_pkmn') >= 0:
-			return `Use ${quest.target} Nanab berry to help catch Pokémon.`;
+	// CATCH WITH PINAP
+	if (questTemplate.includes('berry_pinap')) {
+		return `Catch ${questTarget} Pokémon With a Pinap Berry.`;
+	}
 
-		// CATCH WITH RAZZ
-		case quest.template.indexOf('berry_razz') >= 0:
-			return `Catch ${quest.target} Pokémon With a Razz Berry.`;
+	// CATCH WITH NANAB
+	if (questTemplate.includes('t2_2019_berry_nanab_pkmn')) {
+		return `Catch ${questTarget} Pokémon With a Nanab Berry.`;
+	}
 
-		// CATCH WITH ANY BERRY
-		case quest.template.indexOf('berry_easy') >= 0:
-			return `Catch ${quest.target} Pokémon With a Razz Berry.`;
-		case quest.template.indexOf('challenge_berry_moderate') >= 0:
-			return `Catch ${quest.target} Pokémon With Any Berry.`;
-		case quest.template.indexOf('challenge_anniversary2020_berry') >= 0:
-			return `Use ${quest.target} berries to help catch Pokémon.`;
-		// HATCH EGGS
-		case quest.template.indexOf('hatch') >= 0:
-			if (quest.target > 1) {
-				return `Hatch ${quest.target} Eggs.`;
-			}
-			return `Hatch ${quest.target} Egg.`;
+	if (questTemplate.includes('t3_2019__berry_nanab_pkmn')) {
+		return `Use ${questTarget} Nanab berry to help catch Pokémon.`;
+	}
 
-		// SPIN POKESTOPS
-		case quest.template.indexOf('spin') >= 0:
-			return `Spin ${quest.target} Pokéstops.`;
+	// CATCH WITH RAZZ, CATCH WITH ANY BERRY
+	if (questTemplate.includes('berry_razz') || questTemplate.includes('berry_easy')) {
+		return `Catch ${questTarget} Pokémon With a Razz Berry.`;
+	}
 
-		// EVOLVE POKEMON
-		case quest.template.indexOf('evolve_specific_plural') >= 0:
+	if (questTemplate.includes('challenge_berry_moderate')) {
+		return `Catch ${questTarget} Pokémon With Any Berry.`;
+	}
+
+	if (questTemplate.includes('challenge_anniversary2020_berry')) {
+		return `Use ${questTarget} berries to help catch Pokémon.`;
+	}
+
+	// HATCH EGGS
+	if (questTemplate.includes('hatch')) {
+		if (questTarget > 1) {
+			return `Hatch ${questTarget} Eggs.`;
+		}
+		return `Hatch ${questTarget} Egg.`;
+	}
+
+	// SPIN POKESTOPS
+	if (questTemplate.includes('spin')) {
+		return `Spin ${questTarget} Pokéstops.`;
+	}
+
+	if (questTemplate.includes('evolve')) {
+		if (
+			questTemplate.includes('specific_plural') &&
+			validConditions &&
+			isNonEmptyArray(quest.conditions[0].info?.pokemon_ids)
+		) {
 			let quest_pokemon = '';
-			for (let p = 0; p < quest.conditions[0].info.pokemon_ids.length; p++) {
-				quest_pokemon = `${masterfile.pokemon[quest.conditions[0].info.pokemon_ids[p]].name}, `;
+			for (const pid of quest.conditions[0].info.pokemon_ids!) {
+				quest_pokemon += `${(masterfile.pokemon[pid]?.name as string | undefined) ?? `<Unknown id ${pid}`}, `;
 			}
-			quest_pokemon = quest_pokemon.slice(0, -2);
-			return `Evolve a ${quest_pokemon}`;
-		case quest.template.indexOf('evolve_item') >= 0:
-			return `Evolve ${quest.target} Pokémon with an Evolution Item.`;
-		case quest.template.indexOf('evolve') >= 0:
-			return `Evolve ${quest.target} Pokémon.`;
-
-		// BUDDY TASKS
-		case quest.template.indexOf('buddy') >= 0:
-			return `Get ${quest.target} Candy from Walking a Pokémon Buddy.`;
-		case quest.template.indexOf('feed_treat') >= 0:
-			return 'Give your buddy 3 treats';
-
-		// POWER UP POKEMON
-		case quest.template.indexOf('powerup') >= 0:
-			return `Power Up ${quest.target} Pokémon.`;
-		case quest.template.indexOf('challenge_mega_energy_power_up') >= 0:
-			return 'Power Up a Pokémon 5 times.';
-
-		// TRADE POKEMON
-		case quest.template.indexOf('trade') >= 0:
-			return `Perform ${quest.target} Trade(s) with a Friend.`;
-
-		// TRANSFER POKEMON
-		case quest.template.indexOf('transfer') >= 0:
-			return `Transfer ${quest.target} Pokémon.`;
-
-		// USE SPECIFIC CHARGE MOVES
-		case quest.template.indexOf('charge') >= 0:
-			if (quest.target > 1) {
-				return `Use a Super Effective Charge Move ${quest.target} Times.`;
-			}
-			return `Use a Super Effective Charge Move ${quest.target} Times.`;
-
-		// SNAPSHOTS
-		case quest.template.indexOf('snapshot_easy') >= 0:
-			if (quest.conditions[0].info && quest.conditions[0].info.pokemon_ids) {
-				return `Take ${quest.target} Snapshots of ${masterfile.pokemon[quest.conditions[0].info.pokemon_ids[0]].name}`;
-			}
-		case quest.template.indexOf('quest_gen2_jan21_snapshot') >= 0:
-			return `Take ${quest.target} ` + `Snapshots`;
-
-		// PvP
-		case quest.template.indexOf('pvp_participate_hard') >= 0:
-			return `Win ${quest.target} PvP Battles`;
-		case quest.template.indexOf('gbl_win') >= 0:
-			return 'Win in the Go Battle League';
-		case quest.template.indexOf('challenge_megasept2020_battle_energy') >= 0:
-			return 'Battle another trainer';
-
-		// PvE
-		case quest.template.indexOf('pve_participate_medium') >= 0:
-			return `Battle a team leader ${quest.target} times`;
-
-		// TEAM ROCKET (HALLOWEEN 2019)
-		case quest.template.indexOf('rocket') >= 0:
-			return 'Defeat a Team GO Rocket Grunt';
-
-		// GRUNT TYPE
-		case quest.template.indexOf('grunt') >= 0:
-			return `Battle against${quest.target}Team GO Rocket Grunt(s)`;
-		case quest.template.indexOf('quest_tgr_feb21_grunt') >= 0:
-			return `Battle against${quest.target}Team GO Rocket Grunt(s)`;
-		case quest.template.indexOf('feb_2021_battle_gbl') >= 0:
-			return `Complete ${quest.target}PVP Battles`;
-
-		// feb 21
-		case quest.template.indexOf('challenge_feb21_community_day') >= 0:
-			return `Catch ${quest.target} Pokemon`;
-		case quest.template.indexOf('quest_tgr_feb21_purify') >= 0:
-			return `Purify ${quest.target} Pokemon`;
-
-		// CATCH MISSING QUESTS
-		default:
-			console.error(`UPDATE FOR THIS QUEST (${quest.pokestop_id})`, quest);
-			return 'UPDATE FOR THIS QUEST';
+			return `Evolve a ${quest_pokemon.slice(0, -2)}`;
+		}
+		if (questTemplate.includes('item')) {
+			return `Evolve ${questTarget} Pokémon with an Evolution Item.`;
+		}
+		return `Evolve ${questTarget} Pokémon.`;
 	}
+
+	// BUDDY TASKS
+	if (questTemplate.includes('buddy')) {
+		return `Get ${questTarget} Candy from Walking a Pokémon Buddy.`;
+	}
+	if (questTemplate.includes('feed_treat')) {
+		return 'Give your buddy 3 treats';
+	}
+
+	// POWER UP POKEMON
+	if (questTemplate.includes('powerup')) {
+		return `Power Up ${questTarget} Pokémon.`;
+	}
+	if (questTemplate.includes('challenge_mega_energy_power_up')) {
+		return 'Power Up a Pokémon 5 times.';
+	}
+
+	// TRADE POKEMON
+	if (questTemplate.includes('trade')) {
+		return `Perform ${questTarget} Trade(s) with a Friend.`;
+	}
+
+	// TRANSFER POKEMON
+	if (questTemplate.includes('transfer')) {
+		return `Transfer ${questTarget} Pokémon.`;
+	}
+
+	// USE SPECIFIC CHARGE MOVES
+	if (questTemplate.includes('charge')) {
+		return `Use a Super Effective Charge Move ${questTarget} Times.`;
+	}
+	// SNAPSHOTS
+	if (questTemplate.includes('snapshot')) {
+		if (questTemplate.includes('easy') && validConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_ids)) {
+			return `Take ${questTarget} Snapshots of ${
+				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]].name as string
+			}`;
+		}
+		if (questTemplate.includes('gen2_jan21')) {
+			return `Take ${questTarget} Snapshots`;
+		}
+	}
+
+	// PvP
+	if (questTemplate.includes('pvp_participate_hard')) {
+		return `Win ${questTarget} PvP Battles`;
+	}
+	if (questTemplate.includes('gbl_win')) {
+		return 'Win in the Go Battle League';
+	}
+	if (questTemplate.includes('challenge_megasept2020_battle_energy')) {
+		return 'Battle another trainer';
+	}
+
+	// PvE
+	if (questTemplate.includes('pve_participate_medium')) {
+		return `Battle a team leader ${questTarget} times`;
+	}
+
+	// TEAM ROCKET (HALLOWEEN 2019)
+	if (questTemplate.includes('rocket')) {
+		return 'Defeat a Team GO Rocket Grunt';
+	}
+
+	// GRUNT TYPE
+	if (questTemplate.includes('grunt')) {
+		return `Battle against${questTarget}Team GO Rocket Grunt(s)`;
+	}
+	if (questTemplate.includes('quest_tgr_feb21_grunt')) {
+		return `Battle against${questTarget}Team GO Rocket Grunt(s)`;
+	}
+	if (questTemplate.includes('feb_2021_battle_gbl')) {
+		return `Complete ${questTarget}PVP Battles`;
+	}
+
+	// feb 21
+	if (questTemplate.includes('challenge_feb21_community_day')) {
+		return `Catch ${questTarget} Pokemon`;
+	}
+	if (questTemplate.includes('quest_tgr_feb21_purify')) {
+		return `Purify ${questTarget} Pokemon`;
+	}
+
+	client.logger.error(`Update for this quest (${quest.pokestop_id ?? 'undefined'})`, { quest, questTarget });
+	return 'UPDATE FOR THIS QUEST';
 }
