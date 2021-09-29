@@ -25,8 +25,7 @@ export interface CommandOptions extends BaseModuleOptions {
 	cooldownScope?: CooldownScope;
 	ignoreCooldown?: CooldownIgnorer;
 	ratelimit?: number;
-	description?: string;
-	helpDescription: CommandHelpDescription;
+	description: CommandHelpDescription;
 	clientPermissions?: bigint[];
 	userPermissions?: bigint[];
 	defaultPermission?: boolean;
@@ -49,8 +48,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public cooldownScope: CooldownScope;
 	public ignoreCooldown: CooldownIgnorer;
 	public ratelimit: number;
-	public description: string;
-	public helpDescription: CommandHelpDescription;
+	public description: CommandHelpDescription;
 	public clientPermissions: bigint[];
 	public userPermissions: bigint[];
 	public shouldDefer: boolean;
@@ -69,8 +67,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 			cooldownScope = CooldownScope.USER,
 			ignoreCooldown,
 			ratelimit = 1,
-			description = '',
-			helpDescription,
+			description,
 			defaultPermission = true,
 			clientPermissions = [],
 			userPermissions = [],
@@ -87,7 +84,6 @@ export default class Command extends BaseModule implements CommandAttributes {
 		this.cooldownScope = cooldownScope;
 		this.ignoreCooldown = ignoreCooldown ?? [];
 		this.ratelimit = ratelimit;
-		this.helpDescription = helpDescription;
 		this.description = description;
 		this.clientPermissions = clientPermissions;
 		this.userPermissions = userPermissions;
@@ -95,7 +91,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 		this.scope = scope;
 		this.data = new SlashCommandBuilder()
 			.setName(id)
-			.setDescription(this.description)
+			.setDescription(this.description.content)
 			.setDefaultPermission(defaultPermission);
 	}
 

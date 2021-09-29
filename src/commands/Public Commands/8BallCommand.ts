@@ -27,12 +27,11 @@ const responses = [
 export default class EightBall extends Command {
 	public constructor() {
 		super('8ball', {
-			helpDescription: {
+			description: {
 				content: 'Let the bot decide your future',
 				usage: 'Fortune-Telling Game',
 				examples: ['8ball will i get a gf'],
 			},
-			description: 'Let the bot decide your future...',
 		});
 		this.data.addStringOption((option) =>
 			option.setName('question').setDescription('What would you like to ask the 8ball?'),
