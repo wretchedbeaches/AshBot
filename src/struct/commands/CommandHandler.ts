@@ -1,5 +1,5 @@
 import { APIApplicationCommand, Routes } from 'discord-api-types/v9';
-import { Collection, CommandInteraction, Interaction } from 'discord.js';
+import { ApplicationCommandPermissions, Collection, CommandInteraction, Interaction } from 'discord.js';
 import BaseClient from '../../client/BotClient';
 import BaseHandler, { BaseHandlerOptions } from '../BaseHandler';
 import InhibitorHandler from '../inhibitors/InhibitorHandler';
@@ -125,6 +125,7 @@ export default class CommandHandler extends BaseHandler {
 		if (command.registeredId)
 			return this.client.restApi.put(
 				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
+				{ body: command.data.toJSON() },
 			);
 	}
 
@@ -136,6 +137,7 @@ export default class CommandHandler extends BaseHandler {
 					guildId,
 					command.registeredId,
 				) as unknown as `/${string}`,
+				{ body: command.data.toJSON() },
 			);
 	}
 
@@ -161,6 +163,36 @@ export default class CommandHandler extends BaseHandler {
 	}
 
 	// TODO: Permission based calls - may need to update Command class types.
+	public getAllGuildCommandPermissions(guildId: string) {
+		return this.client.restApi.get(
+			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId) as unknown as `/${string}`,
+		);
+	}
+
+	public getGuildCommandPermissions(command: Command, guildId: string) {
+		if (!command.registeredId) return;
+		return this.client.restApi.get(
+			Routes.applicationCommandPermissions(this.client.config.clientId, guildId, command.registeredId),
+		);
+	}
+
+	public setGuildCommandPermissions(guildId: string, permissions: ApplicationCommandPermissions[]) {
+		return this.client.restApi.put(Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId), {
+			body: { permissions },
+		});
+	}
+
+	public updateGuildCommandPermissions(
+		command: Command,
+		guildId: string,
+		permissions: ApplicationCommandPermissions[],
+	) {
+		if (!command.registeredId) return;
+		return this.client.restApi.put(
+			Routes.applicationCommandPermissions(this.client.config.clientId, guildId, command.registeredId),
+			{ body: { permissions } },
+		);
+	}
 
 	public async loadAll(directory: string = this.directory): Promise<CommandHandler> {
 		await super.loadAll(directory);
