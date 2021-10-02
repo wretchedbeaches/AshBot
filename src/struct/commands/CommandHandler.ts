@@ -54,12 +54,11 @@ export default class CommandHandler extends BaseHandler {
 	}
 
 	public setup(): void {
-		this.client.once('ready', async () => {
+		this.client.once('ready', () => {
 			this.client.on('interactionCreate', (interaction: Interaction) => {
 				// eslint-disable-next-line @typescript-eslint/no-floating-promises
 				if (interaction.isCommand()) this.handle(interaction);
 			});
-			await this.loadAll();
 		});
 	}
 
@@ -172,14 +171,21 @@ export default class CommandHandler extends BaseHandler {
 	public getGuildCommandPermissions(command: Command, guildId: string) {
 		if (!command.registeredId) return;
 		return this.client.restApi.get(
-			Routes.applicationCommandPermissions(this.client.config.clientId, guildId, command.registeredId),
+			Routes.applicationCommandPermissions(
+				this.client.config.clientId,
+				guildId,
+				command.registeredId,
+			) as unknown as `/${string}`,
 		);
 	}
 
 	public setGuildCommandPermissions(guildId: string, permissions: ApplicationCommandPermissions[]) {
-		return this.client.restApi.put(Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId), {
-			body: { permissions },
-		});
+		return this.client.restApi.put(
+			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId) as unknown as `/${string}`,
+			{
+				body: { permissions },
+			},
+		);
 	}
 
 	public updateGuildCommandPermissions(
@@ -189,7 +195,11 @@ export default class CommandHandler extends BaseHandler {
 	) {
 		if (!command.registeredId) return;
 		return this.client.restApi.put(
-			Routes.applicationCommandPermissions(this.client.config.clientId, guildId, command.registeredId),
+			Routes.applicationCommandPermissions(
+				this.client.config.clientId,
+				guildId,
+				command.registeredId,
+			) as unknown as `/${string}`,
 			{ body: { permissions } },
 		);
 	}
@@ -204,13 +214,6 @@ export default class CommandHandler extends BaseHandler {
 		for (const registeredGlobalCommand of registeredGlobalCommands) {
 			if (this.modules.has(registeredGlobalCommand.name)) {
 				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
-				const wrapper = '===============';
-				console.log(`${wrapper} REGISTERED COMMAND ${wrapper}`);
-				console.log(registeredGlobalCommand);
-				console.log(`${wrapper} END REGISTERED COMMAND ${wrapper}`);
-				console.log(`\n\n${wrapper} COMMAND DATA ${wrapper}`);
-				console.log(registeredGlobalCommand);
-				console.log(`${wrapper} END COMMAND DATA ${wrapper}`);
 			}
 		}
 		const globalCommands = this.modules.filter((command) => command.scope === 'global');
@@ -285,10 +288,7 @@ export default class CommandHandler extends BaseHandler {
 			}
 		}
 
-		if (
-			(command.channels.size > 0 && interaction.channel === null) ||
-			(interaction.channel !== null && !command.channels.has(interaction.channel.type))
-		) {
+		if (command.channels.size > 0 && interaction.channel !== null && !command.channels.has(interaction.channel.type)) {
 			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'channel' });
 			return true;
 		}
@@ -301,9 +301,9 @@ export default class CommandHandler extends BaseHandler {
 	}
 
 	public async runInhibitors(interaction: CommandInteraction, command: Command) {
-		const reason = this.inhibitorHandler ? await this.inhibitorHandler.test(interaction, command) : null;
+		const reason = this.inhibitorHandler ? await this.inhibitorHandler.test(interaction, command) : undefined;
 
-		if (reason !== null) {
+		if (reason !== undefined) {
 			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason });
 			return true;
 		}

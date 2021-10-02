@@ -24,7 +24,7 @@ export default class InhibitorHandler extends BaseHandler {
 		return null;
 	}
 
-	public async test(interaction: CommandInteraction, command: Command): Promise<string | void> {
+	public async test(interaction: CommandInteraction, command: Command): Promise<string | undefined> {
 		if (!this.modules.size) return;
 
 		const promises: Promise<Inhibitor | null>[] = [];
