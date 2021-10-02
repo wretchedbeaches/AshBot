@@ -232,7 +232,13 @@ export default class CommandHandler extends BaseHandler {
 		const command = this.modules.get(commandName) as Command;
 
 		try {
-			if (command.shouldDefer) await interaction.deferReply();
+			if (command.shouldDefer) {
+				const ephemeral =
+					typeof command.isEphemeral === 'boolean'
+						? command.isEphemeral
+						: await command.isEphemeral(interaction, command);
+				await interaction.deferReply({ ephemeral });
+			}
 			if (await this.runCommandInhibitors(interaction, command)) {
 				return false;
 			}

@@ -30,6 +30,7 @@ export interface CommandOptions extends BaseModuleOptions {
 	userPermissions?: bigint[];
 	defaultPermission?: boolean;
 	shouldDefer?: boolean;
+	isEphemeral?: boolean;
 	scope?: CommandScope;
 }
 
@@ -52,6 +53,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public clientPermissions: bigint[];
 	public userPermissions: bigint[];
 	public shouldDefer: boolean;
+	public isEphemeral: boolean | ((interaction: CommandInteraction, command: Command) => Promise<boolean> | boolean);
 	public scope: CommandScope;
 	public data: SlashCommandBuilder;
 	public handler: CommandHandler;
@@ -62,8 +64,8 @@ export default class Command extends BaseModule implements CommandAttributes {
 		id: string,
 		{
 			channels = [],
-			ownerOnly = false,
-			cooldown = 0,
+			ownerOnly,
+			cooldown,
 			cooldownScope = CooldownScope.USER,
 			ignoreCooldown,
 			ratelimit = 1,
@@ -79,8 +81,8 @@ export default class Command extends BaseModule implements CommandAttributes {
 		super(id, rest);
 		this.channels = new Set();
 		if (Array.isArray(channels)) for (const channel of channels) this.channels.add(channel);
-		this.ownerOnly = ownerOnly;
-		this.cooldown = cooldown;
+		this.ownerOnly = ownerOnly ?? false;
+		this.cooldown = cooldown ?? 0;
 		this.cooldownScope = cooldownScope;
 		this.ignoreCooldown = ignoreCooldown ?? [];
 		this.ratelimit = ratelimit;
