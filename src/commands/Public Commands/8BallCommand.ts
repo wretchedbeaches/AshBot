@@ -27,6 +27,7 @@ const responses = [
 export default class EightBall extends Command {
 	public constructor() {
 		super('8ball', {
+			category: 'Public Commands',
 			description: {
 				content: 'Let the bot decide your future',
 				usage: 'Fortune-Telling Game',
