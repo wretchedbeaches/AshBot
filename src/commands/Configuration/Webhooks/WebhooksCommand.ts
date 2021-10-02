@@ -1,6 +1,6 @@
-import { CommandInteraction, MessageEmbed, TextChannel } from 'discord.js';
-import { Embeds } from 'discord-paginationembed';
+import { ButtonInteraction, CommandInteraction, MessageButton, TextChannel } from 'discord.js';
 import Command from '../../../struct/commands/Command';
+import { ActionRowPaginator } from '@psibean/discord.js-pagination';
 
 export default class WebhooksCommand extends Command {
 	public constructor() {
@@ -8,7 +8,7 @@ export default class WebhooksCommand extends Command {
 			description: {
 				content: 'Returns a list of all webhook channels.',
 				usage: 'webhooks',
-				examples: ['webhooks'],
+				examples: ['webhooks', 'webhooks #webhook-channel'],
 			},
 			category: 'Webhooks',
 			ratelimit: 3,
@@ -19,143 +19,161 @@ export default class WebhooksCommand extends Command {
 		);
 	}
 
+	public async handleAllConfigurations(interaction: CommandInteraction, channels) {
+		const channelIds = Object.keys(channels);
+
+		const messageActionRows = [
+			{
+				components: [
+					{
+						label: 'First',
+						emoji: '⏪',
+						style: 'SECONDARY',
+						disabled: true,
+					},
+					{
+						label: 'Previous',
+						disabled: true,
+					},
+					{
+						label: 'Delete',
+						style: 'DANGER',
+						disabled: true,
+					},
+					{
+						label: 'Next',
+						disabled: true,
+					},
+					{
+						label: 'Last',
+						emoji: '⏩',
+						style: 'SECONDARY',
+						disabled: true,
+					},
+				],
+			},
+		];
+
+		const pageEmbedResolver = async ({ newIdentifiers, paginator }) => {
+			const channelId = channelIds[newIdentifiers.pageIdentifier];
+			const newEmbed = this.client.embed(paginator.interaction.guildId);
+			const channel = await this.client.channels.fetch(channelId);
+			// TODO: Provide an option to either delete the configuration for the unknown channel
+			// Or to update the configuration to a new channel.
+			if (channel === null) {
+				newEmbed.setTitle(`Webhook Configuration: Unknown Channel '${channelId}'`);
+				newEmbed.setDescription(`This configuration is for an unknown channel id '${channelId}'.`);
+				// TODO: Check this isn't considered an empty embed.
+				return newEmbed;
+			}
+			newEmbed.setTitle(
+				`Webhook 
+				Configuration For Channel ${channel.isText() ? (channel as TextChannel).name : channelId}`,
+			);
+
+			newEmbed.addFields(
+				Object.entries(channel).map((entry) => {
+					return {
+						name: entry[0],
+						value: JSON.stringify(entry[1]),
+						inline: true,
+					};
+				}),
+			);
+			return newEmbed;
+		};
+
+		const identifiersResolver = async ({
+			interaction,
+			paginator,
+		}: {
+			interaction: ButtonInteraction;
+			paginator: ActionRowPaginator;
+		}) => {
+			const label = (interaction.component as MessageButton).label!.toLowerCase();
+			let { pageIdentifier }: { pageIdentifier: number } = paginator.currentIdentifiers;
+			switch (label) {
+				case 'first':
+					return paginator.initialIdentifiers;
+				case 'next':
+					pageIdentifier += 1;
+					break;
+				case 'delete':
+					await paginator.message.delete();
+					break;
+				case 'previous':
+					pageIdentifier -= 1;
+					break;
+				case 'last':
+					pageIdentifier = paginator.maxNumberOfPages - 1;
+			}
+			if (pageIdentifier < 0) {
+				pageIdentifier = (paginator.maxNumberOfPages as number) + (pageIdentifier % paginator.maxNumberOfPages);
+			} else if (pageIdentifier >= paginator.maxNumberOfPages) {
+				pageIdentifier %= paginator.maxNumberOfPages;
+			}
+			return { ...paginator.currentIdentifiers, pageIdentifier };
+		};
+
+		const paginator = new ActionRowPaginator(interaction, {
+			messageActionRows,
+			identifiersResolver,
+			pageEmbedResolver,
+			maxNumberOfPages: channels.length,
+		});
+		await paginator.send();
+		return paginator.message;
+	}
+
 	public async execute(interaction: CommandInteraction) {
 		const channelArgument = interaction.options.getChannel('channel', false);
 		// TODO: Can't 100% guarantee guildId here until figuring out guild only API logic.
 		// Otherwise local guild only inhibitor logic.
-		const channels = this.client.settings.get(interaction.guildId!, 'channels', {});
-		const embeds: MessageEmbed[] = [];
-		if (channelArgument === null) {
-			for (const channelId in channels) {
-				if (!channels.prototype.hasOwnProperty(channelId)) continue;
-				const channel = channels[channelId];
-				embeds.push(
-					this.client
-						.embed(interaction.guildId!)
-						.setTitle(
-							`Webhook Configuration For Channel ${
-								((await this.client.channels.fetch(channelId)) as TextChannel).name
-							}`,
-						)
-						.addFields(
-							Object.entries(channel).map((entry) => ({
-								name: entry[0],
-								value: JSON.stringify(entry[1]),
-								inline: true,
-							})),
-						),
-				);
-			}
-		} else {
-			embeds.push(
-				this.client
-					.embed(interaction.guildId!)
-					.setTitle(`Webhook Configuration For Channel ${channelArgument.name}`)
-					.addFields(
-						Object.entries(channels[channelArgument.id]).map((entry) => ({
-							name: entry[0],
-							value: JSON.stringify(entry[1]),
-							inline: true,
-						})),
-					),
-			);
+		let channels = this.client.settings.get(interaction.guildId, 'channels', {});
+		if (channelArgument) channels = channels[channelArgument.id];
+
+		if (!channels) {
+			const errorMessage = channelArgument
+				? `There is no webhook configuration for '${channelArgument.name}'`
+				: `There are no webhook configurations.`;
+			return interaction.editReply(errorMessage);
 		}
-		// TODO: This package is out of date - pagination will need to be significantly updated.
-		await new Embeds()
-			.setArray(embeds.length === 0 ? [this.client.embed(interaction.guildId!).setTitle('No webhooks set')] : embeds)
-			.setAuthorizedUsers([interaction.user.id])
-			.setChannel(interaction.channel as TextChannel)
-			.setPageIndicator(true)
-			.setTimeout(300000)
-			.setPageIndicator(true)
-			.build();
+
+		if (channelArgument === null) {
+			return this.handleAllConfigurations(interaction, channels);
+		}
+
+		const embed = this.client
+			.embed(interaction.guildId!)
+			.setTitle(`Webhook Configuration For Channel ${(channelArgument as TextChannel).name}`);
+
+		const channelConfiguration = channels[channelArgument.id] ?? {};
+		const configEntries = Object.entries(channelConfiguration);
+		if (configEntries.length > 0) {
+			embed.addFields(
+				configEntries.map((entry) => ({
+					name: entry[0],
+					value: JSON.stringify(entry[1]),
+					inline: true,
+				})),
+			);
+		} else {
+			embed.setDescription(`No Webhook Configuration found for this channel.`);
+		}
+		const pages = [embed];
+		const identifiersResolver = ({
+			interaction,
+			paginator,
+		}: {
+			interaction: ButtonInteraction;
+			paginator: ActionRowPaginator;
+		}) => {
+			if ((interaction.component as MessageButton).label === 'delete') {
+				return paginator.message.delete();
+			}
+		};
+		const paginator = new ActionRowPaginator(interaction, { identifiersResolver, pages });
+		await paginator.send();
+		return paginator.message;
 	}
 }
-
-// export default class WebhooksCommand extends Command {
-//   public constructor() {
-//     super('webhooks', {
-//       aliases: ['webhooks'],
-//       category: 'Webhooks',
-//       description: {
-//         content: 'Returns a list of all webhook channels.',
-//         usage: 'webhooks',
-//         examples: ['webhooks'],
-//       },
-//       args: [
-//         {
-//           id: 'channel',
-//           type: 'channel',
-//           default: null,
-//         },
-//       ],
-//       ratelimit: 3,
-//     });
-//   }
-
-//   public async exec(message: Message, args): Promise<Message> {
-//     if (!this.client.handleAdminPermissions(message)) return;
-//     const channels = this.client.settings.get(message.guild.id, 'channels', {});
-//     let embeds: MessageEmbed[] = [];
-//     if (!args.channel) {
-//       for (let channelId in channels) {
-//         const channel = channels[channelId];
-//         embeds.push(
-//           this.client
-//             .embed(message.guild.id)
-//             .setTitle(
-//               `Webhook Configuration For Channel ${
-//                 (
-//                   (this.client.channels.cache.get(channelId) as TextChannel) ||
-//                   ((await this.client.channels.fetch(channelId)) as TextChannel)
-//                 ).name
-//               }`
-//             )
-//             .addFields(
-//               Object.entries(channel).map((entry) => ({
-//                 name: entry[0],
-//                 value: JSON.stringify(entry[1]),
-//                 inline: true,
-//               }))
-//             )
-//         );
-//       }
-//     } else {
-//       embeds.push(
-//         this.client
-//           .embed(message.guild.id)
-//           .setTitle(
-//             `Webhook Configuration For Channel ${
-//               (
-//                 (this.client.channels.cache.get(
-//                   args.channel.id
-//                 ) as TextChannel) ||
-//                 ((await this.client.channels.fetch(
-//                   args.channel.id
-//                 )) as TextChannel)
-//               ).name
-//             }`
-//           )
-//           .addFields(
-//             Object.entries(channels[args.channel.id]).map((entry) => ({
-//               name: entry[0],
-//               value: JSON.stringify(entry[1]),
-//               inline: true,
-//             }))
-//           )
-//       );
-//     }
-//     new Embeds()
-//       .setArray(
-//         embeds.length === 0
-//           ? [this.client.embed(message.guild.id).setTitle('No webhooks set')]
-//           : embeds
-//       )
-//       .setAuthorizedUsers([message.author.id])
-//       .setChannel(message.channel as TextChannel)
-//       .setPageIndicator(true)
-//       .setTimeout(300000)
-//       .setPageIndicator(true)
-//       .build();
-//   }
-// }
