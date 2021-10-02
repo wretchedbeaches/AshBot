@@ -160,15 +160,15 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 
 	if (pokemon_id === undefined) return;
 
-	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-	const pokemonData = masterfile.pokemon[`${pokemon_id}`];
+	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
 	if (isInvalid(pokemonData) || capture_1 === 0 || cp === undefined) {
 		return;
 	}
 
 	const isBoosted =
-		// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-		weather !== 0 && pokemonData.types.some((type) => boosted[util.weather[`${weather}`].name].includes(type));
+		isValid(weather) &&
+		weather !== 0 &&
+		pokemonData.types.some((type) => boosted[util.weather[`${weather!}`].name].includes(type));
 	let iv: number | undefined = undefined;
 	if (individual_attack && individual_defense && individual_stamina)
 		iv = ((individual_attack + individual_defense + individual_stamina) / 45) * 100;
@@ -281,8 +281,7 @@ const router = Router();
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post('', async (req, res) => {
-	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-	client.logger.info(`[Bot] Recieved ${req.body.length} Events`);
+	client.logger.info(`[Bot] Recieved ${(req.body?.length as number | undefined) ?? 'unknown'} Events`);
 	for (const event of req.body) {
 		for (const [guildId, { channels }] of client.settings.items) {
 			for (const channelId in channels) {
@@ -320,7 +319,7 @@ router.post('', async (req, res) => {
 			}
 		}
 	}
-	return res.status(200).json({ message: 'SUCCESS' });
+	res.status(200).json({ message: 'SUCCESS' });
 });
 
 export default router;

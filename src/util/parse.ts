@@ -4,7 +4,7 @@ import 'moment-timezone';
 import 'moment-precise-range-plugin';
 import config from '../config.json';
 import client from '../Bot';
-import { GuildEmoji, MessageEmbed } from 'discord.js';
+import { GuildEmoji, HexColorString, MessageEmbed } from 'discord.js';
 import countryFlagEmoji from 'country-flag-emoji';
 import nearbyCities from 'nearby-cities';
 import { stripIndents } from 'common-tags';
@@ -170,7 +170,8 @@ export function parsePokemon(
 	// TODO: Define a pokemonData type based on the data in the file.
 	if (!webhook)
 		embed.setTitle(`${pokemonData ? pokemonData.name : ''} ${latitude!.toFixed(5)},${longitude!.toFixed(5)}`);
-	if (pokemonData?.types) embed.setColor(`#${util.types[pokemonData.types[0]].color.toString(16) as string}`);
+	if (pokemonData?.types)
+		embed.setColor(`#${util.types[pokemonData.types[0]].color.toString(16) as string}` as HexColorString);
 	if (pokemonData)
 		embed.setThumbnail(
 			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.toLowerCase().split(' ').join('')}.gif`,
@@ -344,7 +345,7 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 	const embed = client.embed(guildId);
 	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
 		const color: number = util.types[pokemonData.types![0]].color;
-		embed.setColor(`#${color.toString(16)}`);
+		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 	embed
 		.setAuthor(`${member.user.username as string} found shiny ${pokemonData.name}`)
@@ -445,7 +446,7 @@ export function parseRaid(
 	const embed = client.embed(guildId);
 	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
 		const color: number = util.types[pokemonData.types![0]].color;
-		embed.setColor(`#${color.toString(16)}`);
+		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 
 	// line 1: name and gender
@@ -566,7 +567,7 @@ export function parseQuest(
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${pokestop_name ?? 'Unknown Pokestop'}`);
 	const questTypeColor: number | undefined = isValid(questData?.type) ? util.types[questData.type].color : undefined;
-	if (isValid(questTypeColor)) embed.setColor(`#${questTypeColor!.toString(16)}`);
+	if (isValid(questTypeColor)) embed.setColor(`#${questTypeColor!.toString(16)}` as HexColorString);
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (isNonEmptyArray(quest.rewards)) {
 		const reward: QuestEventRewards = rewards![0];
@@ -649,7 +650,7 @@ export function parseInvasion(
 	if (webhook) embed.setTitle(`${(city?.name as string | undefined) ?? 'Unknown'}: ${name!}`);
 	if (isValid(invasionData?.type) && invasionData.types[invasionData.type]) {
 		const color: number = util.types[invasionData.type!].color;
-		embed.setColor(`#${color.toString(16)}`);
+		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (url) embed.setThumbnail(url);

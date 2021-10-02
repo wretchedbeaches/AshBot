@@ -22,8 +22,7 @@ export default class Listener extends BaseModule {
 		this.type = type;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	public execute(...args: any[]): any {
+	public execute(..._: any[]): any {
 		throw new Error(ErrorMessages.NOT_IMPLEMENTED(this.constructor.name, 'execute'));
 	}
 }

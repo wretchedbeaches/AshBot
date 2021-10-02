@@ -99,12 +99,10 @@ export default class Command extends BaseModule implements CommandAttributes {
 			.setDefaultPermission(defaultPermission ?? true);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public shouldExecute(_: CommandInteraction): Promise<boolean> | boolean {
 		return true;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public execute(_: CommandInteraction): Promise<any> | any {
 		throw new Error(ErrorMessages.NOT_IMPLEMENTED(this.constructor.name, 'execute'));
 	}

@@ -55,9 +55,8 @@ export default class CommandHandler extends BaseHandler {
 
 	public setup(): void {
 		this.client.once('ready', () => {
-			this.client.on('interactionCreate', (interaction: Interaction) => {
-				// eslint-disable-next-line @typescript-eslint/no-floating-promises
-				if (interaction.isCommand()) this.handle(interaction);
+			this.client.on('interactionCreate', async (interaction: Interaction) => {
+				if (interaction.isCommand()) await this.handle(interaction);
 			});
 		});
 	}
