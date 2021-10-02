@@ -7,12 +7,11 @@ export default class AdminCommand extends Command {
 	public constructor() {
 		super('admin', {
 			category: 'Configuration',
-			helpDescription: {
+			description: {
 				content: 'Access admin commands.',
 				usage: 'admin <command> [options]',
 				examples: ['admin roles admin <role>', 'admin roles mod <role>'],
 			},
-			description: 'Access admin commands.',
 			ratelimit: 3,
 		});
 		this.data.addSubcommand((subcommand) =>
