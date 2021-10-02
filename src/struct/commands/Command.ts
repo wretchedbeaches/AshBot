@@ -66,14 +66,15 @@ export default class Command extends BaseModule implements CommandAttributes {
 			channels = [],
 			ownerOnly,
 			cooldown,
-			cooldownScope = CooldownScope.USER,
+			cooldownScope,
 			ignoreCooldown,
-			ratelimit = 1,
+			ratelimit,
 			description,
-			defaultPermission = true,
-			clientPermissions = [],
-			userPermissions = [],
-			shouldDefer = true,
+			defaultPermission,
+			clientPermissions,
+			userPermissions,
+			shouldDefer,
+			isEphemeral,
 			scope = 'global',
 			...rest
 		}: CommandOptions,
@@ -83,18 +84,19 @@ export default class Command extends BaseModule implements CommandAttributes {
 		if (Array.isArray(channels)) for (const channel of channels) this.channels.add(channel);
 		this.ownerOnly = ownerOnly ?? false;
 		this.cooldown = cooldown ?? 0;
-		this.cooldownScope = cooldownScope;
+		this.cooldownScope = cooldownScope ?? CooldownScope.USER;
 		this.ignoreCooldown = ignoreCooldown ?? [];
-		this.ratelimit = ratelimit;
+		this.ratelimit = ratelimit ?? 1;
 		this.description = description;
-		this.clientPermissions = clientPermissions;
-		this.userPermissions = userPermissions;
-		this.shouldDefer = shouldDefer;
+		this.clientPermissions = clientPermissions ?? [];
+		this.userPermissions = userPermissions ?? [];
+		this.shouldDefer = shouldDefer ?? true;
+		this.isEphemeral = isEphemeral ?? false;
 		this.scope = scope;
 		this.data = new SlashCommandBuilder()
 			.setName(id)
 			.setDescription(this.description.content)
-			.setDefaultPermission(defaultPermission);
+			.setDefaultPermission(defaultPermission ?? true);
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
