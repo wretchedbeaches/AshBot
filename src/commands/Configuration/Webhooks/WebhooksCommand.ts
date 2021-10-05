@@ -13,10 +13,90 @@ export default class WebhooksCommand extends Command {
 			category: 'Webhooks',
 			ratelimit: 3,
 		});
-
+		this.data
+			.addSubcommand((subcommand) =>
+				subcommand
+					.setName('show')
+					.setDescription('Show Webhook Configuration.')
+					.addChannelOption((option) =>
+						option
+							.setName('channel')
+							.setDescription('The channel to view configuration for, otherwise all of them.')
+							.setRequired(false),
+					),
+			)
+			.addSubcommand(
+				(subcommqand) =>
+					subcommqand
+						.setName('create_raid')
+						.setDescription('Create a Raid Webhook Configuration.')
+						.addChannelOption((channelOption) =>
+							channelOption
+								.setName('channel')
+								.setDescription('The channel to create the configuration for.')
+								.setRequired(true),
+						)
+						.addBooleanOption((trainOption) =>
+							trainOption.setName('train').setDescription('Whether to filter on train.'),
+						)
+						.addBooleanOption((exOption) => exOption.setName('ex').setDescription('Whether to filter on ex raid.'))
+						.addStringOption((teamOption) =>
+							teamOption
+								.setName('team')
+								.setDescription('The team to filter on.')
+								.addChoices([
+									['uncontested', 'uncontested'],
+									['mystic', 'mystic'],
+									['valor', 'valor'],
+									['instinct', 'instinct'],
+								]),
+						)
+						.addBooleanOption((boostedOption) =>
+							boostedOption.setName('boosted').setDescription('Whether to filter on boosted'),
+						)
+						.addStringOption((pokemonNameOption) =>
+							pokemonNameOption.setName('name').setDescription('The name of a pokemon to filter on.'),
+						)
+						.addIntegerOption((mincpOption) =>
+							mincpOption.setName('mincp').setDescription('The minimum cp to filter on.'),
+						)
+						.addIntegerOption((maxcpOption) =>
+							maxcpOption.setName('maxcp').setDescription('The minimum cp to filter on.'),
+						)
+						.addIntegerOption((minLevelOption) =>
+							minLevelOption.setName('minlevel').setDescription('The minimum level to filter on.'),
+						)
+						.addIntegerOption((maxLevelOption) =>
+							maxLevelOption.setName('maxlevel').setDescription('The minimum level to filter on.'),
+						),
+				// TODO: Add geofilter based options:
+				// geofilter_city, geofilter_latitude, geofilter_longitude, geofilter_radiuse
+			)
+			.addSubcommand((subcommand) =>
+				subcommand
+					.setName('remove')
+					.setDescription('Remove a Webhook Configuration.')
+					.addChannelOption((option) =>
+						option.setName('channel').setDescription('The channel to remove configuration for.').setRequired(true),
+					),
+			);
 		this.data.addChannelOption((option) =>
 			option.setName('channel').setDescription('Channel to get Webhook Configuration for').setRequired(false),
 		);
+	}
+
+	public async execute(interaction: CommandInteraction) {
+		const subcommand = interaction.options.getSubcommand();
+		switch (subcommand) {
+			case 'show':
+				return this.handleShow(interaction);
+			case 'create_raid':
+				// TODO: Handle raid webhook creation (add others) - may need to split this into a CreateWebhook Command.
+				// if it gets too large with option content.
+				break;
+			case 'remove':
+				return this.handleRemove(interaction);
+		}
 	}
 
 	public async handleAllConfigurations(interaction: CommandInteraction, channels) {
@@ -125,7 +205,7 @@ export default class WebhooksCommand extends Command {
 		return paginator.message;
 	}
 
-	public async execute(interaction: CommandInteraction) {
+	public async handleShow(interaction: CommandInteraction) {
 		const channelArgument = interaction.options.getChannel('channel', false);
 		// TODO: Can't 100% guarantee guildId here until figuring out guild only API logic.
 		// Otherwise local guild only inhibitor logic.
@@ -175,5 +255,22 @@ export default class WebhooksCommand extends Command {
 		const paginator = new ActionRowPaginator(interaction, { identifiersResolver, pages });
 		await paginator.send();
 		return paginator.message;
+	}
+
+	public async handleRemove(interaction: CommandInteraction) {
+		// TODO: Add logic to ensure guild and channel in execute
+		const guildId = interaction.guildId!;
+		const settings = this.client.settings.get(guildId, 'channels', {});
+		const channelId = interaction.channel!.id;
+		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+		delete settings[channelId];
+		await this.client.settings.set(guildId, 'channels', settings);
+		if (this.client.intervals.has(channelId)) {
+			clearInterval(this.client.intervals.get(channelId)!);
+			this.client.intervals.delete(channelId);
+			this.client.embedQueue.delete(channelId);
+			this.client.trains.delete(channelId);
+		}
+		return interaction.editReply("Successfully removed channel's raid webhook configuration.");
 	}
 }
