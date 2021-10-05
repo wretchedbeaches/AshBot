@@ -61,13 +61,13 @@ export default class WebhooksCommand extends Command {
 							mincpOption.setName('mincp').setDescription('The minimum cp to filter on.'),
 						)
 						.addIntegerOption((maxcpOption) =>
-							maxcpOption.setName('maxcp').setDescription('The minimum cp to filter on.'),
+							maxcpOption.setName('maxcp').setDescription('The maximum cp to filter on.'),
 						)
 						.addIntegerOption((minLevelOption) =>
 							minLevelOption.setName('minlevel').setDescription('The minimum level to filter on.'),
 						)
 						.addIntegerOption((maxLevelOption) =>
-							maxLevelOption.setName('maxlevel').setDescription('The minimum level to filter on.'),
+							maxLevelOption.setName('maxlevel').setDescription('The maximum level to filter on.'),
 						),
 				// TODO: Add geofilter based options:
 				// geofilter_city, geofilter_latitude, geofilter_longitude, geofilter_radiuse
