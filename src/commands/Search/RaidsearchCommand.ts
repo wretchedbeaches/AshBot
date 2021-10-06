@@ -12,7 +12,7 @@ import util from '../../util/util.json';
 export default class RaidsearchCommand extends Command {
   public constructor() {
     super('raidsearch', {
-      aliases: ['raidsearch', 'raid'],
+      aliases: ['raidsearch'],
       category: 'Search',
       description: {
         content: 'Search for raids.',
@@ -55,7 +55,7 @@ export default class RaidsearchCommand extends Command {
                 str.split(str.endsWith('km') ? 'km' : 'm')[0]
               );
               return isNaN(num)
-              ? false
+                ? false
                 : {
                     radius: num / (str.endsWith('km') ? 1 : 1000),
                     unit: str.endsWith('km') ? 'km' : 'm',
