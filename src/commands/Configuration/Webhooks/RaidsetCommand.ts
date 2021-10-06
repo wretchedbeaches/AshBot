@@ -137,7 +137,7 @@ export default class RaidsetCommand extends Command {
 		this.client.setInterval(channelId);
 		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 		delete this.client.trains[channelId];
-		const finalError = error === '' ? '' : `However the following errors occurred:\n\n${error.trim()}`;
+		const finalError = error === '' ? '' : ` However the following errors occurred:\n\n${error.trim()}`;
 		return interaction.editReply(`Successfully updated channel's raid webhook configuration.${finalError}`);
 	}
 }
