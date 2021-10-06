@@ -6,9 +6,9 @@ export default class WebhooksCommand extends Command {
 	public constructor() {
 		super('webhooks', {
 			description: {
-				content: 'Returns a list of all webhook channels.',
+				content: 'Show or remove Webhook Configurations.',
 				usage: 'webhooks',
-				examples: ['webhooks', 'webhooks #webhook-channel'],
+				examples: ['webhooks show', 'webhooks show #webhook-channel', 'webhooks remove #webhook-channel'],
 			},
 			category: 'Webhooks',
 			ratelimit: 3,
@@ -25,53 +25,6 @@ export default class WebhooksCommand extends Command {
 							.setRequired(false),
 					),
 			)
-			.addSubcommand(
-				(subcommqand) =>
-					subcommqand
-						.setName('create_raid')
-						.setDescription('Create a Raid Webhook Configuration.')
-						.addChannelOption((channelOption) =>
-							channelOption
-								.setName('channel')
-								.setDescription('The channel to create the configuration for.')
-								.setRequired(true),
-						)
-						.addBooleanOption((trainOption) =>
-							trainOption.setName('train').setDescription('Whether to filter on train.'),
-						)
-						.addBooleanOption((exOption) => exOption.setName('ex').setDescription('Whether to filter on ex raid.'))
-						.addStringOption((teamOption) =>
-							teamOption
-								.setName('team')
-								.setDescription('The team to filter on.')
-								.addChoices([
-									['uncontested', 'uncontested'],
-									['mystic', 'mystic'],
-									['valor', 'valor'],
-									['instinct', 'instinct'],
-								]),
-						)
-						.addBooleanOption((boostedOption) =>
-							boostedOption.setName('boosted').setDescription('Whether to filter on boosted'),
-						)
-						.addStringOption((pokemonNameOption) =>
-							pokemonNameOption.setName('name').setDescription('The name of a pokemon to filter on.'),
-						)
-						.addIntegerOption((mincpOption) =>
-							mincpOption.setName('mincp').setDescription('The minimum cp to filter on.'),
-						)
-						.addIntegerOption((maxcpOption) =>
-							maxcpOption.setName('maxcp').setDescription('The maximum cp to filter on.'),
-						)
-						.addIntegerOption((minLevelOption) =>
-							minLevelOption.setName('minlevel').setDescription('The minimum level to filter on.'),
-						)
-						.addIntegerOption((maxLevelOption) =>
-							maxLevelOption.setName('maxlevel').setDescription('The maximum level to filter on.'),
-						),
-				// TODO: Add geofilter based options:
-				// geofilter_city, geofilter_latitude, geofilter_longitude, geofilter_radiuse
-			)
 			.addSubcommand((subcommand) =>
 				subcommand
 					.setName('remove')
@@ -80,9 +33,6 @@ export default class WebhooksCommand extends Command {
 						option.setName('channel').setDescription('The channel to remove configuration for.').setRequired(true),
 					),
 			);
-		this.data.addChannelOption((option) =>
-			option.setName('channel').setDescription('Channel to get Webhook Configuration for').setRequired(false),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {
@@ -90,10 +40,6 @@ export default class WebhooksCommand extends Command {
 		switch (subcommand) {
 			case 'show':
 				return this.handleShow(interaction);
-			case 'create_raid':
-				// TODO: Handle raid webhook creation (add others) - may need to split this into a CreateWebhook Command.
-				// if it gets too large with option content.
-				break;
 			case 'remove':
 				return this.handleRemove(interaction);
 		}
