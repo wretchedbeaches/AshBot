@@ -167,42 +167,46 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 				if (!channels.prototype.hasOwnProperty(channelId)) continue;
 				if (!this.embedQueue.has(channelId)) this.embedQueue.set(channelId, []);
 				try {
-					this.intervals.set(
-						channelId,
-						setInterval(() => {
-							if (this.embedQueue.has(channelId) && this.embedQueue.get(channelId)!.length > 0) {
-								// fetch checks cache first already
-								this.channels
-									.fetch(channelId)
-									.then((channel) => {
-										if (channel?.isText()) {
-											if (this.embedQueue.has(channelId)) {
-												const channelQueue: ChannelEmbed[] = this.embedQueue.get(channelId)!;
-												const embed = channelQueue[0];
-												channel
-													.send({
-														content: embed.coordinates
-															? `${embed.coordinates[0].toFixed(5)}, ${embed.coordinates[1].toFixed(5)}`
-															: embed.message,
-														embeds: [embed.embed],
-													})
-													.then((_) => {
-														// if (embed.shiny) this.handleShinyReactions(embedMessage, embed.user);
-														this.embedQueue.set(channelId, channelQueue.slice(1, channelQueue.length));
-													})
-													.catch((error) => this.logger.error(error));
-											}
-										}
-									})
-									.catch((error) => this.logger.error(error));
-							}
-						}, Number(process.env.QUEUE_INTERVAL)),
-					);
+					this.setInterval(channelId);
 				} catch (error) {
 					console.log(error);
 				}
 			}
 		}
+	}
+
+	public setInterval(channelId: string) {
+		this.intervals.set(
+			channelId,
+			setInterval(() => {
+				if (this.embedQueue.has(channelId) && this.embedQueue.get(channelId)!.length > 0) {
+					// fetch checks cache first already
+					this.channels
+						.fetch(channelId)
+						.then((channel) => {
+							if (channel?.isText()) {
+								if (this.embedQueue.has(channelId)) {
+									const channelQueue: ChannelEmbed[] = this.embedQueue.get(channelId)!;
+									const embed = channelQueue[0];
+									channel
+										.send({
+											content: embed.coordinates
+												? `${embed.coordinates[0].toFixed(5)}, ${embed.coordinates[1].toFixed(5)}`
+												: embed.message,
+											embeds: [embed.embed],
+										})
+										.then((_) => {
+											// if (embed.shiny) this.handleShinyReactions(embedMessage, embed.user);
+											this.embedQueue.set(channelId, channelQueue.slice(1, channelQueue.length));
+										})
+										.catch((error) => this.logger.error(error));
+								}
+							}
+						})
+						.catch((error) => this.logger.error(error));
+				}
+			}, Number(process.env.QUEUE_INTERVAL)),
+		);
 	}
 
 	private initServer() {
