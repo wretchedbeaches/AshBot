@@ -1,11 +1,13 @@
+export interface GeofilterOption {
+	city?: string;
+	center?: number[];
+	radius?: number;
+	unit?: 'km' | 'm';
+}
+
 export interface WebhookFilter {
 	type: 'invasion' | 'pokemon' | 'quest' | 'raid';
-	geofilter?: {
-		city?: string;
-		center?: number[];
-		radius?: number;
-		unit?: 'km' | 'm';
-	};
+	geofilter?: GeofilterOption;
 	rmchannel?: boolean;
 }
 
