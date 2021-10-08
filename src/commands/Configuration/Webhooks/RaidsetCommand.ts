@@ -1,10 +1,14 @@
 import { CommandInteraction } from 'discord.js';
 import ntim from '../../../util/name_to_id_map.json';
-import config from '../../../config.json';
 import { stripIndents } from 'common-tags';
 import Command from '../../../struct/commands/Command';
-import { addCpFilterOptions, addGeofilterOptions, addLevelFilterOptions } from '../../../util/WebhookFilterOptions';
-import RaidOptions from '../../../models/RaidOptions';
+import {
+	addCpFilterOptions,
+	addGeofilterOptions,
+	addLevelFilterOptions,
+	parseGeofilterOptions,
+} from '../../../util/WebhookFilterOptions';
+import { RaidsetConfig } from '../../../models/WebhookConfigurations';
 
 export default class RaidsetCommand extends Command {
 	public constructor() {
@@ -68,51 +72,24 @@ export default class RaidsetCommand extends Command {
 	public async execute(interaction: CommandInteraction) {
 		// Create/overwrite by default if update argument is not provided.
 		const isUpdate = interaction.options.getBoolean('update', false) ?? false;
-		const guildId = interaction.guildId!;
-		const channel = interaction.options.getChannel('channel', true);
+		// TODO: once https://github.com/discordjs/builders/pull/41 is merged
+		// Only allow for only text channels to be selected for this argument.
+		const channel = interaction.options.getChannel('channel', false) ?? interaction.channel;
+		const guildId = interaction.guildId;
+		// TODO: Remove this check once command is forced to be guild only.
+		if (guildId == null || channel === null) {
+			return interaction.editReply(
+				`No channel was provided for the Raid Webhook Configuration and the command was not used in a channel.`,
+			);
+		}
 		const channelId = channel.id;
 		const channelConfigurations = this.client.settings.get(guildId, 'channels', {});
 		// If set to update and the configuration already exists, update it.
-		const channelConfiguration: RaidOptions =
+		const channelConfiguration: RaidsetConfig =
 			isUpdate && channelConfigurations[channelId] !== undefined ? channelConfigurations[channelId] : { type: 'raid' };
 
-		let error = '';
-		const radiusArgument = interaction.options.getNumber('radius', false);
-		const cityArgument = interaction.options.getString('city', false);
-		const latitudeArgument = interaction.options.getNumber('latitude', false);
-		const longitudeArgument = interaction.options.getNumber('longitude', false);
-
-		const hasCityArgument = cityArgument !== null;
-		const hasLatLong = latitudeArgument && longitudeArgument;
-
 		const filterErrorSuffix = isUpdate ? 'updated' : 'set';
-		// This determines whether the user attempted to provide a geofilter but didn't provide a radius.
-		// This logic doesn't entirely make sense, because previously a city is never really used in filtering....
-		// TODO: Work out what the hell is meant to be going on - i'll double check the old raid filter logic.
-		const attemptedToSetGeofilter =
-			radiusArgument !== null && (latitudeArgument !== null || longitudeArgument !== null);
-		if (hasCityArgument) {
-			if (config.cities[cityArgument]) {
-				channelConfiguration.geofilter = cityArgument;
-			} else {
-				error = `City '${cityArgument!}' was provided but could not be found, geofilter was not ${filterErrorSuffix}.`;
-			}
-		} else if (radiusArgument !== null) {
-			const unitArgument = interaction.options.getString('unit') as 'km' | 'm' | null;
-			if (unitArgument === null) {
-				error = `A radius of '${radiusArgument}' was provided without a unit (m or km), geofilter was not ${filterErrorSuffix}.`;
-			} else if (hasLatLong) {
-				channelConfiguration.geofilter = {
-					center: [latitudeArgument, longitudeArgument!],
-					radius: radiusArgument,
-					unit: unitArgument,
-				};
-			}
-		} else if (attemptedToSetGeofilter) {
-			error = `The following arguments were provided for the geo filter:`;
-			error += `\nlat/long: '${latitudeArgument ?? ''}/${longitudeArgument ?? ''}'`;
-			error += `\n\n**But no radius was provided and is required when providing a lat/long.**\nGeofilter was not ${filterErrorSuffix}`;
-		}
+		let error = parseGeofilterOptions(interaction, channelConfiguration, filterErrorSuffix);
 
 		const pokemonNameArgument = interaction.options.getString('name', false);
 		if (pokemonNameArgument !== null) {
@@ -120,11 +97,11 @@ export default class RaidsetCommand extends Command {
 			if (pokemonId) {
 				channelConfiguration.name = pokemonNameArgument.toLowerCase();
 			} else {
-				error += `\n\nThe pokemon name '${pokemonNameArgument}'' was provided but could not be found, the name filter was not ${filterErrorSuffix}.`;
+				error += `\n\nThe pokemon name '${pokemonNameArgument}' was provided but could not be found, the name filter was not ${filterErrorSuffix}.`;
 			}
 		}
 
-		const argumentBlacklist = ['channel', 'radius', 'city', 'latitude', 'longitude', 'name', 'unit'];
+		const argumentBlacklist = ['channel', 'radius', 'city', 'latitude', 'longitude', 'name', 'unit', 'update'];
 		for (const argument of interaction.options.data) {
 			if (argumentBlacklist.includes(argument.name)) continue;
 			const argumentValue = argument.value ?? null;
@@ -135,8 +112,7 @@ export default class RaidsetCommand extends Command {
 		await this.client.settings.set(guildId, 'channels', channelConfigurations);
 		this.client.embedQueue.set(channelId, []);
 		this.client.setInterval(channelId);
-		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-		delete this.client.trains[channelId];
+		this.client.trains.delete(channelId);
 		const finalError = error === '' ? '' : ` However the following errors occurred:\n\n${error.trim()}`;
 		return interaction.editReply(`Successfully updated channel's raid webhook configuration.${finalError}`);
 	}
