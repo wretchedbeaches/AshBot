@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Collection, MessageEmbed, User } from 'discord.js';
+import { Client, ClientOptions, Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import CommandHandler from '../struct/commands/CommandHandler';
 import InhibitorHandler from '../struct/inhibitors/InhibitorHandler';
@@ -156,7 +156,7 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		await this.initServer();
 	}
 
-	public embed(guildId: string): MessageEmbed {
+	public embed(guildId?: string | null): MessageEmbed {
 		return new MessageEmbed()
 			.setFooter(this.settings.get(guildId, 'footer', ''), this.settings.get(guildId, 'footerImage', ''))
 			.setColor(this.settings.get(guildId, 'color', process.env.EMBED_COLOR));
@@ -220,6 +220,12 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		app.listen(PORT, () => {
 			this.logger.info(`[Bot] Listening for webhooks on: http://localhost:${PORT}.`);
 		});
+	}
+
+	public getEmoji(name: string): string | GuildEmoji {
+		const emoji = this.emojis.cache.find((emoji) => emoji.name === name);
+		if (emoji instanceof GuildEmoji) return emoji;
+		return name;
 	}
 
 	// public async handleWebhookSet(interaction: CommandInteraction, args: WebhookFilter) {
