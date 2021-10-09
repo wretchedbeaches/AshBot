@@ -73,6 +73,7 @@ export default class BaseWebhooksetCommand extends Command {
 			channel,
 			filterErrorSuffix,
 			channelId,
+			isUpdate,
 		});
 		if (extraError) error += extraError;
 
@@ -118,6 +119,7 @@ export default class BaseWebhooksetCommand extends Command {
 		channel?: GuildChannel | APIInteractionDataResolvedChannel;
 		channelId?: string;
 		filterErrorSuffix?: string;
+		isUpdate?: boolean;
 	}): Promise<string | void> | string | void {
 		for (const argument of interaction.options.data) {
 			if (this.argumentConfigBlacklist.has(argument.name)) continue;
