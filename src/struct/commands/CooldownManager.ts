@@ -51,7 +51,7 @@ export default class CooldownManager extends EventEmitter {
 					? this.handleGuildCooldown(interaction.guildId!, cooldownIdentifier, time, endTime)
 					: this.handleUserCooldown(interaction.user.id, cooldownIdentifier, time, endTime);
 
-			if (entry.uses >= command.ratelimit) {
+			if (entry.uses >= command.rateLimit) {
 				const diff = entry.end - interaction.createdTimestamp;
 
 				this.emit(CooldownManagerEvents.COOLDOWN, { interaction, command, remainingTime: diff });

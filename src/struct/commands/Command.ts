@@ -24,7 +24,7 @@ export interface CommandOptions extends BaseModuleOptions {
 	cooldown?: number;
 	cooldownScope?: CooldownScope;
 	ignoreCooldown?: CooldownIgnorer;
-	ratelimit?: number;
+	rateLimit?: number;
 	description: CommandHelpDescription;
 	clientPermissions?: bigint[];
 	userPermissions?: bigint[];
@@ -42,13 +42,13 @@ export type CommandChannelType = 'DM' | 'GUILD_TEXT' | 'GUILD_NEWS' | ThreadChan
 
 export type CooldownIgnorer = Array<string> | ((args: InteractionCommandArgs) => Promise<boolean>);
 
-export default class Command extends BaseModule implements CommandAttributes {
+export default abstract class Command extends BaseModule implements CommandAttributes {
 	public channels: Set<CommandChannelType>;
 	public ownerOnly: boolean;
 	public cooldown: number;
 	public cooldownScope: CooldownScope;
 	public ignoreCooldown: CooldownIgnorer;
-	public ratelimit: number;
+	public rateLimit: number;
 	public description: CommandHelpDescription;
 	public clientPermissions: bigint[];
 	public userPermissions: bigint[];
@@ -68,7 +68,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 			cooldown,
 			cooldownScope,
 			ignoreCooldown,
-			ratelimit,
+			rateLimit,
 			description,
 			defaultPermission,
 			clientPermissions,
@@ -86,7 +86,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 		this.cooldown = cooldown ?? 0;
 		this.cooldownScope = cooldownScope ?? CooldownScope.USER;
 		this.ignoreCooldown = ignoreCooldown ?? [];
-		this.ratelimit = ratelimit ?? 1;
+		this.rateLimit = rateLimit ?? 1;
 		this.description = description;
 		this.clientPermissions = clientPermissions ?? [];
 		this.userPermissions = userPermissions ?? [];
