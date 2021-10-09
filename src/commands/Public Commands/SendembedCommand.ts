@@ -11,6 +11,7 @@ export default class SendEmbedCommand extends Command {
 			},
 			category: 'Utilities',
 			rateLimit: 3,
+			isEphemeral: true,
 		});
 		this.data
 			.addChannelOption((channelOption) =>

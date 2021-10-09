@@ -12,7 +12,8 @@ export default class HelpCommand extends Command {
 				usage: 'help [command]',
 				examples: ['help', 'help ping'],
 			},
-			ratelimit: 3,
+			rateLimit: 3,
+			isEphemeral: true,
 		});
 		this.data.addStringOption((option) =>
 			option.setName('command').setDescription('The command to get help for.').setRequired(false),
