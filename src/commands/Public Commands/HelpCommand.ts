@@ -32,7 +32,7 @@ export default class HelpCommand extends Command {
 					Message | APIMessage
 				>;
 			}
-			const commandHelpEmbed = this.client.embed(interaction.guildId!).setAuthor(`Help | ${commandArgument}`, avatarUrl)
+			const commandHelpEmbed = this.client.embed(interaction.guildId).setAuthor(`Help | ${commandArgument}`, avatarUrl)
 				.setDescription(stripIndents`
           **Description:**
           ${command.description.content}
@@ -51,7 +51,7 @@ export default class HelpCommand extends Command {
 		}
 
 		const embed = this.client
-			.embed(interaction.guildId!)
+			.embed(interaction.guildId)
 			.setAuthor(`Help | ${this.client.user!.username}`, avatarUrl)
 			.setFooter(`/help [command] for more information on a command`);
 

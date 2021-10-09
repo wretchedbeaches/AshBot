@@ -27,7 +27,7 @@ export default class SendEmbedCommand extends Command {
 		const content = interaction.options.getString('content', true);
 		if (channel.type === 'GUILD_TEXT') {
 			await (channel as TextChannel).send({
-				embeds: [this.client.embed(interaction.guildId!).setDescription(content)],
+				embeds: [this.client.embed(interaction.guildId).setDescription(content)],
 			});
 			return interaction.editReply(
 				`${interaction.user.toString()}, sent embed message with content \`${content}\` to ${channel.name}`,
