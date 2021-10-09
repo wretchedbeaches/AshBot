@@ -42,7 +42,7 @@ export type CommandChannelType = 'DM' | 'GUILD_TEXT' | 'GUILD_NEWS' | ThreadChan
 
 export type CooldownIgnorer = Array<string> | ((args: InteractionCommandArgs) => Promise<boolean>);
 
-export default abstract class Command extends BaseModule implements CommandAttributes {
+export default class Command extends BaseModule implements CommandAttributes {
 	public channels: Set<CommandChannelType>;
 	public ownerOnly: boolean;
 	public cooldown: number;
