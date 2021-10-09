@@ -12,6 +12,7 @@ import { BaseHandlerEvents, ErrorMessages } from './Util';
 
 export interface BaseHandlerOptions {
 	automateCategories?: boolean;
+	filterPath?: (path: string) => boolean;
 	directory: string;
 }
 
@@ -22,6 +23,7 @@ export interface BaseHandlerAttributes {
 	client: BaseClient;
 	directory?: string;
 	modules: Collection<string, BaseModule>;
+	filterPath: null | ((path: string) => boolean);
 }
 
 export default class BaseHandler extends EventEmitter implements BaseHandlerAttributes {
@@ -31,13 +33,15 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	public client: BaseClient;
 	public directory: string;
 	public modules: Collection<string, BaseModule>;
+	public filterPath: null | ((path: string) => boolean);
 
 	// TODO: determine a default directory
-	public constructor(client: BaseClient, { directory, automateCategories = false }: BaseHandlerOptions) {
+	public constructor(client: BaseClient, { directory, automateCategories, filterPath }: BaseHandlerOptions) {
 		super();
 		this.client = client;
-		this.automateCategories = automateCategories;
+		this.automateCategories = automateCategories ?? false;
 		this.directory = directory;
+		this.filterPath = filterPath ?? null;
 		this.modules = new Collection<string, BaseModule>();
 		this.categories = new Collection();
 		this.classToHandle = BaseModule;
@@ -96,12 +100,11 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 		return module;
 	}
 
-	// TODO: Add a load filter?
 	public loadAll(directory = this.directory): BaseHandler | Promise<BaseHandler> {
 		const filepaths = BaseHandler.readdirRecursive(directory);
 		for (let filepath of filepaths) {
 			filepath = path.resolve(filepath);
-			this.load(filepath);
+			if (this.filterPath === null || this.filterPath(filepath)) this.load(filepath);
 		}
 		return this;
 	}
