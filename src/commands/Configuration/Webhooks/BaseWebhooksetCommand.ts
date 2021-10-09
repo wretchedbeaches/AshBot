@@ -30,7 +30,7 @@ export default class BaseWebhooksetCommand extends Command {
 
 	public constructor(id, options: WebhooksetCommandOptions) {
 		const { webhookType, ...rest } = options;
-		super(id, { ...rest, category: 'Webhooks', rateLimit: 3 });
+		super(id, { ...rest, scope: 'guild', category: 'Webhooks', rateLimit: 3 });
 		this.webhookType = webhookType;
 		this.argumentConfigBlacklist = new Set(['channel', 'update', 'radius', 'city', 'latitude', 'longitude', 'unit']);
 		this.data
