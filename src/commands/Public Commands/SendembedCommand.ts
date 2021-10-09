@@ -1,43 +1,39 @@
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { CommandInteraction, TextChannel } from 'discord.js';
+import Command from '../../struct/commands/Command';
 
-export default class SendembedCommand extends Command {
-  public constructor() {
-    super('sendembed', {
-      aliases: ['sendembed'],
-      category: 'Utilies',
-      description: {
-        content: 'Send an embed to a specific channel.',
-        usage: 'sendembed #`channel` `message content`',
-        examples: ['sendembed #general this text will go inside of an embed.'],
-      },
-      ratelimit: 3,
-      args: [
-        {
-          id: 'channel',
-          type: 'channelMention',
-          prompt: {
-            optional: false,
-            start: (msg: Message) =>
-              `${msg.author}, please provide a valid channel to send the embed to.`,
-            retry: (msg: Message) =>
-              `${msg.author}, please provide a valid channel to send the embed to.`,
-          },
-        },
-        {
-          id: 'content',
-          type: 'string',
-          match: 'rest',
-        },
-      ],
-    });
-  }
+export default class SendEmbedCommand extends Command {
+	public constructor() {
+		super('sendembed', {
+			description: {
+				content: 'Send an embed to a specific channel.',
+				usage: 'sendembed #`channel` `message content`',
+				examples: ['sendembed #general this text will go inside of an embed.'],
+			},
+			category: 'Utilities',
+			rateLimit: 3,
+		});
+		this.data
+			.addChannelOption((channelOption) =>
+				channelOption.setName('channel').setDescription('The channel to send the embed to.').setRequired(true),
+			)
+			.addStringOption((contentOption) =>
+				contentOption.setName('content').setDescription('The content to send in the embed.').setRequired(true),
+			);
+	}
 
-  public exec(message: Message, { channel, content }): Promise<Message> {
-    if (!this.client.handleModPermissions(message)) return;
-    channel.send(this.client.embed(message.guild.id).setDescription(content));
-    return message.channel.send(
-      `${message.author}, sent embed message with content \`${content}\` to ${channel}`
-    );
-  }
+	public async execute(interaction: CommandInteraction) {
+		const channel = interaction.options.getChannel('channel', true);
+		const content = interaction.options.getString('content', true);
+		if (channel.type === 'GUILD_TEXT') {
+			await (channel as TextChannel).send({
+				embeds: [this.client.embed(interaction.guildId!).setDescription(content)],
+			});
+			return interaction.editReply(
+				`${interaction.user.toString()}, sent embed message with content \`${content}\` to ${channel.name}`,
+			);
+		}
+		return interaction.editReply(
+			`Was unable to send the embed with content '${content} to the specified channel ${channel.name}.'`,
+		);
+	}
 }
