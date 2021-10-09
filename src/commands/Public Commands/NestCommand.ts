@@ -1,72 +1,96 @@
-import { Command } from 'discord-akairo';
-import { Message, TextChannel } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import cheerio from 'cheerio';
 import axios from 'axios';
-import { FieldsEmbed } from 'discord-paginationembed';
-import masterfile from '../../util/masterfile.json';
+import Command from '../../struct/commands/Command';
+import ntim from '../../util/name_to_id_map.json';
 
-export default class NestlistCommand extends Command {
-  public constructor() {
-    super('nest', {
-      aliases: ['nest'],
-      category: 'Utilies',
-      description: {
-        content: 'Retrieves a list of the current nesting pokemon.',
-        usage: 'nest',
-        examples: ['nest'],
-      },
-      args: [
-        {
-          id: 'type',
-          type: (_: Message, str: string): null | string => {
-            if (['list'].includes(str)) return str.toLowerCase();
-            return null;
-          },
-          prompt: {
-            optional: false,
-            start: (msg: Message) =>
-              `${msg.author}, please provide a valid utility type, currently only **list**.`,
-            retry: (msg: Message) =>
-              `${msg.author}, please provide a valid utility type, currently only **list**.`,
-          },
-        },
-      ],
-      ratelimit: 3,
-    });
-  }
+export default class NestListCommand extends Command {
+	public constructor() {
+		super('nest', {
+			category: 'Utilities',
+			description: {
+				content: 'Retrieves a list of the current nesting pokemon.',
+				usage: 'nest',
+				examples: ['nest'],
+			},
+			isEphemeral: true,
+		});
 
-  public async exec(message: Message) {
-    const data = (await axios.get('https://themasternest.net/')).data;
-    const $ = cheerio.load(data);
-    const nestingPokemon = $('#nesting-species')
-      .children()
-      .html()
-      .split('<br>')
-      .join(', ')
-      .split(', ')
-      .map((p) => p.trim())
-      .map((p) => ({
-        value: `${this.client.getEmoji(
-          'pokemon_' +
-            Object.entries(masterfile.pokemon).find(([k, v]) => v.name === p)[0]
-        )} ${p}`,
-      }));
-    let embed = new FieldsEmbed();
-    embed.embed = this.client
-      .embed(message.guild.id)
-      .setTitle(`Nesting Pokemon`);
-    embed
-      .setArray(
-        nestingPokemon.length > 0
-          ? nestingPokemon
-          : [{ value: 'No nesting pokemon found.' }]
-      )
-      .setAuthorizedUsers([message.author.id])
-      .setChannel(message.channel as TextChannel)
-      .setPageIndicator(true)
-      .setElementsPerPage(parseInt(process.env.NEST_LIST_FIELDS_LENGTH))
-      .formatField('Pokemon', (el) => (el as any).value)
-      .setTimeout(300000)
-      .build();
-  }
+		this.data.addStringOption((nestTypeOption) =>
+			nestTypeOption
+				.setName('type')
+				.setDescription(
+					'Whether to list by global (shows all), worldwide, northern hemisphere or southern hemisphere. Default global',
+				)
+				.addChoices([
+					['global', 'global'],
+					['worldwide', 'worldwide'],
+					['north', 'north'],
+					['south', 'south'],
+				])
+				.setRequired(false),
+		);
+	}
+
+	public async execute(interaction: CommandInteraction) {
+		const typeArgument = interaction.options.getString('type', false) ?? 'global';
+		const data = (await axios.get('https://themasternest.net/')).data;
+		const $ = cheerio.load(data);
+		const nestingPokemonHtml = $('#nesting-species').find('strong').html() ?? $('#nesting-species').html();
+		if (nestingPokemonHtml === null)
+			return interaction.editReply(`There was a problem fetching the current nesting pokemon.`);
+
+		const breaklineSplit = nestingPokemonHtml
+			.toLowerCase()
+			.split('<br>')
+			.filter((val) => val.replace('"', '').trim() !== '')
+			.map((val) => val.trim());
+
+		const nestPokemon = { world: [], north: [], south: [] };
+
+		let currentNestType = 'world';
+		for (const line of breaklineSplit) {
+			if (line.includes('world')) currentNestType = 'world';
+			else if (line.includes('north')) currentNestType = 'north';
+			else if (line.includes('south')) currentNestType = 'south';
+			else {
+				const splitLine = line.split(',');
+				for (const splitEntry of splitLine) {
+					const pokemonName = splitEntry.trim();
+					// Use logging just to get details on missing info to fix / add over time.
+					if (ntim[pokemonName] === undefined)
+						this.client.logger.warn(`Pokemon '${pokemonName}' is missing from name to id map.`, { command: this.id });
+					const emojiName = `pokemon_${pokemonName}`;
+					const pokemonEmoji = this.client.getEmoji(emojiName);
+					if (pokemonEmoji === emojiName) {
+						this.client.logger.warn(`Couldn't find '${emojiName}' emoji for ${pokemonName}.`, { command: this.id });
+						nestPokemon[currentNestType].push(pokemonName);
+					} else nestPokemon[currentNestType].push(`${pokemonEmoji.toString()} ${pokemonName}`);
+					nestPokemon[currentNestType].push(splitEntry.trim());
+				}
+			}
+		}
+		let nestContent = '';
+		// TODO: This content can probably be cached and periodically updated / swept.
+		const worldwideContent = `**❯ Worldwide**\n\n${nestPokemon.world.sort().join(', ')}`;
+		const northernContent = `**❯ Northern Hemisphere\n\n${nestPokemon.north.sort().join(', ')}`;
+		const southernContent = `**❯ Southern Hemisphere\n\n${nestPokemon.south.sort().join(', ')}`;
+		switch (typeArgument) {
+			case 'global':
+				nestContent = `${worldwideContent}\n\n${northernContent}\n\n${southernContent}`;
+				break;
+			case 'worldwide':
+				nestContent = worldwideContent;
+				break;
+			case 'north':
+				nestContent = northernContent;
+				break;
+			case 'south':
+				nestContent = southernContent;
+				break;
+		}
+
+		const embed = this.client.embed(interaction.guildId).setTitle('Nesting Pokemon').setDescription(nestContent);
+		return interaction.editReply({ embeds: [embed] });
+	}
 }
