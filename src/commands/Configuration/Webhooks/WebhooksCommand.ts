@@ -11,7 +11,7 @@ export default class WebhooksCommand extends Command {
 				examples: ['webhooks show', 'webhooks show #webhook-channel', 'webhooks remove #webhook-channel'],
 			},
 			category: 'Webhooks',
-			ratelimit: 3,
+			rateLimit: 3,
 		});
 		this.data
 			.addSubcommand((subcommand) =>
