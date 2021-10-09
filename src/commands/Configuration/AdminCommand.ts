@@ -12,7 +12,7 @@ export default class AdminCommand extends Command {
 				usage: 'admin <command> [options]',
 				examples: ['admin roles admin <role>', 'admin roles mod <role>'],
 			},
-			ratelimit: 3,
+			rateLimit: 3,
 		});
 		this.data.addSubcommand((subcommand) =>
 			subcommand

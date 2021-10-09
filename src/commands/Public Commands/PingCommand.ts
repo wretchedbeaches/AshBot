@@ -10,7 +10,7 @@ export default class PingCommand extends Command {
 				usage: 'ping',
 				examples: ['ping'],
 			},
-			ratelimit: 3,
+			rateLimit: 3,
 		});
 	}
 
