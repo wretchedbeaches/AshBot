@@ -73,6 +73,7 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		this.commandHandler = new CommandHandler(this, {
 			directory: join(__dirname, '..', 'commands/Public Commands'),
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
+			filterPath: (path) => !path.toLowerCase().includes('base'),
 		});
 		this.inhibitorHandler = new InhibitorHandler(this, {
 			directory: join(__dirname, '..', 'inhibitors'),
