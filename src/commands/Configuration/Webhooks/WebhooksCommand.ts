@@ -164,7 +164,7 @@ export default class WebhooksCommand extends Command {
 		}
 		const embed = this.client
 			.embed(interaction.guildId)
-			.setTitle(`Webhook Configuration For Channel ${(channelArgument as TextChannel).name}`);
+			.setTitle(`Webhook Configuration For Channel ${channelArgument?.toString() ?? 'Unknown'}`);
 
 		const channelConfiguration =
 			channelArgument === null ? channelConfigurations[0] : channels[channelArgument.id] ?? {};
