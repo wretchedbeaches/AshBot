@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed, Permissions } from 'discord.js';
+import { CommandInteraction, MessageEmbed, Permissions } from 'discord.js';
 import Command from '../../struct/commands/Command';
 
 export default class ClearCommand extends Command {
@@ -36,18 +36,7 @@ export default class ClearCommand extends Command {
 					.setDescription(
 						`${deletedMessages.size} ${deletedMessages.size > 1 ? 'messages were' : 'message was'} deleted`,
 					);
-				const responseMessage = await interaction.editReply({ embeds: [embed] });
-				let message: Message;
-				if (responseMessage instanceof Message) message = responseMessage;
-				else message = new Message(this.client, responseMessage);
-
-				setTimeout(() => {
-					try {
-						void message.delete();
-					} catch (error) {
-						this.client.logger.error(`Failed to delete a message during a timeout for the ClearCommand.`, { error });
-					}
-				}, 3000);
+				return await interaction.editReply({ embeds: [embed] });
 			}
 		} catch (error) {
 			this.client.logger.error('Something went wrong with the clear command.', {
