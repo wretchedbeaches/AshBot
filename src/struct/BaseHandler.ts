@@ -13,7 +13,7 @@ import { BaseHandlerEvents, ErrorMessages } from './Util';
 export interface BaseHandlerOptions {
 	automateCategories?: boolean;
 	filterPath?: (path: string) => boolean;
-	directory: string;
+	directories: string[];
 }
 
 export interface BaseHandlerAttributes {
@@ -21,7 +21,7 @@ export interface BaseHandlerAttributes {
 	categories: Collection<string, Category>;
 	classToHandle: new (...args: any[]) => BaseModule;
 	client: BaseClient;
-	directory?: string;
+	directories?: string[];
 	modules: Collection<string, BaseModule>;
 	filterPath: null | ((path: string) => boolean);
 }
@@ -31,16 +31,16 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	public categories: Collection<string, Category>;
 	public classToHandle: new (...args: any[]) => BaseModule;
 	public client: BaseClient;
-	public directory: string;
+	public directories: string[];
 	public modules: Collection<string, BaseModule>;
 	public filterPath: null | ((path: string) => boolean);
 
 	// TODO: determine a default directory
-	public constructor(client: BaseClient, { directory, automateCategories, filterPath }: BaseHandlerOptions) {
+	public constructor(client: BaseClient, { directories, automateCategories, filterPath }: BaseHandlerOptions) {
 		super();
 		this.client = client;
 		this.automateCategories = automateCategories ?? false;
-		this.directory = directory;
+		this.directories = directories;
 		this.filterPath = filterPath ?? null;
 		this.modules = new Collection<string, BaseModule>();
 		this.categories = new Collection();
@@ -100,8 +100,11 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 		return module;
 	}
 
-	public loadAll(directory = this.directory): BaseHandler | Promise<BaseHandler> {
-		const filepaths = BaseHandler.readdirRecursive(directory);
+	public loadAll(directories = this.directories): BaseHandler | Promise<BaseHandler> {
+		const filepaths: string[] = [];
+		for (const directory of directories) {
+			filepaths.concat(BaseHandler.readdirRecursive(directory));
+		}
 		for (let filepath of filepaths) {
 			filepath = path.resolve(filepath);
 			if (this.filterPath === null || this.filterPath(filepath)) this.load(filepath);

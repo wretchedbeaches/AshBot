@@ -38,10 +38,10 @@ export default class CommandHandler extends BaseHandler {
 
 	public constructor(
 		client: BaseClient,
-		{ directory, automateCategories, blockClient = true, blockBots = true, cooldownManager }: CommandHandlerOptions,
+		{ directories, automateCategories, blockClient = true, blockBots = true, cooldownManager }: CommandHandlerOptions,
 	) {
 		super(client, {
-			directory,
+			directories,
 			automateCategories,
 		});
 		this.classToHandle = Command;
@@ -203,8 +203,8 @@ export default class CommandHandler extends BaseHandler {
 		);
 	}
 
-	public async loadAll(directory: string = this.directory): Promise<CommandHandler> {
-		await super.loadAll(directory);
+	public async loadAll(directories = this.directories): Promise<CommandHandler> {
+		await super.loadAll(directories);
 		// TODO: WIll need to update the global registration logic
 		// Filter all global commands with the names of the registered commands.
 		// For any that aren't registered, register them each individually instead

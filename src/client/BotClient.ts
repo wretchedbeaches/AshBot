@@ -67,16 +67,16 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		this.trains = new Collection();
 
 		this.listenerHandler = new ListenerHandler(this, {
-			directory: join(__dirname, '..', 'listeners'),
+			directories: [join(__dirname, '..', 'listeners')],
 		});
 
 		this.commandHandler = new CommandHandler(this, {
-			directory: join(__dirname, '..', 'commands/Public Commands'),
+			directories: [join(__dirname, '..', 'commands/Public Commands')],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
 		});
 		this.inhibitorHandler = new InhibitorHandler(this, {
-			directory: join(__dirname, '..', 'inhibitors'),
+			directories: [join(__dirname, '..', 'inhibitors')],
 		});
 
 		this.settings = new SequelizeProvider(guild, {
