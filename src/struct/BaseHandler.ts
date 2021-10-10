@@ -21,7 +21,7 @@ export interface BaseHandlerAttributes {
 	categories: Collection<string, Category>;
 	classToHandle: new (...args: any[]) => BaseModule;
 	client: BaseClient;
-	directories?: string[];
+	directories: string[];
 	modules: Collection<string, BaseModule>;
 	filterPath: null | ((path: string) => boolean);
 }
@@ -33,7 +33,7 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	public client: BaseClient;
 	public directories: string[];
 	public modules: Collection<string, BaseModule>;
-	public filterPath: null | ((path: string) => boolean);
+	public filterPath: ((path: string) => boolean) | null;
 
 	// TODO: determine a default directory
 	public constructor(client: BaseClient, { directories, automateCategories, filterPath }: BaseHandlerOptions) {
@@ -101,13 +101,15 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 	}
 
 	public loadAll(directories = this.directories): BaseHandler | Promise<BaseHandler> {
-		const filepaths: string[] = [];
+		let filepaths: string[] = [];
 		for (const directory of directories) {
-			filepaths.concat(BaseHandler.readdirRecursive(directory));
+			filepaths = filepaths.concat(...BaseHandler.readdirRecursive(directory));
 		}
 		for (let filepath of filepaths) {
-			filepath = path.resolve(filepath);
-			if (this.filterPath === null || this.filterPath(filepath)) this.load(filepath);
+			if (this.filterPath === null || this.filterPath(filepath)) {
+				filepath = path.resolve(filepath);
+				this.load(filepath);
+			}
 		}
 		return this;
 	}
@@ -169,7 +171,6 @@ export default class BaseHandler extends EventEmitter implements BaseHandlerAttr
 				}
 			}
 		})(directory);
-
 		return result;
 	}
 }

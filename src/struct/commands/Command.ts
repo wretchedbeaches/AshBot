@@ -63,7 +63,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public constructor(
 		id: string,
 		{
-			channels = [],
+			channels,
 			ownerOnly,
 			cooldown,
 			cooldownScope,
@@ -75,7 +75,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 			userPermissions,
 			shouldDefer,
 			isEphemeral,
-			scope = 'global',
+			scope,
 			...rest
 		}: CommandOptions,
 	) {
@@ -92,7 +92,7 @@ export default class Command extends BaseModule implements CommandAttributes {
 		this.userPermissions = userPermissions ?? [];
 		this.shouldDefer = shouldDefer ?? true;
 		this.isEphemeral = isEphemeral ?? false;
-		this.scope = scope;
+		this.scope = scope ?? 'guild';
 		this.data = new SlashCommandBuilder()
 			.setName(id)
 			.setDescription(this.description.content)

@@ -1,5 +1,5 @@
 import { APIApplicationCommand, Routes } from 'discord-api-types/v9';
-import { ApplicationCommandPermissions, Collection, CommandInteraction, Interaction } from 'discord.js';
+import { Collection, CommandInteraction, Interaction } from 'discord.js';
 import BaseClient from '../../client/BotClient';
 import BaseHandler, { BaseHandlerOptions } from '../BaseHandler';
 import InhibitorHandler from '../inhibitors/InhibitorHandler';
@@ -7,6 +7,7 @@ import ListenerHandler from '../listeners/ListenerHandler';
 import { CommandHandlerEvents } from '../Util';
 import Command from './Command';
 import CooldownManager from './CooldownManager';
+import GuildCommandManager from './GuildCommandManager';
 
 export interface CommandHandlerOptions extends BaseHandlerOptions {
 	blockClient?: boolean;
@@ -29,48 +30,47 @@ export interface CommandBlockedData {
 export default class CommandHandler extends BaseHandler {
 	public blockClient: boolean;
 	public blockBots: boolean;
-	public cooldownManager?: CooldownManager;
+	public cooldownManager: CooldownManager | null;
 	public cooldowns: Collection<string, Collection<string, CooldownData>>;
 	public inhibitorHandler?: InhibitorHandler;
 	public listenerHandler: ListenerHandler;
 	public modules: Collection<string, Command>;
+	public guildCommandManagers: Collection<string, GuildCommandManager>;
 	public classToHandle: new (...args: any[]) => Command;
 
-	public constructor(
-		client: BaseClient,
-		{ directories, automateCategories, blockClient = true, blockBots = true, cooldownManager }: CommandHandlerOptions,
-	) {
-		super(client, {
-			directories,
-			automateCategories,
-		});
+	public constructor(client: BaseClient, { blockClient, blockBots, cooldownManager, ...rest }: CommandHandlerOptions) {
+		super(client, rest);
 		this.classToHandle = Command;
-		this.blockClient = blockClient;
-		this.blockBots = blockBots;
+		this.blockClient = blockClient ?? true;
+		this.blockBots = blockBots ?? true;
 		this.cooldowns = new Collection();
-		this.cooldownManager = cooldownManager;
+		this.cooldownManager = cooldownManager ?? null;
 		this.inhibitorHandler = undefined;
+		this.guildCommandManagers = new Collection();
 		this.setup();
 	}
 
 	public setup(): void {
-		this.client.once('ready', () => {
+		this.client.once('ready', async () => {
 			this.client.on('interactionCreate', async (interaction: Interaction) => {
 				if (interaction.isCommand()) await this.handle(interaction);
 			});
+			for (const guild of this.client.guilds.cache.values()) await this.initGuild(guild.id);
 		});
 	}
 
-	public getGlobalCommands(): Promise<APIApplicationCommand[]> {
-		return this.client.restApi.get(
-			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
-		) as Promise<APIApplicationCommand[]>;
+	public async initGuild(guildId: string) {
+		const guildHandler = new GuildCommandManager(this.client, guildId);
+		await guildHandler.init(this.modules.filter((val) => val.scope === 'guild'));
+		this.guildCommandManagers.set(guildId, guildHandler);
 	}
 
-	public getGuildCommands(guildId: string): Promise<APIApplicationCommand[]> {
-		return this.client.restApi.get(
-			Routes.applicationGuildCommands(this.client.config.clientId, guildId) as unknown as `/${string}`,
-		) as Promise<APIApplicationCommand[]>;
+	public removeGuild(guildId: string) {
+		const guildManager = this.guildCommandManagers.get(guildId);
+		if (guildManager) {
+			guildManager.commands.clear();
+			this.guildCommandManagers.delete(guildId);
+		}
 	}
 
 	public getGlobalCommand(command: Command) {
@@ -80,43 +80,11 @@ export default class CommandHandler extends BaseHandler {
 			);
 	}
 
-	public getGuildCommand(command: Command, guildId: string) {
-		if (command.registeredId)
-			return this.client.restApi.get(
-				Routes.applicationGuildCommand(
-					this.client.config.clientId,
-					guildId,
-					command.registeredId,
-				) as unknown as `/${string}`,
-			);
-	}
-
-	public registerCommandGlobally(command: Command): Promise<APIApplicationCommand> {
+	public createGlobalCommand(command: Command): Promise<APIApplicationCommand> {
 		return this.client.restApi.post(
 			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
 			{ body: command.data.toJSON() },
 		) as Promise<APIApplicationCommand>;
-	}
-
-	public async registerGlobalCommands(commands: Command[]) {
-		return this._registerGlobalCommands(this.commandsToData(commands));
-	}
-
-	public _registerGlobalCommands(commands: any[]) {
-		return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
-			body: commands,
-		});
-	}
-
-	public registerGuildCommands(commands: Command[], guildId: string) {
-		return this._registerGuildCommands(this.commandsToData(commands), guildId);
-	}
-
-	public _registerGuildCommands(commands: any[], guildId: string) {
-		return this.client.restApi.put(
-			Routes.applicationGuildCommands(this.client.config.clientId, guildId) as unknown as `/${string}`,
-			{ body: commands },
-		);
 	}
 
 	public updateGlobalCommand(command: Command) {
@@ -127,103 +95,43 @@ export default class CommandHandler extends BaseHandler {
 			);
 	}
 
-	public updateGuildCommand(command: Command, guildId: string) {
-		if (command.registeredId)
-			return this.client.restApi.patch(
-				Routes.applicationGuildCommand(
-					this.client.config.clientId,
-					guildId,
-					command.registeredId,
-				) as unknown as `/${string}`,
-				{ body: command.data.toJSON() },
-			);
-	}
-
-	public unregisterGlobalCommand(command: Command) {
-		if (command.registeredId)
-			return this.client.restApi
-				.delete(Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`)
-				.then((result) => {
-					this.deregister(command);
-					return result;
-				});
-	}
-
-	public unregisterGuildCommand(command: Command, guildId: string) {
-		if (command.registeredId)
-			return this.client.restApi.delete(
-				Routes.applicationGuildCommand(
-					this.client.config.clientId,
-					guildId,
-					command.registeredId,
-				) as unknown as `/${string}`,
-			);
-	}
-
-	// TODO: Permission based calls - may need to update Command class types.
-	public getAllGuildCommandPermissions(guildId: string) {
+	public getGlobalCommands(): Promise<APIApplicationCommand[]> {
 		return this.client.restApi.get(
-			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId) as unknown as `/${string}`,
-		);
+			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
+		) as Promise<APIApplicationCommand[]>;
 	}
 
-	public getGuildCommandPermissions(command: Command, guildId: string) {
-		if (!command.registeredId) return;
-		return this.client.restApi.get(
-			Routes.applicationCommandPermissions(
-				this.client.config.clientId,
-				guildId,
-				command.registeredId,
-			) as unknown as `/${string}`,
-		);
+	public async setGlobalCommands(commands: Command[]) {
+		return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
+			body: this.commandsToData(commands),
+		});
 	}
 
-	public setGuildCommandPermissions(guildId: string, permissions: ApplicationCommandPermissions[]) {
-		return this.client.restApi.put(
-			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId) as unknown as `/${string}`,
-			{
-				body: { permissions },
-			},
-		);
-	}
-
-	public updateGuildCommandPermissions(
-		command: Command,
-		guildId: string,
-		permissions: ApplicationCommandPermissions[],
-	) {
-		if (!command.registeredId) return;
-		return this.client.restApi.put(
-			Routes.applicationCommandPermissions(
-				this.client.config.clientId,
-				guildId,
-				command.registeredId,
-			) as unknown as `/${string}`,
-			{ body: { permissions } },
-		);
+	public deleteGlobalCommand(registeredId: string, command?: Command) {
+		return this.client.restApi
+			.delete(Routes.applicationCommand(this.client.config.clientId, registeredId) as unknown as `/${string}`)
+			.then((result) => {
+				if (command) this.deregister(command);
+				return result;
+			});
 	}
 
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {
 		await super.loadAll(directories);
+		const globalCommands = this.modules.filter((val) => val.scope === 'global');
+
 		// TODO: WIll need to update the global registration logic
 		// Filter all global commands with the names of the registered commands.
 		// For any that aren't registered, register them each individually instead
 		const registeredGlobalCommands = await this.getGlobalCommands();
 
 		for (const registeredGlobalCommand of registeredGlobalCommands) {
-			if (this.modules.has(registeredGlobalCommand.name)) {
+			if (globalCommands.has(registeredGlobalCommand.name)) {
 				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
+			} else {
+				await this.deleteGlobalCommand(registeredGlobalCommand.id, globalCommands.get(registeredGlobalCommand.name));
 			}
 		}
-		const globalCommands = this.modules.filter((command) => command.scope === 'global');
-		if (registeredGlobalCommands.length === globalCommands.size) return this;
-
-		// TODO: guild restricted logic
-		// Guild restricted commands should be registered against a list of guilds in the DB to load them for.
-		// const guildCommands = this.modules.filter(command => command.scope !== 'global');
-		const promises: Promise<unknown>[] = [];
-		promises.push(this.registerGlobalCommands(Array.from(globalCommands.values())));
-		await Promise.all(promises);
 		return this;
 	}
 
@@ -292,7 +200,7 @@ export default class CommandHandler extends BaseHandler {
 			return true;
 		}
 
-		if (this.cooldownManager !== undefined && (await this.cooldownManager.runCooldowns(interaction, command))) {
+		if (this.cooldownManager !== null && (await this.cooldownManager.runCooldowns(interaction, command))) {
 			return true;
 		}
 

@@ -18,24 +18,24 @@ export default class DistanceCommand extends Command {
 
 		this.data
 			.addNumberOption((fromLatOption) =>
-				fromLatOption.setName('fromLatitude').setDescription('The from latitude.').setRequired(true),
+				fromLatOption.setName('from_latitude').setDescription('The from latitude.').setRequired(true),
 			)
 			.addNumberOption((fromLongOption) =>
-				fromLongOption.setName('fromLongiutde').setDescription('The from longitude.').setRequired(true),
+				fromLongOption.setName('from_longiutde').setDescription('The from longitude.').setRequired(true),
 			)
 			.addNumberOption((toLatOption) =>
-				toLatOption.setName('toLatitude').setDescription('The to latitude.').setRequired(true),
+				toLatOption.setName('to_latitude').setDescription('The to latitude.').setRequired(true),
 			)
 			.addNumberOption((fromLongOption) =>
-				fromLongOption.setName('toLongiutde').setDescription('The to longitude.').setRequired(true),
+				fromLongOption.setName('to_longitude').setDescription('The to longitude.').setRequired(true),
 			);
 	}
 
 	public async execute(interaction: CommandInteraction) {
-		const fromLatitude = interaction.options.getNumber('fromLatitude', true);
+		const fromLatitude = interaction.options.getNumber('from_latitude', true);
 		const fromLongitude = interaction.options.getNumber('fromLongitude', true);
-		const toLatitude = interaction.options.getNumber('toLatitude', true);
-		const toLongitude = interaction.options.getNumber('toLongitude', true);
+		const toLatitude = interaction.options.getNumber('to_latitude', true);
+		const toLongitude = interaction.options.getNumber('to_longitude', true);
 
 		if (
 			this.isInvalid(fromLatitude, 90) ||

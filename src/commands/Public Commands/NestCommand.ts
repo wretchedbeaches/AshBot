@@ -19,9 +19,7 @@ export default class NestListCommand extends Command {
 		this.data.addStringOption((nestTypeOption) =>
 			nestTypeOption
 				.setName('type')
-				.setDescription(
-					'Whether to list by global (shows all), worldwide, northern hemisphere or southern hemisphere. Default global',
-				)
+				.setDescription('Whether to list by global (default, shows all), worldwide, northern or southern.')
 				.addChoices([
 					['global', 'global'],
 					['worldwide', 'worldwide'],
@@ -66,15 +64,14 @@ export default class NestListCommand extends Command {
 						this.client.logger.warn(`Couldn't find '${emojiName}' emoji for ${pokemonName}.`, { command: this.id });
 						nestPokemon[currentNestType].push(pokemonName);
 					} else nestPokemon[currentNestType].push(`${pokemonEmoji.toString()} ${pokemonName}`);
-					nestPokemon[currentNestType].push(splitEntry.trim());
 				}
 			}
 		}
 		let nestContent = '';
 		// TODO: This content can probably be cached and periodically updated / swept.
 		const worldwideContent = `**❯ Worldwide**\n\n${nestPokemon.world.sort().join(', ')}`;
-		const northernContent = `**❯ Northern Hemisphere\n\n${nestPokemon.north.sort().join(', ')}`;
-		const southernContent = `**❯ Southern Hemisphere\n\n${nestPokemon.south.sort().join(', ')}`;
+		const northernContent = `**❯ Northern Hemisphere**\n\n${nestPokemon.north.sort().join(', ')}`;
+		const southernContent = `**❯ Southern Hemisphere**\n\n${nestPokemon.south.sort().join(', ')}`;
 		switch (typeArgument) {
 			case 'global':
 				nestContent = `${worldwideContent}\n\n${northernContent}\n\n${southernContent}`;

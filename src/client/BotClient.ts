@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
+import { Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import CommandHandler from '../struct/commands/CommandHandler';
 import InhibitorHandler from '../struct/inhibitors/InhibitorHandler';
@@ -17,6 +17,7 @@ import hookRouter from '../routes/hook';
 import cors from 'cors';
 import CooldownManager from '../struct/commands/CooldownManager';
 import LogManager from '../util/LogManager';
+import BaseClient, { BaseClientAttributes, BaseClientOptions } from '../struct/BaseClient';
 
 interface BotConfig {
 	token: string;
@@ -24,14 +25,8 @@ interface BotConfig {
 	owners: string[];
 }
 
-export interface BaseClientAttributes extends Client {
+export interface AshBotClientAttributes extends BaseClientAttributes {
 	config: BotConfig;
-	owners: string[];
-	restApi: REST;
-	commandHandler: CommandHandler;
-	listenerHandler: ListenerHandler;
-	inhibitorHandler: InhibitorHandler;
-	isOwner(user: User): boolean;
 }
 
 export interface ChannelEmbed {
@@ -42,7 +37,7 @@ export interface ChannelEmbed {
 	user?: User;
 }
 
-export default class BaseClient extends Client implements BaseClientAttributes {
+export default class AshBot extends BaseClient implements BaseClientAttributes {
 	public owners: string[];
 	public config: BotConfig;
 	public restApi: REST;
@@ -56,8 +51,8 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	public trains: Collection<string, { longitude: number; latitude: number }>;
 	public logger: LogManager;
 
-	public constructor(config: BotConfig, options: ClientOptions) {
-		super(options);
+	public constructor(config: BotConfig, options: BaseClientOptions) {
+		super({ ...options });
 		this.logger = new LogManager(this);
 		this.config = config;
 		this.owners = config.owners;
@@ -71,7 +66,10 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		});
 
 		this.commandHandler = new CommandHandler(this, {
-			directories: [join(__dirname, '..', 'commands/Public Commands')],
+			directories: [
+				join(__dirname, '..', 'commands/Public Commands'),
+				join(__dirname, '..', 'commands/Configuration/Webhooks'),
+			],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
 		});
@@ -86,23 +84,12 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	}
 
 	private async _init(): Promise<void> {
-		this.listenerHandler.setEmitters({
-			commandHandler: this.commandHandler,
-			listenerHandler: this.listenerHandler,
-			process,
-		});
-		if (this.commandHandler.cooldownManager !== undefined)
-			this.listenerHandler.emitters.set('cooldownManager', this.commandHandler.cooldownManager);
-		await this.listenerHandler.loadAll();
-		this.commandHandler.useListenerHandler(this.listenerHandler);
-		this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
+		await super.init();
 
 		await this.updateNestMigrationDate();
 		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		setInterval(this.updateNestMigrationDate, parseInt(process.env.NEST_MIGRATION_UPDATE_TIME!, 10));
 
-		await this.commandHandler.loadAll();
-		await this.inhibitorHandler.loadAll();
 		const dbDialect: Dialect = (process.env.DATABASE_DIALECT ?? 'mysql') as Dialect;
 		const rdmdb = new Sequelize(
 			process.env.DATABASE as string,
@@ -165,7 +152,7 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	private initGuilds(): void {
 		for (const [_, { channels }] of this.settings.items) {
 			for (const channelId in channels) {
-				if (!channels.prototype.hasOwnProperty(channelId)) continue;
+				if (!channels.hasOwnProperty(channelId)) continue;
 				if (!this.embedQueue.has(channelId)) this.embedQueue.set(channelId, []);
 				try {
 					this.setInterval(channelId);
@@ -279,8 +266,4 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 	//     );
 	//   }
 	// }
-
-	public isOwner(user) {
-		return this.owners.includes(user.id);
-	}
 }

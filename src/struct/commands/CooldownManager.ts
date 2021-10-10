@@ -121,7 +121,7 @@ export default class CooldownManager extends EventEmitter {
 				return cooldownPrefix;
 			case CooldownScope.MEMBER:
 				// TODO: Emit an error here?
-				if (interaction.guildId) return `${cooldownPrefix}-${interaction.guildId}`;
+				if (interaction.guildId) return `${cooldownPrefix}-${interaction.user.id}-${interaction.guildId}`;
 				return null;
 			case CooldownScope.GUILD:
 				if (interaction.guildId) return `${cooldownPrefix}-${interaction.guildId}`;

@@ -12,6 +12,7 @@ export default class WebhooksCommand extends Command {
 			},
 			category: 'Webhooks',
 			rateLimit: 3,
+			isEphemeral: true,
 		});
 		this.data
 			.addSubcommand((subcommand) =>
@@ -37,6 +38,7 @@ export default class WebhooksCommand extends Command {
 
 	public async execute(interaction: CommandInteraction) {
 		const subcommand = interaction.options.getSubcommand();
+		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
 		switch (subcommand) {
 			case 'show':
 				return this.handleShow(interaction);
@@ -52,29 +54,24 @@ export default class WebhooksCommand extends Command {
 			{
 				components: [
 					{
+						type: 'BUTTON',
 						label: 'First',
 						emoji: '⏪',
 						style: 'SECONDARY',
-						disabled: true,
 					},
 					{
+						type: 'BUTTON',
 						label: 'Previous',
-						disabled: true,
 					},
 					{
-						label: 'Delete',
-						style: 'DANGER',
-						disabled: true,
-					},
-					{
+						type: 'BUTTON',
 						label: 'Next',
-						disabled: true,
 					},
 					{
+						type: 'BUTTON',
 						label: 'Last',
 						emoji: '⏩',
 						style: 'SECONDARY',
-						disabled: true,
 					},
 				],
 			},
@@ -84,8 +81,7 @@ export default class WebhooksCommand extends Command {
 			const channelId = channelIds[newIdentifiers.pageIdentifier];
 			const newEmbed = this.client.embed(paginator.interaction.guildId);
 			const channel = await this.client.channels.fetch(channelId);
-			// TODO: Provide an option to either delete the configuration for the unknown channel
-			// Or to update the configuration to a new channel.
+
 			if (channel === null) {
 				newEmbed.setTitle(`Webhook Configuration: Unknown Channel '${channelId}'`);
 				newEmbed.setDescription(`This configuration is for an unknown channel id '${channelId}'.`);
@@ -98,7 +94,7 @@ export default class WebhooksCommand extends Command {
 			);
 
 			newEmbed.addFields(
-				Object.entries(channel).map((entry) => {
+				Object.entries(channels[channelId]).map((entry) => {
 					return {
 						name: entry[0],
 						value: JSON.stringify(entry[1]),
@@ -109,7 +105,7 @@ export default class WebhooksCommand extends Command {
 			return newEmbed;
 		};
 
-		const identifiersResolver = async ({
+		const identifiersResolver = ({
 			interaction,
 			paginator,
 		}: {
@@ -123,9 +119,6 @@ export default class WebhooksCommand extends Command {
 					return paginator.initialIdentifiers;
 				case 'next':
 					pageIdentifier += 1;
-					break;
-				case 'delete':
-					await paginator.message.delete();
 					break;
 				case 'previous':
 					pageIdentifier -= 1;
@@ -146,6 +139,7 @@ export default class WebhooksCommand extends Command {
 			identifiersResolver,
 			pageEmbedResolver,
 			maxNumberOfPages: channels.length,
+			messageSender: ({ interaction, messageOptions }) => interaction.editReply(messageOptions),
 		});
 		await paginator.send();
 		return paginator.message;
@@ -153,27 +147,27 @@ export default class WebhooksCommand extends Command {
 
 	public async handleShow(interaction: CommandInteraction) {
 		const channelArgument = interaction.options.getChannel('channel', false);
-		// TODO: Can't 100% guarantee guildId here until figuring out guild only API logic.
-		// Otherwise local guild only inhibitor logic.
-		let channels = this.client.settings.get(interaction.guildId, 'channels', {});
-		if (channelArgument) channels = channels[channelArgument.id];
-
-		if (!channels) {
+		const channels = this.client.settings.get(interaction.guildId, 'channels', null);
+		const channelConfigurations = Object.values(channels);
+		console.log('FOUND CHANNELS:');
+		console.log(channels);
+		console.log(channelConfigurations);
+		if (channels === null || channelConfigurations.length === 0) {
 			const errorMessage = channelArgument
 				? `There is no webhook configuration for '${channelArgument.name}'`
 				: `There are no webhook configurations.`;
 			return interaction.editReply(errorMessage);
 		}
 
-		if (channelArgument === null) {
+		if (channelArgument === null && Object.keys(channels).length > 1) {
 			return this.handleAllConfigurations(interaction, channels);
 		}
-
 		const embed = this.client
 			.embed(interaction.guildId)
 			.setTitle(`Webhook Configuration For Channel ${(channelArgument as TextChannel).name}`);
 
-		const channelConfiguration = channels[channelArgument.id] ?? {};
+		const channelConfiguration =
+			channelArgument === null ? channelConfigurations[0] : channels[channelArgument.id] ?? {};
 		const configEntries = Object.entries(channelConfiguration);
 		if (configEntries.length > 0) {
 			embed.addFields(
@@ -186,37 +180,28 @@ export default class WebhooksCommand extends Command {
 		} else {
 			embed.setDescription(`No Webhook Configuration found for this channel.`);
 		}
-		const pages = [embed];
-		const identifiersResolver = ({
-			interaction,
-			paginator,
-		}: {
-			interaction: ButtonInteraction;
-			paginator: ActionRowPaginator;
-		}) => {
-			if ((interaction.component as MessageButton).label === 'delete') {
-				return paginator.message.delete();
-			}
-		};
-		const paginator = new ActionRowPaginator(interaction, { identifiersResolver, pages });
-		await paginator.send();
-		return paginator.message;
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	public async handleRemove(interaction: CommandInteraction) {
-		// TODO: Add logic to ensure guild and channel in execute
-		const guildId = interaction.guildId!;
-		const settings = this.client.settings.get(guildId, 'channels', {});
-		const channelId = interaction.channel!.id;
-		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-		delete settings[channelId];
-		await this.client.settings.set(guildId, 'channels', settings);
-		if (this.client.intervals.has(channelId)) {
-			clearInterval(this.client.intervals.get(channelId)!);
-			this.client.intervals.delete(channelId);
-			this.client.embedQueue.delete(channelId);
-			this.client.trains.delete(channelId);
+		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
+		if (channelArgument) {
+			const guildId = interaction.guildId!;
+			const channels = this.client.settings.get(guildId, 'channels', {});
+			const channelId = interaction.channel!.id;
+			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+			delete channels[channelId];
+			await this.client.settings.set(guildId, 'channels', channels);
+			if (this.client.intervals.has(channelId)) {
+				clearInterval(this.client.intervals.get(channelId)!);
+				this.client.intervals.delete(channelId);
+				this.client.embedQueue.delete(channelId);
+				this.client.trains.delete(channelId);
+			}
+			return interaction.editReply("Successfully removed channel's raid webhook configuration.");
 		}
-		return interaction.editReply("Successfully removed channel's raid webhook configuration.");
+		return interaction.editReply(
+			`No channel was provided for the Webhook Configuration and the command was not used in a channel.`,
+		);
 	}
 }
