@@ -25,6 +25,7 @@ class SequelizeProvider implements SequelizeProviderAttributes {
 		this.table = table;
 		this.idColumn = idColumn;
 		this.dataColumn = dataColumn;
+		this.items = new Collection();
 	}
 
 	public async init(): Promise<void> {
