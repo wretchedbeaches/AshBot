@@ -4,8 +4,8 @@
   "description": "",
   "main": "src/Bot.ts",
   "engines": {
-    "node": "16.6.0",
-    "npm": "7.0.2"
+    "node": "16.11.0",
+    "npm": "8.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
