@@ -1,5 +1,5 @@
 /* eslint-disable no-duplicate-imports */
-import type { Sequelize, Model } from 'sequelize';
+import type { Sequelize } from 'sequelize';
 import { account } from './account';
 import type { accountAttributes, accountCreationAttributes } from './account';
 import { assignment } from './assignment';
