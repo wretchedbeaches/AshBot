@@ -201,7 +201,7 @@ router.post('', async (req, res) => {
 							// TO DO: THis may not be great and may be fine to handle async
 							await handleQuest(client, event.message as QuestEventData, { channelConfig, channelId, guildId });
 							break;
-						case 'invasions':
+						case 'invasion':
 							handleInvasion(client, event.message as InvasionEventData, { channelConfig, channelId, guildId });
 							break;
 						default:

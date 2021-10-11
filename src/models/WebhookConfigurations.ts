@@ -22,7 +22,7 @@ export interface QuestsetConfig {
 }
 
 export interface InvasionsetConfig {
-	type: 'invasions';
+	type: 'invasion';
 	geofilter?: string | GeofilterOption;
 	leader?: boolean;
 	train?: boolean;

@@ -5,7 +5,7 @@ import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 export default class InvasionSetCommand extends BaseWebhooksetCommand {
 	public constructor() {
 		super('invasionset', {
-			webhookType: 'invasions',
+			webhookType: 'invasion',
 			description: {
 				content: 'Set or remove the invasion webhook configuration for a particular channel.',
 				usage: stripIndents`invasionset
