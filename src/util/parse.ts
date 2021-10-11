@@ -42,6 +42,8 @@ export interface PokemonDataEvolution {
 	gender_reequirement?: number;
 }
 
+export interface TypeData {}
+
 export interface PokemonDataType {
 	attack?: number;
 	buddy_distance?: number;
@@ -64,7 +66,7 @@ export interface PokemonDataType {
 	temp_evolutions?: any[];
 	third_move_candy?: number;
 	third_move_stardust?: number;
-	types?: string[];
+	types?: { [key: string]: { typeId: number; typeName: string } };
 	weight?: number;
 }
 
@@ -181,7 +183,9 @@ export function parsePokemon(
 	if (!webhook)
 		embed.setTitle(`${pokemonData ? pokemonData.name : ''} ${latitude!.toFixed(5)},${longitude!.toFixed(5)}`);
 	if (pokemonData?.types)
-		embed.setColor(`#${util.types[pokemonData.types[0]].color.toString(16) as string}` as HexColorString);
+		embed.setColor(
+			`#${util.types[Object.values(pokemonData.types)[0].typeName].color.toString(16) as string}` as HexColorString,
+		);
 	if (pokemonData)
 		embed.setThumbnail(
 			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.toLowerCase().split(' ').join('')}.gif`,
@@ -215,11 +219,11 @@ export function parsePokemon(
 	const pokemonDataTypesAreValid = isValid(pokemonData?.types);
 	// line 6: types and weather
 	if (pokemonDataIsValid && pokemonDataTypesAreValid) {
-		description += `**Types:** ${pokemonData!
-			.types!.map((type) => {
-				return emoji(config.typeEmojis[type]) === config.typeEmojis[type]
-					? util.types[type].emoji
-					: emoji(config.typeEmojis[type]);
+		description += `**Types:** ${Object.values(pokemonData!.types!)
+			.map((type) => {
+				return emoji(config.typeEmojis[type.typeName]) === config.typeEmojis[type.typeName]
+					? util.types[type.typeName].emoji
+					: emoji(config.typeEmojis[type.typeName]);
 			})
 			.join(' ')} `;
 	}
@@ -241,7 +245,7 @@ export function parsePokemon(
 			pokemonDataIsValid &&
 			pokemonDataTypesAreValid &&
 			pokemonData?.types &&
-			pokemonData.types.some((type) => (boosted[utilWeatherName] ?? []).includes(type))
+			Object.values(pokemonData.types).some((type) => (boosted[utilWeatherName] ?? []).includes(type))
 		) {
 			description += `**BOOSTED**`;
 		}
@@ -354,8 +358,8 @@ export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: stri
 	const duration = moment.preciseDiff(disappearTime, now);
 
 	const embed = client.embed(guildId);
-	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
-		const color: number = util.types[pokemonData.types![0]].color;
+	if (isValid(pokemonData.types)) {
+		const color: number = util.types[Object.values(pokemonData.types!)[0].typeName].color;
 		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 	embed
@@ -455,8 +459,8 @@ export function parseRaid(
 	const locationEmoji: LocationEmoji | undefined = countryFlagEmoji.get(city.country);
 
 	const embed = client.embed(guildId);
-	if (isValid(pokemonData.types) && pokemonData.types!.length > 0) {
-		const color: number = util.types[pokemonData.types![0]].color;
+	if (isValid(pokemonData.types)) {
+		const color: number = util.types[Object.values(pokemonData.types!)[0].typeName].color;
 		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 
@@ -500,10 +504,10 @@ export function parseRaid(
 	}
 
 	if (isValid(pokemonData.types)) {
-		description += `**Types:** ${pokemonData
-			.types!.map((type) => {
-				const weaknesses: string[] = util.typeWeaknesses[type].weaknesses;
-				return `${emoji(config.typeEmojis[type])!} (**Weaknesses**: ${weaknesses
+		description += `**Types:** ${Object.values(pokemonData.types!)
+			.map((type) => {
+				const weaknesses: string[] = util.typeWeaknesses[type.typeName].weaknesses;
+				return `${emoji(config.typeEmojis[type.typeName])!} (**Weaknesses**: ${weaknesses
 					.map((weakness: string) => emoji(config.typeEmojis[weakness])!)
 					.join(' ')})`;
 			})
@@ -714,14 +718,14 @@ export function getQuestTask(quest: QuestEventData): string {
 	const questTarget = quest.target ?? 'unknown target';
 	// CATCHING SPECIFIC POKEMON
 	if (questTemplate.includes('catch_specific')) {
-		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_ids))
+		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info.pokemon_ids))
 			return `Catch ${quest.target!} ${
 				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]!]!.name! as string
 			}`;
 	}
 	// CATCH POKEMON TYPES
 	if (questTemplate.includes('catch_types')) {
-		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_type_ids)) {
+		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info.pokemon_type_ids)) {
 			let catch_types = '';
 			quest.conditions[0].info.pokemon_type_ids!.forEach((type) => {
 				catch_types += `${proto.values[`poke_type_${type}`] as string}, `;
@@ -739,7 +743,7 @@ export function getQuestTask(quest: QuestEventData): string {
 	// CATCH POKEMON OTHER
 	if (questTemplate.includes('catch')) {
 		if (validConditions) {
-			if (isNonEmptyArray(quest.conditions[0].info?.pokemon_type_ids)) {
+			if (isNonEmptyArray(quest.conditions[0].info.pokemon_type_ids)) {
 				return `Catch ${questTarget} ${
 					proto.values[`poke_type_${quest.conditions[0]!.info.pokemon_type_ids![0]!}`] as string
 				} Type Pokémon.`;
@@ -757,7 +761,7 @@ export function getQuestTask(quest: QuestEventData): string {
 	if (questTemplate.includes('land')) {
 		let curveball = '';
 		let throw_type = '';
-		if (validConditions && isValid(quest.conditions[0].info?.throw_type_id)) {
+		if (validConditions && isValid(quest.conditions[0].info.throw_type_id)) {
 			throw_type = proto.values[`throw_type_${quest.conditions[0].info.throw_type_id!}`];
 		}
 		if (questTemplate.includes('curve')) {
@@ -851,7 +855,7 @@ export function getQuestTask(quest: QuestEventData): string {
 		if (
 			questTemplate.includes('specific_plural') &&
 			validConditions &&
-			isNonEmptyArray(quest.conditions[0].info?.pokemon_ids)
+			isNonEmptyArray(quest.conditions[0].info.pokemon_ids)
 		) {
 			let quest_pokemon = '';
 			for (const pid of quest.conditions[0].info.pokemon_ids!) {
@@ -897,7 +901,7 @@ export function getQuestTask(quest: QuestEventData): string {
 	}
 	// SNAPSHOTS
 	if (questTemplate.includes('snapshot')) {
-		if (questTemplate.includes('easy') && validConditions && isNonEmptyArray(quest.conditions[0].info?.pokemon_ids)) {
+		if (questTemplate.includes('easy') && validConditions && isNonEmptyArray(quest.conditions[0].info.pokemon_ids)) {
 			return `Take ${questTarget} Snapshots of ${
 				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]].name as string
 			}`;
