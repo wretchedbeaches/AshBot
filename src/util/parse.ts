@@ -240,7 +240,8 @@ export function parsePokemon(
 		if (
 			pokemonDataIsValid &&
 			pokemonDataTypesAreValid &&
-			pokemonData!.types!.some((type) => (boosted[utilWeatherName] ?? []).includes(type))
+			pokemonData?.types &&
+			pokemonData.types.some((type) => (boosted[utilWeatherName] ?? []).includes(type))
 		) {
 			description += `**BOOSTED**`;
 		}

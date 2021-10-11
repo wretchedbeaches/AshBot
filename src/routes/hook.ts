@@ -63,6 +63,7 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 	const isBoosted =
 		isValid(weather) &&
 		weather !== 0 &&
+		pokemonData.types &&
 		pokemonData.types.some((type) => boosted[util.weather[`${weather!}`].name].includes(type));
 	let iv: number | undefined = undefined;
 	if (individual_attack && individual_defense && individual_stamina)
