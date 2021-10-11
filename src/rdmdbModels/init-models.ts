@@ -196,12 +196,12 @@ export function initModels(sequelize: Sequelize) {
 	web_session.initModel(sequelize);
 
 	device.belongsToMany(device_group, {
-		through: device_group_device as typeof Model,
+		through: device_group_device,
 		foreignKey: 'device_uuid',
 		otherKey: 'device_group_name',
 	});
 	device_group.belongsToMany(device, {
-		through: device_group_device as typeof Model,
+		through: device_group_device,
 		foreignKey: 'device_group_name',
 		otherKey: 'device_uuid',
 	});

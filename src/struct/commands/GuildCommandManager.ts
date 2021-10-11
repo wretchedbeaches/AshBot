@@ -52,7 +52,7 @@ export default class GuildCommandManager {
 	}
 
 	public updateGuildCommand(command: Command) {
-		if (command.registeredId)
+		if (command.registeredId && this.commands.has(command.id))
 			return this.client.restApi.patch(
 				Routes.applicationGuildCommand(
 					this.client.config.clientId,

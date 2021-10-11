@@ -4,21 +4,12 @@ import CommandHandler from './commands/CommandHandler';
 import InhibitorHandler from './inhibitors/InhibitorHandler';
 import ListenerHandler from './listeners/ListenerHandler';
 
-export interface BaseClientAttributes {
-	owners: string[];
-	restApi: REST;
-	commandHandler: CommandHandler;
-	listenerHandler: ListenerHandler;
-	inhibitorHandler: InhibitorHandler;
-	isOwner(user: User): boolean;
-}
-
 export interface BaseClientOptions extends ClientOptions {
 	owners?: string[];
 	restToken: string;
 }
 
-export default class BaseClient extends Client implements BaseClientAttributes {
+export default class BaseClient extends Client {
 	public owners: string[];
 	public restApi: REST;
 	public commandHandler!: CommandHandler;
@@ -43,10 +34,10 @@ export default class BaseClient extends Client implements BaseClientAttributes {
 		if (this.commandHandler.cooldownManager !== null)
 			this.listenerHandler.emitters.set('cooldownManager', this.commandHandler.cooldownManager);
 		await this.listenerHandler.loadAll();
+		await this.inhibitorHandler.loadAll();
 		await this.commandHandler.useListenerHandler(this.listenerHandler);
 		await this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
 		await this.commandHandler.loadAll();
-		await this.inhibitorHandler.loadAll();
 	}
 
 	public isOwner(user: User) {

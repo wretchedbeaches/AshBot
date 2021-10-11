@@ -92,7 +92,7 @@ export default class CommandHandler extends BaseHandler {
 			return this.client.restApi.put(
 				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
 				{ body: command.data.toJSON() },
-			);
+			) as Promise<APIApplicationCommand>;
 	}
 
 	public getGlobalCommands(): Promise<APIApplicationCommand[]> {
@@ -114,6 +114,15 @@ export default class CommandHandler extends BaseHandler {
 				if (command) this.deregister(command);
 				return result;
 			});
+	}
+
+	public async updateGuildCommand(command: Command) {
+		let updateCount = 0;
+		for (const guildCommandManager of this.guildCommandManagers.values()) {
+			const updatedCommand = await guildCommandManager.updateGuildCommand(command);
+			if (updatedCommand) updateCount++;
+		}
+		return updateCount;
 	}
 
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {

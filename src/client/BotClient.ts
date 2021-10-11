@@ -12,21 +12,17 @@ import puppeteer from 'puppeteer';
 import { guild } from '../rdmdbModels/guild';
 import { join } from 'path';
 // import { WebhookFilter } from '../models/WebhookFilters';
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import hookRouter from '../routes/hook';
 import cors from 'cors';
 import CooldownManager from '../struct/commands/CooldownManager';
 import LogManager from '../util/LogManager';
-import BaseClient, { BaseClientAttributes, BaseClientOptions } from '../struct/BaseClient';
+import BaseClient, { BaseClientOptions } from '../struct/BaseClient';
 
 interface BotConfig {
 	token: string;
 	clientId: string;
 	owners: string[];
-}
-
-export interface AshBotClientAttributes extends BaseClientAttributes {
-	config: BotConfig;
 }
 
 export interface ChannelEmbed {
@@ -37,7 +33,7 @@ export interface ChannelEmbed {
 	user?: User;
 }
 
-export default class AshBot extends BaseClient implements BaseClientAttributes {
+export default class AshBot extends BaseClient {
 	public owners: string[];
 	public config: BotConfig;
 	public restApi: REST;
@@ -200,7 +196,7 @@ export default class AshBot extends BaseClient implements BaseClientAttributes {
 	private initServer() {
 		const PORT = process.env.PORT ?? 8080;
 		const app = express();
-		app.use(express.json({ limit: '500mb' }));
+		app.use('/', express.json({ limit: '500' }) as RequestHandler);
 		app.use(cors());
 		app.use('/', hookRouter);
 
