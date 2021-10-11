@@ -101,5 +101,5 @@ export interface InvasionEventData {
 
 export interface HookEvent {
 	type: EventType;
-	message: PokemonEventData | RaidEventData | QuestEventData;
+	message: PokemonEventData | RaidEventData | QuestEventData | InvasionEventData;
 }
