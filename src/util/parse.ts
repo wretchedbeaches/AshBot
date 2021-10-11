@@ -1,7 +1,7 @@
-//TO-DO: Add support for evolution cost [candy cost/stardust cost] / custom embed structure / add support for invasion encounters
-//TO-DO: Add support for tile-server to display tileserver-GL on embeds, templates (whmgr/poraclejs) / make optional
-//TO-DO: Restucture embeds for quests, invasions, pokemon, raids, nests. (better data display for user ease) 
-//TO-DO: Fix type weakness/immunity on pokemon/raid embeds / Make weakness, catch %, rank optional
+// TODO: Add support for evolution cost [candy cost/stardust cost] / custom embed structure / add support for invasion encounters
+// TODO: Add support for tile-server to display tileserver-GL on embeds, templates (whmgr/poraclejs) / make optional
+// TODO: Restucture embeds for quests, invasions, pokemon, raids, nests. (better data display for user ease)
+// TODO: Fix type weakness/immunity on pokemon/raid embeds / Make weakness, catch %, rank optional
 import moment, { Moment } from 'moment';
 import geoTz from 'geo-tz';
 import 'moment-timezone';
