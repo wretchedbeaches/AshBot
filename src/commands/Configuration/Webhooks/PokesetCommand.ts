@@ -3,6 +3,7 @@ import { CommandInteraction } from 'discord.js';
 import { PokesetConfig } from '../../../models/WebhookConfigurations';
 import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 import ntim from '../../../util/name_to_id_map.json';
+import { addCommonFilterOptions } from '../../../util/WebhookFilterOptions';
 
 // Eventually the discord API will allow for native support of min/max number values.
 // But in the mean time will need to do it on the client:
@@ -37,12 +38,24 @@ export default class PokesetCommand extends BaseWebhooksetCommand {
 				],
 			},
 		});
-		this.argumentConfigBlacklist.add('name');
+		this.argumentConfigBlacklist.add('names');
 		this.argumentConfigBlacklist.add('rmpokemon');
-		this.argumentConfigBlacklist.add('rawiv');
-		this.data.addStringOption((rmpokemonOption) =>
-			rmpokemonOption.setName('rmpokemon').setDescription('Pokemon to remove from the filter, update must be true.'),
-		);
+		this.argumentConfigBlacklist.add('atkiv');
+		this.argumentConfigBlacklist.add('defiv');
+		this.argumentConfigBlacklist.add('staiv');
+
+		addCommonFilterOptions(this.data);
+
+		this.data
+			.addStringOption((rmpokemonOption) =>
+				rmpokemonOption.setName('rmpokemon').setDescription('Pokemon to remove from the filter, update must be true.'),
+			)
+			.addStringOption((namesOption) =>
+				namesOption.setName('names').setDescription('Comma separated Pokemon names to filter on.'),
+			)
+			.addIntegerOption((atkivOption) => atkivOption.setName('atkiv').setDescription('The atk IV to filter on.'))
+			.addIntegerOption((defivOption) => defivOption.setName('defiv').setDescription('The def IV to filter on.'))
+			.addIntegerOption((staivOption) => staivOption.setName('staiv').setDescription('The sta IV to filter on.'));
 	}
 
 	public handleArguments({
@@ -85,29 +98,16 @@ export default class PokesetCommand extends BaseWebhooksetCommand {
 			}
 		}
 
-		const rawivArgument = interaction.options.getString('rawiv', false);
-		// TODO: Raw iv argument should be 3 individual number arghuments
-		// Filter should be updated such that can filter on just one or 2 of them.
+		const rawAtk = interaction.options.getInteger('atkiv', false);
+		const rawDef = interaction.options.getInteger('defiv', false);
+		const rawSta = interaction.options.getInteger('staiv', false);
+		// TODO: Filter should be updated such that can filter on just one or 2 of them.
 		// Not necessarily filter on all 3.
-		if (rawivArgument) {
-			let splitRawiv: string[] = [];
-			const rawIvError = `\n\nFailed to parse the atk/def/sta rawiv filter that was provided: '${rawivArgument}'' - not applied.\nThe rawiv must be 'atk/def/sta' or 'atk,def,sta' format with each number between 0 and 15.`;
-			if (rawivArgument.includes(',')) splitRawiv = rawivArgument.split(',');
-			else if (rawivArgument.includes('/')) splitRawiv = rawivArgument.split('/');
-			if (splitRawiv.length === 3) {
-				splitRawiv = rawivArgument.split(',');
-				try {
-					const attack = parseInt(splitRawiv[0], 10);
-					const defense = parseInt(splitRawiv[1], 10);
-					const stamina = parseInt(splitRawiv[2], 10);
-					if (this.validateIv(attack) && this.validateIv(defense) && this.validateIv(stamina)) {
-						channelConfiguration.rawiv = { attack, defense, stamina };
-					} else {
-						error += rawIvError;
-					}
-				} catch (e) {
-					error += rawIvError;
-				}
+
+		if (rawAtk && rawDef && rawSta) {
+			const rawIvError = `\n\nFailed to parse the atkiv/defiv/staiv filter that was provided: '${rawAtk}/${rawDef}/${rawSta}' - not applied.\nThe rawiv must be 'atk/def/sta' or 'atk,def,sta' format with each number between 0 and 15.`;
+			if (this.validateIv(rawAtk) && this.validateIv(rawDef) && this.validateIv(rawSta)) {
+				channelConfiguration.rawiv = { attack: rawAtk, defense: rawDef, stamina: rawSta };
 			} else {
 				error += rawIvError;
 			}
