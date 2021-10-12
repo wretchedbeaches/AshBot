@@ -13,10 +13,9 @@ export default class CommandBlockedListener extends Listener {
 
 	public execute({ interaction, command, reason }: CommandBlockedData): void {
 		// TODO: Differentiate logging based on reason?
-		this.handler.client.logger.info(`Command ${command.id} was blocked for user ${interaction.user.id}.`, {
+		this.client!.logger.info(`Command ${command.id} was blocked for user ${interaction.user.id}.`, {
 			event: CommandHandlerEvents.COMMAND_BLOCKED,
 			reason,
 		});
-		console.log(`Command '${command.id}'' blocked for reason '${reason}'`);
 	}
 }

@@ -1,5 +1,5 @@
 import { APIApplicationCommand, Routes } from 'discord-api-types/v9';
-import { Collection, CommandInteraction, Interaction } from 'discord.js';
+import { Collection, CommandInteraction, Guild, Interaction } from 'discord.js';
 import BaseClient from '../../client/BotClient';
 import BaseHandler, { BaseHandlerOptions } from '../BaseHandler';
 import InhibitorHandler from '../inhibitors/InhibitorHandler';
@@ -52,17 +52,37 @@ export default class CommandHandler extends BaseHandler {
 
 	public setup(): void {
 		this.client.once('ready', async () => {
+			// TODO: Handle interactionCreate before commandHandler is actually ready.
+			// E.g. shouldn't handle commands until all permissions and everything has been updated / checked.
+			// This works for now, but currently commands used in that small period of time will just be ignored.
+			const guilds = this.client.guilds.cache.values();
+			const ownerGuilds: Guild[] = [];
+			for (const guild of guilds) {
+				await this.initGuild(guild);
+				if (this.client.owners.includes(guild.ownerId)) ownerGuilds.push(guild);
+			}
+			const ownerOnlyCommands = this.modules.filter((value) => value.ownerOnly).values();
+			for (const guild of ownerGuilds) {
+				const guildCommandManager = this.guildCommandManagers.get(guild.id);
+				if (guildCommandManager) {
+					await guildCommandManager.updateOwnerOnlyCommandPermissions(ownerOnlyCommands, guild.ownerId);
+				}
+			}
+
 			this.client.on('interactionCreate', async (interaction: Interaction) => {
 				if (interaction.isCommand()) await this.handle(interaction);
 			});
-			for (const guild of this.client.guilds.cache.values()) await this.initGuild(guild.id);
 		});
 	}
 
-	public async initGuild(guildId: string) {
-		const guildHandler = new GuildCommandManager(this.client, guildId);
-		await guildHandler.init(this.modules.filter((val) => val.scope === 'guild'));
-		this.guildCommandManagers.set(guildId, guildHandler);
+	public async initGuild(guild: Guild) {
+		const guildCommandManager = new GuildCommandManager(this.client, guild.id);
+		await guildCommandManager.init(
+			this.modules.filter(
+				(val) => (val.scope === 'guild' && !val.ownerOnly) || this.client.owners.includes(guild.ownerId),
+			),
+		);
+		this.guildCommandManagers.set(guild.id, guildCommandManager);
 	}
 
 	public removeGuild(guildId: string) {
@@ -81,10 +101,14 @@ export default class CommandHandler extends BaseHandler {
 	}
 
 	public createGlobalCommand(command: Command): Promise<APIApplicationCommand> {
-		return this.client.restApi.post(
-			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
-			{ body: command.data.toJSON() },
-		) as Promise<APIApplicationCommand>;
+		return (
+			this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
+				body: command.data.toJSON(),
+			}) as Promise<APIApplicationCommand>
+		).then((registeredCommand) => {
+			command.registeredId = registeredCommand.id;
+			return registeredCommand;
+		});
 	}
 
 	public updateGlobalCommand(command: Command) {
@@ -120,6 +144,7 @@ export default class CommandHandler extends BaseHandler {
 		let updateCount = 0;
 		for (const guildCommandManager of this.guildCommandManagers.values()) {
 			const updatedCommand = await guildCommandManager.updateGuildCommand(command);
+			console.log(`New id: ${updatedCommand?.id ?? 'unk'}`);
 			if (updatedCommand) updateCount++;
 		}
 		return updateCount;
@@ -127,20 +152,40 @@ export default class CommandHandler extends BaseHandler {
 
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {
 		await super.loadAll(directories);
-		const globalCommands = this.modules.filter((val) => val.scope === 'global');
+		const globalCommands = this.modules.filter((val) => !val.ownerOnly && val.scope === 'global');
 
-		// TODO: WIll need to update the global registration logic
-		// Filter all global commands with the names of the registered commands.
-		// For any that aren't registered, register them each individually instead
 		const registeredGlobalCommands = await this.getGlobalCommands();
 
 		for (const registeredGlobalCommand of registeredGlobalCommands) {
 			if (globalCommands.has(registeredGlobalCommand.name)) {
 				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
 			} else {
-				await this.deleteGlobalCommand(registeredGlobalCommand.id, globalCommands.get(registeredGlobalCommand.name));
+				try {
+					await this.deleteGlobalCommand(registeredGlobalCommand.id, globalCommands.get(registeredGlobalCommand.name));
+				} catch (error) {
+					this.emit(CommandHandlerEvents.COMMAND_API_ERROR, {
+						error: `There was an error deleting a global command:\n\n${error as string}`,
+						command: registeredGlobalCommand,
+						type: 'deletion',
+					});
+				}
 			}
 		}
+
+		for (const globalCommand of globalCommands.values()) {
+			if (!registeredGlobalCommands.some((val) => val.name === globalCommand.id)) {
+				try {
+					await this.createGlobalCommand(globalCommand);
+				} catch (error) {
+					this.emit(CommandHandlerEvents.COMMAND_API_ERROR, {
+						error: `There was an error creating a global command:\n\n${error as string}`,
+						command: globalCommand,
+						type: 'creation',
+					});
+				}
+			}
+		}
+
 		return this;
 	}
 
@@ -244,8 +289,8 @@ export default class CommandHandler extends BaseHandler {
 	}
 
 	public emitError(error: Error, interaction: Interaction, command: Command) {
-		if (this.listenerCount(CommandHandlerEvents.ERROR)) {
-			this.emit(CommandHandlerEvents.ERROR, { error, interaction, command });
+		if (this.listenerCount(CommandHandlerEvents.COMMAND_ERROR) > 0) {
+			this.emit(CommandHandlerEvents.COMMAND_ERROR, { error, interaction, command });
 			return;
 		}
 

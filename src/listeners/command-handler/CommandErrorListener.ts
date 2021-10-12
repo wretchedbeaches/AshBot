@@ -6,12 +6,12 @@ export default class CommandErrorListener extends Listener {
 	public constructor() {
 		super('commandError', {
 			emitter: 'commandHandler',
-			event: CommandHandlerEvents.ERROR,
+			event: CommandHandlerEvents.COMMAND_ERROR,
 			category: 'commandHandler',
 		});
 	}
 
 	public execute({ error, command }: { error: string; command: Command }): void {
-		this.handler.client.logger.error(error, { event: this.event, command: command.id });
+		this.client!.logger.error(error, { event: this.event, command: command.id });
 	}
 }

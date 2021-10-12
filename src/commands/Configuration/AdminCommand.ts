@@ -37,6 +37,6 @@ export default class AdminCommand extends Command {
 		const roleType = interaction.options.getString('type', true);
 		const role = interaction.options.getRole('role', true);
 		await this.client.settings.set(interaction.guild!.id, `${roleType}RoleId`, role.id);
-		return interaction.editReply(`Successfully set ${roleType} role to ${role.name}`) as Promise<Message | APIMessage>;
+		return interaction.editReply(`Successfully set ${roleType} role to ${role.name}`);
 	}
 }

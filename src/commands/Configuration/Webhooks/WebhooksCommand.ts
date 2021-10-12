@@ -38,7 +38,6 @@ export default class WebhooksCommand extends Command {
 
 	public async execute(interaction: CommandInteraction) {
 		const subcommand = interaction.options.getSubcommand();
-		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
 		switch (subcommand) {
 			case 'show':
 				return this.handleShow(interaction);
@@ -149,9 +148,7 @@ export default class WebhooksCommand extends Command {
 		const channelArgument = interaction.options.getChannel('channel', false);
 		const channels = this.client.settings.get(interaction.guildId, 'channels', null);
 		const channelConfigurations = Object.values(channels);
-		console.log('FOUND CHANNELS:');
-		console.log(channels);
-		console.log(channelConfigurations);
+
 		if (channels === null || channelConfigurations.length === 0) {
 			const errorMessage = channelArgument
 				? `There is no webhook configuration for '${channelArgument.name}'`

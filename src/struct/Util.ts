@@ -5,8 +5,9 @@ export function isPromise(value: any): boolean {
 export const CommandHandlerEvents = {
 	COMMAND_BLOCKED: 'blocked',
 	ENDED: 'ended',
-	ERROR: 'error',
+	COMMAND_ERROR: 'error',
 	STARTED: 'started',
+	COMMAND_API_ERROR: 'commandApiError',
 };
 
 export const CooldownManagerEvents = {

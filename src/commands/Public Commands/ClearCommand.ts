@@ -15,7 +15,7 @@ export default class ClearCommand extends Command {
 			rateLimit: 2,
 		});
 
-		this.data.addNumberOption((amountOption) =>
+		this.data.addIntegerOption((amountOption) =>
 			amountOption.setName('amount').setDescription('The number of messages to delete.').setRequired(true),
 		);
 	}

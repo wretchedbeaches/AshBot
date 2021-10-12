@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import ntim from '../../../util/name_to_id_map.json';
 import { stripIndents } from 'common-tags';
-import { addCommonFilterOptions } from '../../../util/WebhookFilterOptions';
+import { addCpFilterOptions, addLevelFilterOptions, addTrainFilterOption } from '../../../util/WebhookFilterOptions';
 import { RaidsetConfig } from '../../../models/WebhookConfigurations';
 import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 
@@ -17,12 +17,6 @@ export default class RaidsetCommand extends BaseWebhooksetCommand {
                   boosted \`true|false\`
                   name \`pokemon's name\`
                   geofilter \`distance(km/m) lattitude,longitude|city\`
-                  miniv \`min iv\`
-                  maxiv \`max iv\`
-                  mincp \`min cp\`
-                  maxcp \`max cp\`
-                  minlevel \`min level\`
-                  maxlevel \`max level\`
                   train`,
 				examples: ['webhooks', 'webhooks #webhook-channel'],
 			},
@@ -44,7 +38,9 @@ export default class RaidsetCommand extends BaseWebhooksetCommand {
 			.addStringOption((pokemonNameOption) =>
 				pokemonNameOption.setName('name').setDescription('The name of a pokemon to filter on.'),
 			);
-		addCommonFilterOptions(this.data);
+		addCpFilterOptions(this.data);
+		addLevelFilterOptions(this.data);
+		addTrainFilterOption(this.data);
 	}
 
 	public async handleArguments({

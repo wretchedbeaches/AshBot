@@ -1,7 +1,6 @@
 import { Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import CommandHandler from '../struct/commands/CommandHandler';
-import InhibitorHandler from '../struct/inhibitors/InhibitorHandler';
 import ListenerHandler from '../struct/listeners/ListenerHandler';
 import SequelizeProvider from '../util/SequelizeProvider';
 import { Dialect, Sequelize } from 'sequelize';
@@ -34,12 +33,7 @@ export interface ChannelEmbed {
 }
 
 export default class AshBot extends BaseClient {
-	public owners: string[];
 	public config: BotConfig;
-	public restApi: REST;
-	public commandHandler: CommandHandler;
-	public listenerHandler: ListenerHandler;
-	public inhibitorHandler: InhibitorHandler;
 	public nestMigrationDate: Date;
 	public settings: SequelizeProvider;
 	public embedQueue: Collection<string, ChannelEmbed[]>;
@@ -63,14 +57,12 @@ export default class AshBot extends BaseClient {
 
 		this.commandHandler = new CommandHandler(this, {
 			directories: [
+				join(__dirname, '..', 'commands/Owner'),
 				join(__dirname, '..', 'commands/Public Commands'),
 				join(__dirname, '..', 'commands/Configuration/Webhooks'),
 			],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
-		});
-		this.inhibitorHandler = new InhibitorHandler(this, {
-			directories: [join(__dirname, '..', 'inhibitors')],
 		});
 
 		this.settings = new SequelizeProvider(guild, {
@@ -153,7 +145,7 @@ export default class AshBot extends BaseClient {
 				try {
 					this.setInterval(channelId);
 				} catch (error) {
-					console.log(error);
+					this.logger.error(error);
 				}
 			}
 		}

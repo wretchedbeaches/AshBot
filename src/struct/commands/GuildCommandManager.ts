@@ -1,5 +1,5 @@
-import { APIApplicationCommand, Routes } from 'discord-api-types/v9';
-import { ApplicationCommandPermissions, Collection } from 'discord.js';
+import { APIApplicationCommand, Routes, Snowflake } from 'discord-api-types/v9';
+import { ApplicationCommandPermissions, Collection, GuildApplicationCommandPermissionData } from 'discord.js';
 import BaseClient from '../../client/BotClient';
 import Command from './Command';
 
@@ -16,7 +16,6 @@ export default class GuildCommandManager {
 
 	public async init(commands: Collection<string, Command>) {
 		const registeredGuildCommands = await this.getGuildCommands();
-		console.log(`${this.guildId} has ${registeredGuildCommands.length} registered commands.`);
 		for (const command of registeredGuildCommands) {
 			if (commands.has(command.name)) this.commands.set(command.name, command.id);
 			else await this.deleteGuildCommand(command.name, command.id);
@@ -25,7 +24,6 @@ export default class GuildCommandManager {
 		const commandsToRegister = commands.filter((_, key) => {
 			return !registeredGuildCommands.some((val) => val.name === key);
 		});
-		console.log(`Registering ${commandsToRegister.size} commands to ${this.guildId}`);
 		for (const commandToRegister of commandsToRegister.values()) {
 			await this.createGuildCommand(commandToRegister);
 		}
@@ -52,15 +50,12 @@ export default class GuildCommandManager {
 	}
 
 	public updateGuildCommand(command: Command) {
-		if (command.registeredId && this.commands.has(command.id))
-			return this.client.restApi.patch(
-				Routes.applicationGuildCommand(
-					this.client.config.clientId,
-					this.guildId,
-					command.registeredId,
-				) as unknown as `/${string}`,
+		console.log(`Updating: ${this.commands.get(command.id) ?? 'unknown'}`);
+		if (this.commands.has(command.id))
+			return this.client.restApi.post(
+				Routes.applicationGuildCommands(this.client.config.clientId, this.guildId) as unknown as `/${string}`,
 				{ body: command.data.toJSON() },
-			);
+			) as Promise<APIApplicationCommand>;
 	}
 
 	public setGuildCommands(commands: Command[]) {
@@ -86,10 +81,10 @@ export default class GuildCommandManager {
 	}
 
 	// TODO: Permission based calls - may need to update Command class types.
-	public getAllGuildCommandPermissions() {
+	public getAllGuildCommandPermissions(): Promise<GuildApplicationCommandPermissionData[]> {
 		return this.client.restApi.get(
 			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, this.guildId) as unknown as `/${string}`,
-		);
+		) as Promise<GuildApplicationCommandPermissionData[]>;
 	}
 
 	public getGuildCommandPermissions(command: Command) {
@@ -103,9 +98,16 @@ export default class GuildCommandManager {
 		);
 	}
 
-	public setGuildCommandPermissions(guildId: string, permissions: ApplicationCommandPermissions[]) {
+	public setGuildCommandPermissions(
+		registeredId: string,
+		permissions: { id: Snowflake; type: 2; permission: boolean }[],
+	) {
 		return this.client.restApi.put(
-			Routes.guildApplicationCommandsPermissions(this.client.config.clientId, guildId) as unknown as `/${string}`,
+			Routes.applicationCommandPermissions(
+				this.client.config.clientId,
+				this.guildId,
+				registeredId,
+			) as unknown as `/${string}`,
 			{
 				body: { permissions },
 			},
@@ -126,6 +128,21 @@ export default class GuildCommandManager {
 			) as unknown as `/${string}`,
 			{ body: { permissions } },
 		);
+	}
+
+	public async updateOwnerOnlyCommandPermissions(ownerCommands: IterableIterator<Command>, ownerId: string) {
+		const ownerGuildPermissions = await this.getAllGuildCommandPermissions();
+		for (const ownerCommand of ownerCommands) {
+			if (this.commands.has(ownerCommand.id)) {
+				const ownerCommandPermissions = ownerGuildPermissions.find((val) => val.id === ownerCommand.registeredId);
+				// If there are no existing permissions, or the owner id doesn't match on the existing permission
+				// Update the commands permission for the guild.
+				if (!ownerCommandPermissions || ownerCommandPermissions.permissions[0].id !== ownerId) {
+					const registeredId = this.commands.get(ownerCommand.id)!;
+					await this.setGuildCommandPermissions(registeredId, [{ id: ownerId, type: 2, permission: true }]);
+				}
+			}
+		}
 	}
 
 	private commandsToData(commands: Command[]) {

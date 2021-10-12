@@ -11,6 +11,6 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	public async execute(guild: Guild) {
-		await this.client?.commandHandler.initGuild(guild.id);
+		await this.client?.commandHandler.initGuild(guild);
 	}
 }

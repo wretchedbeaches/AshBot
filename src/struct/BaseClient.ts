@@ -14,7 +14,7 @@ export default class BaseClient extends Client {
 	public restApi: REST;
 	public commandHandler!: CommandHandler;
 	public listenerHandler!: ListenerHandler;
-	public inhibitorHandler!: InhibitorHandler;
+	public inhibitorHandler?: InhibitorHandler;
 
 	public constructor(options: BaseClientOptions) {
 		const { owners, restToken, ...clientOptions } = options;
@@ -26,7 +26,6 @@ export default class BaseClient extends Client {
 	public async init() {
 		this.listenerHandler.setEmitters({
 			listenerHandler: this.listenerHandler,
-			inhibitorHandler: this.inhibitorHandler,
 			commandHandler: this.commandHandler,
 			client: this,
 			process,
@@ -34,9 +33,12 @@ export default class BaseClient extends Client {
 		if (this.commandHandler.cooldownManager !== null)
 			this.listenerHandler.emitters.set('cooldownManager', this.commandHandler.cooldownManager);
 		await this.listenerHandler.loadAll();
-		await this.inhibitorHandler.loadAll();
+		if (this.inhibitorHandler) {
+			this.listenerHandler.emitters.set('inhibitorHandler', this.inhibitorHandler);
+			await this.inhibitorHandler.loadAll();
+			await this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
+		}
 		await this.commandHandler.useListenerHandler(this.listenerHandler);
-		await this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
 		await this.commandHandler.loadAll();
 	}
 
