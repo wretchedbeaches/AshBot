@@ -64,7 +64,7 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 		isValid(weather) &&
 		weather !== 0 &&
 		pokemonData.types &&
-		pokemonData.types.some((type) => boosted[util.weather[`${weather!}`].name].includes(type));
+		Object.values(pokemonData.types).some((type) => boosted[util.weather[`${weather!}`].name].includes(type));
 	let iv: number | undefined = undefined;
 	if (individual_attack && individual_defense && individual_stamina)
 		iv = ((individual_attack + individual_defense + individual_stamina) / 45) * 100;
@@ -168,8 +168,8 @@ const handleInvasion = (client: BotClient, event: InvasionEventData, { channelCo
 				filterTrain(client, channelId, channelConfig, { latitude, longitude })))
 	) {
 		const invasionEmbed = parseInvasion(event, guildId, true);
-		if (!client.embedQueue.has(channelId)) client.embedQueue.set(channelId, []);
-		client.embedQueue[channelId].push(invasionEmbed);
+		if (!client.embedQueue.has(channelId) || client.embedQueue.get(channelId) === undefined) client.embedQueue.set(channelId, []);
+		client.embedQueue.get(channelId)!.push(invasionEmbed);
 	}
 };
 
