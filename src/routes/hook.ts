@@ -168,7 +168,8 @@ const handleInvasion = (client: BotClient, event: InvasionEventData, { channelCo
 				filterTrain(client, channelId, channelConfig, { latitude, longitude })))
 	) {
 		const invasionEmbed = parseInvasion(event, guildId, true);
-		if (!client.embedQueue.has(channelId) || client.embedQueue.get(channelId) === undefined) client.embedQueue.set(channelId, []);
+		if (!client.embedQueue.has(channelId) || client.embedQueue.get(channelId) === undefined)
+			client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(invasionEmbed);
 	}
 };

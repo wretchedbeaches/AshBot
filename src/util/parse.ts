@@ -122,11 +122,11 @@ const parseLocation = (locationEmoji: LocationEmoji | undefined, city) => {
 };
 
 const parseAppleGoogle = (latitude: number, longitude: number) => {
-    return `/n ${emoji(
-        config.statsEmojis.google,
-    )!} [[**Google**]](https://www.google.com/maps?q=${latitude},${longitude}) ${emoji(
-        config.statsEmojis.apple,
-    )!} [[**Apple**]](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)`;
+	return `/n ${emoji(
+		config.statsEmojis.google,
+	)!} [[**Google**]](https://www.google.com/maps?q=${latitude},${longitude}) ${emoji(
+		config.statsEmojis.apple,
+	)!} [[**Apple**]](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)`;
 };
 
 export function parsePokemon(
@@ -669,8 +669,10 @@ export function parseInvasion(
 	}
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (url) embed.setThumbnail(url);
-	if (invasionGruntData && util.gruntImages[invasionGruntData.grunt]) embed.setThumbnail(util.gruntImages[invasionGruntData.grunt]);
-	if (invasionGruntData && util.gruntImages[invasionGruntData.type]) embed.setThumbnail(util.gruntImages[invasionGruntData.type]);
+	if (invasionGruntData && util.gruntImages[invasionGruntData.grunt])
+		embed.setThumbnail(util.gruntImages[invasionGruntData.grunt]);
+	if (invasionGruntData && util.gruntImages[invasionGruntData.type])
+		embed.setThumbnail(util.gruntImages[invasionGruntData.type]);
 
 	let description = '';
 	if (incident_expire_timestamp)
