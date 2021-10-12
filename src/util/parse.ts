@@ -122,11 +122,11 @@ const parseLocation = (locationEmoji: LocationEmoji | undefined, city) => {
 };
 
 const parseAppleGoogle = (latitude: number, longitude: number) => {
-	return `${emoji(
-		config.statsEmojis.google,
-	)!} [[**Google**](https://www.google.com/maps?q=${latitude},${longitude})] ${emoji(
-		config.statsEmojis.apple,
-	)!} [[**Apple**](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)]`;
+    return `/n ${emoji(
+        config.statsEmojis.google,
+    )!} [[**Google**]](https://www.google.com/maps?q=${latitude},${longitude}) ${emoji(
+        config.statsEmojis.apple,
+    )!} [[**Apple**]](http://maps.apple.com/maps?daddr=${latitude},${longitude}&z=10&t=s&dirflg=d)`;
 };
 
 export function parsePokemon(
@@ -199,7 +199,7 @@ export function parsePokemon(
 	if (isValid(cp) && isValid(iv) && isValid(pokemon_level)) {
 		description += `\n${emoji(config.statsEmojis.cp)!} **${cp!}**\n${emoji(
 			emoji(config.statsEmojis.iv),
-		)!} **${iv!.toFixed(1)}%*`;
+		)!} **${iv!.toFixed(1)}%**`;
 		if (isValid(individual_attack) && isValid(individual_defense) && isValid(individual_stamina)) {
 			description += ` **(${individual_attack!}/${individual_defense!}/${individual_stamina!})**\n`;
 		}
@@ -644,7 +644,7 @@ export function parseInvasion(
 } {
 	const { latitude, longitude, grunt_type, name, url, incident_expire_timestamp } = invasion;
 
-	const invasionData = masterfile.grunt_types[`${grunt_type}`];
+	const invasionGruntData = masterfile.grunt_types[`${grunt_type}`];
 	let disappearTime: Moment;
 	let now: Moment;
 	let duration: string;
@@ -663,28 +663,28 @@ export function parseInvasion(
 
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${(city?.name as string | undefined) ?? 'Unknown'}: ${name!}`);
-	if (isValid(invasionData?.type) && invasionData.types[invasionData.type]) {
-		const color: number = util.types[invasionData.type!].color;
+	if (isValid(invasion.grunt_type) && isValid(invasionGruntData)) {
+		const color: number = util.types[invasionGruntData.type].color;
 		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (url) embed.setThumbnail(url);
-	if (invasionData && util.gruntImages[invasionData.grunt]) embed.setThumbnail(util.gruntImages[invasionData.grunt]);
-	if (invasionData && util.gruntImages[invasionData.type]) embed.setThumbnail(util.gruntImages[invasionData.type]);
+	if (invasionGruntData && util.gruntImages[invasionGruntData.grunt]) embed.setThumbnail(util.gruntImages[invasionGruntData.grunt]);
+	if (invasionGruntData && util.gruntImages[invasionGruntData.type]) embed.setThumbnail(util.gruntImages[invasionGruntData.type]);
 
 	let description = '';
 	if (incident_expire_timestamp)
 		description = `**Expires**: ${disappearTime!.format('hh:mm:ss A')} (${duration!} left)\n`;
-	if (isValid(invasionData?.type)) {
-		const typeOutput = config.typeEmojis[invasionData.type]
-			? emoji(config.typeEmojis[invasionData.type])
-			: invasionData.type;
+	if (isValid(invasionGruntData?.type)) {
+		const typeOutput = config.typeEmojis[invasionGruntData.type]
+			? emoji(config.typeEmojis[invasionGruntData.type])
+			: invasionGruntData.type;
 		description += `**Type:** ${typeOutput as string}`;
 	}
 
-	description += `**Gender** ${parseGender(invasionData.gender)}`;
+	description += `**Gender** ${parseGender(invasionGruntData.gender)}`;
 
-	if (isValid(invasionData?.grunt)) description += `**Grunt Type:** ${invasionData.grunt as string}\n`;
+	if (isValid(invasionGruntData?.grunt)) description += `**Grunt Type:** ${invasionGruntData.grunt as string}\n`;
 
 	description += parseLocation(locationEmoji, city);
 	description += parseAppleGoogle(latitude!, longitude!);
