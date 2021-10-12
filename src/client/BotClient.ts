@@ -168,9 +168,9 @@ export default class AshBot extends BaseClient {
 					this.channels
 						.fetch(channelId)
 						.then((channel) => {
-							if (channel?.isText()) {
-								if (this.embedQueue.has(channelId)) {
-									const channelQueue: ChannelEmbed[] = this.embedQueue.get(channelId)!;
+							if (channel?.isText() && this.embedQueue.has(channelId)) {
+								const channelQueue: ChannelEmbed[] = this.embedQueue.get(channelId)!;
+								if (channelQueue.length > 0) {
 									const embed = channelQueue[0];
 									channel
 										.send({
@@ -263,3 +263,4 @@ export default class AshBot extends BaseClient {
 	//   }
 	// }
 }
+
