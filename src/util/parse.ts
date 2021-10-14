@@ -411,13 +411,11 @@ export function parseQuestDb(quest): { value: string } {
 	const { lat, lon, quest_type, quest_target } = quest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
-	return {
-		value: stripIndents`**Type:** ${masterfile.quest_types[`${quest_type as number}`].type
-			.split('{0}')
-			.join(quest_target)}
+	return stripIndents`**Type:** ${masterfile.quest_types[`${quest_type as number}`].type
+		.split('{0}')
+		.join(quest_target)}
     ${emoji.emoji} ${emoji.name}
-    [**[${lat.toFixed(5)},${lon.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`,
-	};
+    [**[${lat.toFixed(5)},${lon.toFixed(5)}]](https://www.google.com/maps?q=${lat},${lon})**`;
 }
 export function parseRaid(
 	raid: RaidEventData,
