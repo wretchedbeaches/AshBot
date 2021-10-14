@@ -179,10 +179,10 @@ export default class QuestSearchCommand extends Command {
 				({ title, color, thumbnail } = this.handleItem(item!, dbQuestsAnd));
 				break;
 			case 'stardust':
-				await this.handleStardust(interaction, dbQuestsAnd);
+				({ title, color, thumbnail } = this.handleStardust(interaction, dbQuestsAnd));
 				break;
 			case 'mega':
-				await this.handleMega(pokemonId, nameArgument.toLowerCase()!, dbQuestsAnd);
+				({ title, color, thumbnail } = this.handleMega(pokemonId, nameArgument.toLowerCase()!, dbQuestsAnd));
 				break;
 		}
 
