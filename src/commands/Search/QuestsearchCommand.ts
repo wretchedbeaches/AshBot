@@ -1,17 +1,16 @@
 import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
 import { stripIndents } from 'common-tags';
-import config from '../../config.json';
 import ntim from '../../util/name_to_id_map.json';
 import masterfile from '../../util/masterfile.json';
 import { pokestop } from '../../rdmdbModels/pokestop';
 import sequelize, { Op } from 'sequelize';
 import util from '../../util/util.json';
 import { parseQuestDb } from '../../util/parse';
-import Command from '../../struct/commands/Command';
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 import { PokemonItemDataType, PokemonTypeDataType } from '../../models/Data';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
+import BaseSearchCommand from './BaseSearchCommand';
+import config from '../../config.json';
 
 interface HandleData {
 	title: string;
@@ -19,24 +18,7 @@ interface HandleData {
 	color?: HexColorString;
 }
 
-export default class QuestSearchCommand extends Command {
-	public static addCommonOptions(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
-		commandBuilder
-			.addIntegerOption((distanceOption) =>
-				distanceOption.setName('distance').setDescription('The radius to search, defaults to km (see unit)'),
-			)
-			.addStringOption((unitOption) =>
-				unitOption.setName('unit').setDescription('The metric of the distance, metres or kilometres'),
-			)
-			.addStringOption((cityOption) => cityOption.setName('city').setDescription('The city to search within'))
-			.addNumberOption((latitudeOption) =>
-				latitudeOption.setName('latitude').setDescription('The latitude to search from'),
-			)
-			.addNumberOption((longitudeOption) =>
-				longitudeOption.setName('longitude').setDescription('The longitude to search from'),
-			);
-	}
-
+export default class QuestSearchCommand extends BaseSearchCommand {
 	public constructor() {
 		super('quest', {
 			description: {
@@ -58,8 +40,6 @@ export default class QuestSearchCommand extends Command {
 					'quest mega beedrill',
 				],
 			},
-			category: 'Search',
-			rateLimit: 3,
 		});
 
 		this.data.addSubcommand((pokemonSubcommand) => {
@@ -103,35 +83,14 @@ export default class QuestSearchCommand extends Command {
 	}
 
 	public async execute(interaction: CommandInteraction) {
-		const subcommand = interaction.options.getSubcommand(true);
-		const latitude = interaction.options.getNumber('latitude', false);
-		const longitude = interaction.options.getNumber('longitude', false);
-		// Default to 10km if not provided
-		const distance = interaction.options.getInteger('distance', false) ?? 10;
-		const unit = interaction.options.getString('unit', false) ?? 'km';
-		const radius = unit === 'km' ? distance : distance / 1000;
-		const city = interaction.options.getString('city');
-
-		let center: { lat: number; long: number } | null = null;
-		if (latitude !== null && longitude !== null) center = { lat: latitude, long: longitude };
-		let withinCity: Literal | null = null;
+		const { subcommand, center, radius, city } = this.parseCommonArgs(interaction);
 		if (city !== null)
-			withinCity = sequelize.literal(`ST_CONTAINS(ST_GEOMFROMTEXT(
-      'POLYGON((${
-				config.cities[city].map((coord: [number, number]) => `${coord[1]} ${coord[0]}`).join(', ') as string
-			}))'), POINT(\`pokestop\`.\`lon\`, \`pokestop\`.\`lat\`))`);
+			if (config.cities[city] === undefined)
+				return interaction.editReply(`The provided city '${city}' does not seem to be valid.`);
 
-		let distanceQuery: Literal | null = null;
-		if (center !== null) {
-			distanceQuery = sequelize.literal(
-				`111.111 *
-		DEGREES(ACOS(LEAST(1.0, COS(RADIANS(${center.lat}))
-				 * COS(RADIANS(\`pokestop\`.\`lat\`))
-				 * COS(RADIANS(${center.long} - \`pokestop\`.\`lon\`))
-				 + SIN(RADIANS(${center.lat}))
-				 * SIN(RADIANS(\`pokestop\`.\`lat\`)))))`,
-			);
-		}
+		const withinCityQuery: Literal | null = BaseSearchCommand.getWithinCityQuery('pokestop', city);
+
+		const distanceQuery: Literal | null = BaseSearchCommand.getDistanceQuery('pokestop', center);
 
 		const dbQuestsAnd: (Where | Literal | Record<string, unknown>)[] = [];
 		if (center !== null && distanceQuery !== null)
@@ -140,8 +99,7 @@ export default class QuestSearchCommand extends Command {
 					[Op.lte]: radius,
 				}),
 			);
-
-		if (withinCity !== null) dbQuestsAnd.push(withinCity);
+		else if (withinCityQuery !== null) dbQuestsAnd.push(withinCityQuery);
 
 		let nameArgument = '';
 		let pokemonId: string | undefined = '';
