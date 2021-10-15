@@ -79,9 +79,10 @@ export default class CommandHandler extends BaseHandler {
 		const guildCommandManager = new GuildCommandManager(this.client, guild.id);
 		await guildCommandManager.init(
 			this.modules.filter(
-				(val) => (val.scope === 'guild' && !val.ownerOnly) || this.client.owners.includes(guild.ownerId),
+				(val) => val.scope === 'guild' && (!val.ownerOnly || this.client.owners.includes(guild.ownerId)),
 			),
 		);
+
 		this.guildCommandManagers.set(guild.id, guildCommandManager);
 	}
 
