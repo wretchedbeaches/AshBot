@@ -1,0 +1,27 @@
+{
+  "uncontested": {
+    "id": 0,
+    "name": "Uncontested",
+    "color": 7915600
+  },
+  "mystic": {
+    "id": 1,
+    "name": "Mystic",
+    "color": 6852848
+  },
+  "valor": {
+    "id": 2,
+    "name": "Valor",
+    "color": 12595240
+  },
+  "instinct": {
+    "id": 3,
+    "name": "Instinct",
+    "color": 16306224
+  },
+  "any": {
+    "id": 4,
+    "name": "Any team",
+    "color": 1300169
+  }
+}
