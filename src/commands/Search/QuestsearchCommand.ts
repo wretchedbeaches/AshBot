@@ -175,15 +175,9 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 			pages.push(embed);
 		}
 
-		const messageOptionsResolver = ({
-			newIdentifier,
-			paginator,
-		}: {
-			newIdentifier: number;
-			paginator: ButtonPaginator;
-		}) => {
+		const messageOptionsResolver = ({ newIdentifiers, paginator }: { newIdentifiers; paginator: ButtonPaginator }) => {
 			return {
-				content: `Page ${newIdentifier + 1}/${paginator.maxNumberOfPages as number}`,
+				content: `Page ${(newIdentifiers.pageIdentifier as number) + 1}/${paginator.maxNumberOfPages as number}`,
 			};
 		};
 
