@@ -34,7 +34,7 @@ export interface ChannelEmbed {
 
 export default class AshBot extends BaseClient {
 	public config: BotConfig;
-	public nestMigrationDate: Date;
+	public nestMigrationDate?: Date;
 	public settings: SequelizeProvider;
 	public embedQueue: Collection<string, ChannelEmbed[]>;
 	public intervals: Collection<string, NodeJS.Timeout>;
