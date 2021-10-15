@@ -37,6 +37,7 @@ export default class CommandHandler extends BaseHandler {
 	public modules: Collection<string, Command>;
 	public guildCommandManagers: Collection<string, GuildCommandManager>;
 	public classToHandle: new (...args: any[]) => Command;
+	public ownerOnlyCommands: IterableIterator<Command>;
 
 	public constructor(client: BaseClient, { blockClient, blockBots, cooldownManager, ...rest }: CommandHandlerOptions) {
 		super(client, rest);
@@ -61,13 +62,6 @@ export default class CommandHandler extends BaseHandler {
 				await this.initGuild(guild);
 				if (this.client.owners.includes(guild.ownerId)) ownerGuilds.push(guild);
 			}
-			const ownerOnlyCommands = this.modules.filter((value) => value.ownerOnly).values();
-			for (const guild of ownerGuilds) {
-				const guildCommandManager = this.guildCommandManagers.get(guild.id);
-				if (guildCommandManager) {
-					await guildCommandManager.updateOwnerOnlyCommandPermissions(ownerOnlyCommands, guild.ownerId);
-				}
-			}
 
 			this.client.on('interactionCreate', async (interaction: Interaction) => {
 				if (interaction.isCommand()) await this.handle(interaction);
@@ -75,8 +69,8 @@ export default class CommandHandler extends BaseHandler {
 		});
 	}
 
-	public async initGuild(guild: Guild) {
-		const guildCommandManager = new GuildCommandManager(this.client, guild.id);
+	public async initGuild(guild: Guild): Promise<GuildCommandManager> {
+		const guildCommandManager = new GuildCommandManager(this.client, guild);
 		await guildCommandManager.init(
 			this.modules.filter(
 				(val) => val.scope === 'guild' && (!val.ownerOnly || this.client.owners.includes(guild.ownerId)),
@@ -84,6 +78,9 @@ export default class CommandHandler extends BaseHandler {
 		);
 
 		this.guildCommandManagers.set(guild.id, guildCommandManager);
+		if (this.client.owners.includes(guild.ownerId))
+			await guildCommandManager.updateOwnerOnlyCommandPermissions(this.ownerOnlyCommands, guild.ownerId);
+		return guildCommandManager;
 	}
 
 	public removeGuild(guildId: string) {
@@ -153,6 +150,7 @@ export default class CommandHandler extends BaseHandler {
 
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {
 		await super.loadAll(directories);
+		this.ownerOnlyCommands = this.modules.filter((value) => value.ownerOnly).values();
 		const globalCommands = this.modules.filter((val) => !val.ownerOnly && val.scope === 'global');
 
 		const registeredGlobalCommands = await this.getGlobalCommands();
