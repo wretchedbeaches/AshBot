@@ -29,11 +29,10 @@ const lessThanOrEqualTo = (a: number, b: number): boolean => {
 };
 
 export const filterBoosted = (channelConfig, isBoosted?: boolean) => {
-	const { IsBoosted: configIsBoosted } = channelConfig;
-	if (isInvalid(configIsBoosted) || isInvalid(isBoosted)) {
+	if (isInvalid(channelConfig.boosted) || isInvalid(isBoosted)) {
 		return true;
 	}
-	return configIsBoosted === isBoosted;
+	return channelConfig.boosted === isBoosted;
 };
 
 const filterMin = (val: number, min?: number) => {
@@ -61,20 +60,25 @@ export const filterIV = (channelConfig, iv?: number) => {
 	return filterNumber(iv, channelConfig.miniv, channelConfig.maxiv);
 };
 
-export const filterRawIV = (channelConfig, ivs): boolean => {
+export const filterRawIV = (channelConfig, { individual_attack, individual_defense, individual_stamina }): boolean => {
 	const { rawiv: configiv } = channelConfig;
-	if (isInvalid(configiv)) return true;
+	if (
+		isInvalid(configiv) ||
+		isInvalid(individual_attack) ||
+		isInvalid(individual_defense) ||
+		isInvalid(individual_stamina)
+	)
+		return true;
 	return (
-		ivs.individual_attack === configiv.attack &&
-		ivs.individual_defense === configiv.defense &&
-		ivs.individual_stamina === configiv.stamina
+		individual_attack === configiv.attack &&
+		individual_defense === configiv.defense &&
+		individual_stamina === configiv.stamina
 	);
 };
 
 export const filterName = (channelConfig, name) => {
-	const { name: configName } = channelConfig;
-	if (isInvalid(configName)) return true;
-	return configName.includes(name.toLowerCase());
+	if (isInvalid(channelConfig.name)) return true;
+	return channelConfig.name.includes(name.toLowerCase());
 };
 
 export const filterLongLat = (latitude, longitude) => {
