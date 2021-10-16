@@ -17,7 +17,6 @@ import {
 	filterLongLat,
 	filterName,
 	filterRawIV,
-	filterShiny,
 	filterTeam,
 	filterTrain,
 	isInvalid,
@@ -36,7 +35,12 @@ const boosted = {
 	windy: ['Dragon', 'Flying', 'Psychic'],
 };
 
-const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConfig, channelId, guildId }) => {
+const handlePokemon = (
+	client: BotClient,
+	pokemonData,
+	event: PokemonEventData,
+	{ channelConfig, channelId, guildId },
+) => {
 	let pokemonEmbed;
 	const {
 		cp,
@@ -44,19 +48,11 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 		individual_attack,
 		individual_defense,
 		individual_stamina,
-		pokemon_id,
 		latitude,
 		longitude,
 		weather,
 		shiny,
-		username,
-		capture_1,
 	} = event;
-
-	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
-	if (isInvalid(pokemonData) || capture_1 === 0 || cp === undefined) {
-		return false;
-	}
 
 	const isBoosted =
 		isValid(weather) &&
@@ -76,8 +72,7 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 		filterName(channelConfig, pokemonData.name) &&
 		(filterLongLat(latitude, longitude) ||
 			(filterGeo(channelConfig, { latitude, longitude }) &&
-				filterTrain(client, channelId, channelConfig, { latitude, longitude }))) &&
-		filterShiny(channelConfig, username, shiny)
+				filterTrain(client, channelId, channelConfig, { latitude, longitude })))
 	) {
 		let distanceFromPrevious;
 		if (client.trains.has(channelId) && channelConfig.train) {
@@ -190,10 +185,14 @@ router.post('', async (req, res) => {
 						continue;
 					}
 					let handled = false;
+					let pokemonData = null;
 					try {
 						switch (event.type) {
 							case 'pokemon':
-								handled = handlePokemon(client, event.message as PokemonEventData, {
+								if (event.message.capture_1 === 0) continue;
+								pokemonData = masterfile.pokemon[`${event.message.pokemon_id as number}`];
+								if (isInvalid(pokemonData)) continue;
+								handled = handlePokemon(client, pokemonData, event.message as PokemonEventData, {
 									channelConfig,
 									channelId,
 									guildId,
@@ -231,9 +230,11 @@ router.post('', async (req, res) => {
 								config: channelConfig,
 							});
 					} catch (error) {
+						client.logger.error(error);
 						client.logger.error(`Error encountered while trying to handle a Webhook Event.`, {
 							evenetMessage: event,
 							config: channelConfig,
+							error: error,
 						});
 					}
 				}

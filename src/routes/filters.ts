@@ -120,7 +120,8 @@ export const filterTrain = (client: BotClient, channelId, channelConfig, locatio
 };
 
 export const filterShiny = (channelConfig, username, shiny) => {
-	if (typeof channelConfig.shiny === 'boolean' && channelConfig.shiny) {
+	if (isInvalid(shiny)) return true;
+	if (channelConfig.shiny) {
 		return shiny && config.shinyMentions[username] && config.shinyMentions[username].length === 21;
 	}
 	return true;
