@@ -53,8 +53,6 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 		capture_1,
 	} = event;
 
-	if (pokemon_id === undefined) return false;
-
 	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
 	if (isInvalid(pokemonData) || capture_1 === 0 || cp === undefined) {
 		return false;
@@ -188,7 +186,7 @@ router.post('', async (req, res) => {
 			for (const channelId in channels) {
 				if (Object.prototype.hasOwnProperty.call(channels, channelId)) {
 					const channelConfig = channels[channelId];
-					if (isValid(channelConfig.type) && channelConfig.type !== event.type) {
+					if (channelConfig.type !== event.type || event.message.pokemon_id === 0) {
 						continue;
 					}
 					let handled = false;
