@@ -670,8 +670,9 @@ export function parseInvasion(
 
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${(city?.name as string | undefined) ?? 'Unknown'}: ${name!}`);
-	if (isValid(invasion.grunt_type) && isValid(invasionGruntData)) {
-		const color: number = util.types[invasionGruntData.type].color;
+	const gruntType = util.gruntTypes[`${grunt_type}`];
+	if (gruntType?.type && util.types[gruntType.type]) {
+		const color: number = util.types[gruntType.type].color;
 		embed.setColor(`#${color.toString(16)}` as HexColorString);
 	}
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
