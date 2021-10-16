@@ -9,6 +9,7 @@ import BaseSearchCommand from './BaseSearchCommand';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 import teams from '../../data/teams.json';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
+import { getNumberChoices } from '../../util/WebhookFilterOptions';
 
 export default class RaidSearchCommand extends BaseSearchCommand {
 	public constructor() {
@@ -45,7 +46,10 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 					]),
 			)
 			.addIntegerOption((levelOption) =>
-				levelOption.setName('option').setDescription('Search for raids of a particular level'),
+				levelOption
+					.setName('level')
+					.setDescription('Search for raids of a particular level')
+					.addChoices(getNumberChoices(6)),
 			);
 	}
 

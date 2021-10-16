@@ -39,7 +39,7 @@ export default class RaidsetCommand extends BaseWebhooksetCommand {
 				pokemonNameOption.setName('name').setDescription('The name of a pokemon to filter on.'),
 			);
 		addCpFilterOptions(this.data);
-		addLevelFilterOptions(this.data);
+		addLevelFilterOptions(this.data, 6);
 		addTrainFilterOption(this.data);
 	}
 
