@@ -2,7 +2,7 @@ import masterfile from '../util/masterfile.json';
 import util from '../util/util.json';
 import { Router } from 'express';
 import client from '../Bot';
-import { parsePokemon, parseRaid, parseQuest, parseInvasion, parseShinyPokemon } from '../util/parse';
+import { parsePokemon, parseRaid, parseQuest, parseInvasion } from '../util/parse';
 import { getPreciseDistance } from 'geolib';
 import { pokestop } from '../rdmdbModels/pokestop';
 import BotClient from '../client/BotClient';
@@ -41,7 +41,6 @@ const handlePokemon = (
 	event: PokemonEventData,
 	{ channelConfig, channelId, guildId },
 ) => {
-	let pokemonEmbed;
 	const {
 		cp,
 		pokemon_level,
@@ -89,10 +88,7 @@ const handlePokemon = (
 			latitude: latitude!,
 			longitude: longitude!,
 		});
-		if (!pokemonEmbed)
-			pokemonEmbed = shiny
-				? parseShinyPokemon(event, guildId as string)
-				: parsePokemon(event, guildId as string, true, distanceFromPrevious);
+		const pokemonEmbed = parsePokemon(event, guildId as string, true, distanceFromPrevious);
 		if (!client.embedQueue.has(channelId)) client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(pokemonEmbed);
 		return true;

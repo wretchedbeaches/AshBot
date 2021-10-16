@@ -22,7 +22,7 @@ import {
 	QuestEventRewards,
 	RaidEventData,
 } from '../models/WebhookData';
-import { isInvalid, isNonEmptyArray, isValid } from '../routes/filters';
+import { isNonEmptyArray, isValid } from '../routes/filters';
 
 export interface LocationEmoji {
 	name: string;
@@ -324,65 +324,6 @@ export function parsePokemon(
 		message: `${emoji(`pokemon_${pokemon_id!}`)!} ${pokemonData!.name} | ${latitude?.toFixed(5) ?? 'unknown'},${
 			longitude?.toFixed(5) ?? 'unknown'
 		}`,
-	};
-}
-
-export async function parseShinyPokemon(pokemon: PokemonEventData, guildId: string) {
-	const {
-		pokemon_id,
-		cp,
-		pokemon_level,
-		latitude,
-		longitude,
-		individual_attack,
-		individual_defense,
-		individual_stamina,
-		username,
-		move_1,
-		move_2,
-		disappear_time,
-	} = pokemon;
-	let iv = '';
-	if (isValid(individual_attack) && isValid(individual_defense) && isValid(individual_stamina)) {
-		iv = (((individual_attack! + individual_defense! + individual_stamina!) / 45) * 100).toFixed(1);
-	}
-	const pokemonData: PokemonDataType = masterfile.pokemon[`${pokemon_id!}`];
-	const user = config.shinyMentions[username];
-	let member;
-	if (user) member = await client.guilds.cache.get(guildId)?.members.fetch(user.substring(2, user.length - 1));
-
-	if (isInvalid(member)) return null;
-	// calculating time when pokemon expires and remaining time until pokemon expires
-	const disappearTime = moment.utc(disappear_time ?? 0 * 1000).tz(geoTz(latitude, longitude).toString());
-	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
-	const duration = moment.preciseDiff(disappearTime, now);
-
-	const embed = client.embed(guildId);
-	if (isValid(pokemonData.types)) {
-		const color: number = util.types[Object.values(pokemonData.types!)[0].typeName].color;
-		embed.setColor(`#${color.toString(16)}` as HexColorString);
-	}
-	embed
-		.setAuthor(`${member.user.username as string} found shiny ${pokemonData.name}`)
-		.setThumbnail(
-			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.toLowerCase().split(' ').join('')}.gif`,
-		)
-		.setDescription(
-			stripIndents`${emoji(config.statsEmojis.shiny.cp)} ${cp} ${emoji(config.statsEmojis.shiny.iv)} ${iv} ${emoji(
-				config.statsEmojis.shiny.level,
-			)} ${pokemon_level} ${emoji(config.statsEmojis.shiny.shiny)}
-    ${emoji(config.statsEmojis.shiny.moveset)} ${masterfile.moves[`${move_1!}`].name} | ${
-				masterfile.moves[`${move_2!}`].name
-			}
-      ${emoji(config.statsEmojis.shiny.despawn)} ${duration}
-      ${parseAppleGoogle(latitude!, longitude!)} [[**iPogo**](https://ipogo.app/?coords=${latitude},${longitude})]`,
-		);
-
-	return {
-		embed: embed,
-		message: `${latitude!.toFixed(5)},${longitude!.toFixed(5)} | ${user as string} | ${pokemonData.name}`,
-		shiny: true,
-		user: user,
 	};
 }
 
