@@ -53,11 +53,11 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 		capture_1,
 	} = event;
 
-	if (pokemon_id === undefined) return;
+	if (pokemon_id === undefined) return false;
 
 	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
 	if (isInvalid(pokemonData) || capture_1 === 0 || cp === undefined) {
-		return;
+		return false;
 	}
 
 	const isBoosted =
@@ -102,14 +102,16 @@ const handlePokemon = (client: BotClient, event: PokemonEventData, { channelConf
 				: parsePokemon(event, guildId as string, true, distanceFromPrevious);
 		if (!client.embedQueue.has(channelId)) client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(pokemonEmbed);
+		return true;
 	}
+	return false;
 };
 
 const handleRaid = (client: BotClient, event: RaidEventData, { channelConfig, channelId, guildId }) => {
 	const { cp, pokemon_id, latitude, longitude, team_id, level, ex_raid_eligible } = event;
 	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
 	if (isInvalid(pokemonData)) {
-		return;
+		return false;
 	}
 	if (
 		filterExRaid(channelConfig, ex_raid_eligible) &&
@@ -137,14 +139,12 @@ const handleRaid = (client: BotClient, event: RaidEventData, { channelConfig, ch
 		const raidEmbed = parseRaid(event, guildId as string, true, distanceFromPrevious);
 		if (!client.embedQueue.has(channelId)) client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(raidEmbed);
+		return true;
 	}
+	return false;
 };
 
-const handleQuest = async (
-	client: BotClient,
-	event: QuestEventData,
-	{ channelConfig, channelId, guildId },
-): Promise<void> => {
+const handleQuest = async (client: BotClient, event: QuestEventData, { channelConfig, channelId, guildId }) => {
 	const { pokestop_id, latitude, longitude, rewards } = event;
 	const dbPokestop = await pokestop.findByPk(pokestop_id);
 	if (
@@ -156,7 +156,9 @@ const handleQuest = async (
 		const questEmbed = parseQuest(event, guildId, true, dbPokestop?.incident_expire_timestamp);
 		if (!client.embedQueue.has(channelId)) client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(questEmbed);
+		return true;
 	}
+	return false;
 };
 
 const handleInvasion = (client: BotClient, event: InvasionEventData, { channelConfig, channelId, guildId }) => {
@@ -171,7 +173,9 @@ const handleInvasion = (client: BotClient, event: InvasionEventData, { channelCo
 		if (!client.embedQueue.has(channelId) || client.embedQueue.get(channelId) === undefined)
 			client.embedQueue.set(channelId, []);
 		client.embedQueue.get(channelId)!.push(invasionEmbed);
+		return true;
 	}
+	return false;
 };
 
 const router = Router();
@@ -187,30 +191,52 @@ router.post('', async (req, res) => {
 					if (isValid(channelConfig.type) && channelConfig.type !== event.type) {
 						continue;
 					}
-					switch (event.type) {
-						case 'pokemon':
-							handlePokemon(client, event.message as PokemonEventData, {
-								channelConfig,
-								channelId,
-								guildId,
+					let handled = false;
+					try {
+						switch (event.type) {
+							case 'pokemon':
+								handled = handlePokemon(client, event.message as PokemonEventData, {
+									channelConfig,
+									channelId,
+									guildId,
+								});
+								break;
+							case 'raid':
+								handled = handleRaid(client, event.message as RaidEventData, { channelConfig, channelId, guildId });
+								break;
+							case 'quest':
+								// TO DO: THis may not be great and may be fine to handle async
+								handled = await handleQuest(client, event.message as QuestEventData, {
+									channelConfig,
+									channelId,
+									guildId,
+								});
+								break;
+							case 'invasion':
+								handled = handleInvasion(client, event.message as InvasionEventData, {
+									channelConfig,
+									channelId,
+									guildId,
+								});
+								break;
+							default:
+								handled = true;
+								client.logger.error(
+									`Unknown event type '${(event.type as string | undefined) ?? 'undefined'} was encountered.`,
+									{ eventMessage: event, config: channelConfig },
+								);
+								break;
+						}
+						if (!handled)
+							client.logger.debug(`Webhook ignored by channel configuration filters.`, {
+								evenetMessage: event,
+								config: channelConfig,
 							});
-							break;
-						case 'raid':
-							handleRaid(client, event.message as RaidEventData, { channelConfig, channelId, guildId });
-							break;
-						case 'quest':
-							// TO DO: THis may not be great and may be fine to handle async
-							await handleQuest(client, event.message as QuestEventData, { channelConfig, channelId, guildId });
-							break;
-						case 'invasion':
-							handleInvasion(client, event.message as InvasionEventData, { channelConfig, channelId, guildId });
-							break;
-						default:
-							client.logger.error(
-								`Unknown event type '${(event.type as string | undefined) ?? 'undefined'} was encountered.`,
-								{ eventMessage: event },
-							);
-							break;
+					} catch (error) {
+						client.logger.error(`Error encountered while trying to handle a Webhook Event.`, {
+							evenetMessage: event,
+							config: channelConfig,
+						});
 					}
 				}
 			}
