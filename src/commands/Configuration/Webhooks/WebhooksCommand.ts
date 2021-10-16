@@ -88,8 +88,7 @@ export default class WebhooksCommand extends Command {
 				return newEmbed;
 			}
 			newEmbed.setTitle(
-				`Webhook 
-				Configuration For Channel ${channel.isText() ? (channel as TextChannel).name : channelId}`,
+				`Webhook Configuration For Channel ${channel.isText() ? (channel as TextChannel).name : channelId}`,
 			);
 
 			newEmbed.addFields(
@@ -138,7 +137,6 @@ export default class WebhooksCommand extends Command {
 			identifiersResolver,
 			pageEmbedResolver,
 			maxNumberOfPages: channels.length,
-			messageSender: ({ interaction, messageOptions }) => interaction.editReply(messageOptions),
 		});
 		await paginator.send();
 		return paginator.message;
