@@ -35,9 +35,9 @@ export const addCpFilterOptions = (command: SlashCommandBuilder | SlashCommandSu
 	return command;
 };
 
-export const getNumberChoices = (max: number) => {
+export const getNumberChoices = (min: number, max: number) => {
 	const ivChoices: [string, number][] = [];
-	for (let i = 1; i <= max; i++) {
+	for (let i = min; i <= max; i++) {
 		ivChoices.push([`${i}`, i]);
 	}
 	return ivChoices;
@@ -47,7 +47,7 @@ export const addLevelFilterOptions = (
 	command: SlashCommandBuilder | SlashCommandSubcommandBuilder,
 	maxLevel: number | null = null,
 ) => {
-	const levelChoices = maxLevel === null || maxLevel > 25 ? null : getNumberChoices(maxLevel);
+	const levelChoices = maxLevel === null || maxLevel > 25 ? null : getNumberChoices(1, maxLevel);
 	command
 		.addIntegerOption((minLevelOption) => {
 			minLevelOption.setName('minlevel').setDescription('The minimum level to filter on');
@@ -63,14 +63,9 @@ export const addLevelFilterOptions = (
 };
 
 export const addIvFilterOptions = (command: SlashCommandBuilder | SlashCommandSubcommandBuilder) => {
-	const ivChoices = getNumberChoices(15);
 	command
-		.addIntegerOption((minivOption) =>
-			minivOption.setName('miniv').setDescription('The mnimimum IV to filter on').addChoices(ivChoices),
-		)
-		.addIntegerOption((maxivOption) =>
-			maxivOption.setName('maxiv').setDescription('The maximum IV to filter on').addChoices(ivChoices),
-		);
+		.addIntegerOption((minivOption) => minivOption.setName('miniv').setDescription('The mnimimum IV to filter on'))
+		.addIntegerOption((maxivOption) => maxivOption.setName('maxiv').setDescription('The maximum IV to filter on'));
 	return command;
 };
 

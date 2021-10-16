@@ -45,7 +45,7 @@ export default class PokesetCommand extends BaseWebhooksetCommand {
 		this.argumentConfigBlacklist.add('staiv');
 
 		addCommonFilterOptions(this.data);
-		const ivChoices = getNumberChoices(15);
+		const ivChoices = getNumberChoices(0, 15);
 		this.data
 			.addStringOption((rmpokemonOption) =>
 				rmpokemonOption.setName('rmpokemon').setDescription('Pokemon to remove from the filter, update must be true.'),
