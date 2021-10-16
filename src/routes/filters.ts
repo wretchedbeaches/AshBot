@@ -128,7 +128,7 @@ export const filterExRaid = (channelConfig, isEligible) => {
 };
 
 export const filterTeam = (channelConfig, teamId?: number) => {
-	if (isInvalid(channelConfig) || isInvalid(teamId)) return true;
+	if (isInvalid(channelConfig.team) || isInvalid(teamId)) return true;
 	return util.teams[`${teamId!}`]?.name.toLowerCase() === channelConfig.team;
 };
 
