@@ -12,14 +12,25 @@ export default class BaseSearchCommand extends Command {
 			)
 			.addStringOption((unitOption) =>
 				unitOption.setName('unit').setDescription('The metric of the distance, metres or kilometres'),
-			)
-			.addStringOption((cityOption) => cityOption.setName('city').setDescription('The city to search within'))
+			);
+		BaseSearchCommand.addCityOption(commandBuilder);
+		BaseSearchCommand.addLatLongOptions(commandBuilder);
+	}
+
+	public static addLatLongOptions(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
+		commandBuilder
 			.addNumberOption((latitudeOption) =>
 				latitudeOption.setName('latitude').setDescription('The latitude to search from'),
 			)
 			.addNumberOption((longitudeOption) =>
 				longitudeOption.setName('longitude').setDescription('The longitude to search from'),
 			);
+	}
+
+	public static addCityOption(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
+		commandBuilder.addStringOption((cityOption) =>
+			cityOption.setName('city').setDescription('The city to search within'),
+		);
 	}
 
 	public static getDistanceQuery(type: string, center: { lat: number; long: number } | null) {

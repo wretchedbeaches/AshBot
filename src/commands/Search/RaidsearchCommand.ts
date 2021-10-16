@@ -112,14 +112,17 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 		if (dbRaids.length > 0) {
 			// creating and sending paginated embed with results
 			const embeds = dbRaids.map((raid) => parseRaidDb(raid, interaction.guildId!));
-			const messageOptionsResolver = ({ newIdentifiers, paginator }) =>
-				`Page ${(newIdentifiers.pageIdentifier as number) + 1} of ${
-					paginator.maxNumberOfPages as number
-				} | ${this.client
-					.getEmoji(`pokemon_${dbRaids[newIdentifiers.pageIdentifier]!.raid_pokemon_id as number}`)
-					.toString()} ${dbRaids[newIdentifiers.pageIdentifier].lat.toFixed(5)},${dbRaids[
-					newIdentifiers.pageIdentifier
-				].lon.toFixed(5)}`;
+			const messageOptionsResolver = ({ newIdentifiers, paginator }) => {
+				return {
+					content: `Page ${(newIdentifiers.pageIdentifier as number) + 1} of ${
+						paginator.maxNumberOfPages as number
+					} | ${this.client
+						.getEmoji(`pokemon_${dbRaids[newIdentifiers.pageIdentifier]!.raid_pokemon_id as number}`)
+						.toString()} ${dbRaids[newIdentifiers.pageIdentifier].lat.toFixed(5)},${dbRaids[
+						newIdentifiers.pageIdentifier
+					].lon.toFixed(5)}`,
+				};
+			};
 			const buttonPaginator = new ButtonPaginator(embeds, { maxNumberOfPages: embeds.length, messageOptionsResolver });
 			return buttonPaginator.send();
 		}
