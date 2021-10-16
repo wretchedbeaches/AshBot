@@ -1,4 +1,4 @@
-import { ButtonInteraction, CommandInteraction, MessageButton, TextChannel } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, GuildChannel, MessageButton, TextChannel } from 'discord.js';
 import Command from '../../../struct/commands/Command';
 import { ActionRowPaginator } from '@psibean/discord.js-pagination';
 
@@ -181,11 +181,13 @@ export default class WebhooksCommand extends Command {
 	}
 
 	public async handleRemove(interaction: CommandInteraction) {
-		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
-		if (channelArgument) {
-			const guildId = interaction.guildId!;
-			const channels = this.client.settings.get(guildId, 'channels', {});
-			const channelId = interaction.channel!.id;
+		const guildId = interaction.guildId!;
+		const channelArgument: GuildChannel = (interaction.options.getChannel('channel', false) ??
+			interaction.channel!) as GuildChannel;
+		const channelId = channelArgument.id;
+		const channels = this.client.settings.get(guildId, 'channels', {});
+		if (channels[channelId]) {
+			const configType = channels[channelId].type as string;
 			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 			delete channels[channelId];
 			await this.client.settings.set(guildId, 'channels', channels);
@@ -195,10 +197,12 @@ export default class WebhooksCommand extends Command {
 				this.client.embedQueue.delete(channelId);
 				this.client.trains.delete(channelId);
 			}
-			return interaction.editReply("Successfully removed channel's raid webhook configuration.");
+			return interaction.editReply(
+				`Successfully removed the ${configType} webhook configuration from ${channelArgument.toString()}.`,
+			);
 		}
 		return interaction.editReply(
-			`No channel was provided for the Webhook Configuration and the command was not used in a channel.`,
+			`There was no webhook configuration found for the provided channel '${channelArgument.toString()}'`,
 		);
 	}
 }
