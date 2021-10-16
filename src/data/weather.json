@@ -1,0 +1,42 @@
+{
+  "normal": {
+    "id": 0,
+    "name": "",
+    "emoji": ""
+  },
+  "sunny": {
+    "id": 1,
+    "name": "sunny",
+    "emoji": ":sunny:"
+  },
+  "rain": {
+    "id": 2,
+    "name": "rain",
+    "emoji": ":cloud_rain:"
+  },
+  "partly cloudy": {
+    "id": 3,
+    "name": "partly cloudy",
+    "emoji": ":white_sun_small_cloud:"
+  },
+  "cloudy": {
+    "id": 4,
+    "name": "cloudy",
+    "emoji": ":cloud:"
+  },
+  "windy": {
+    "id": 5,
+    "name": "windy",
+    "emoji": ":leaves:"
+  },
+  "snow": {
+    "id": 6,
+    "name": "snow",
+    "emoji": ":snowflake:"
+  },
+  "fog": {
+    "id": 7,
+    "name": "fog",
+    "emoji": ":foggy:"
+  }
+}
