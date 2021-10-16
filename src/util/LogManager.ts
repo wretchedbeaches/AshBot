@@ -31,10 +31,11 @@ export default class LogManager {
 						command,
 						...rest
 					}: { [key: string]: string } = info;
-					return `[${timestamp}][${level.toUpperCase()}][${topic}]${event ? `[${event}]` : ''}${
+					return `[${timestamp}][${level.toUpperCase()}]${topic ? `[${topic}]` : ''}${event ? `[${event}]` : ''}${
 						guildId ? `[guild:: ${guildId}]` : ''
-					} ${userId ? `[user: ${userId}]` : ''} ${command ? `[command: ${command}]` : ''}
-					}: ${message}${Object.keys(rest).length ? `\n${JSON.stringify(rest, null, 2)}` : ''}`;
+					} ${userId ? `[user: ${userId}]` : ''} ${command ? `[command: ${command}]` : ''}: ${message}${
+						Object.keys(rest).length ? `\n${JSON.stringify(rest, null, 2)}` : ''
+					}`;
 				}),
 			),
 			transports: [
