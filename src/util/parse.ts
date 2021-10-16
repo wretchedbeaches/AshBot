@@ -415,6 +415,17 @@ export function parseQuestDb(quest): { value: string } {
     ${emoji.emoji} ${emoji.name}
     [**[${lat.toFixed(5)},${lon.toFixed(5)}]](https://www.google.com/maps?q=${lat},${lon})**`;
 }
+export function parseWeatherDb(weather): string {
+	const city = nearbyCities({
+		latitude: weather.latitude,
+		longitude: weather.longitude,
+	})[0];
+	const emoji = countryFlagEmoji.get(city.country);
+	return stripIndents`${emoji.emoji} ${city.name}, ${emoji.name}
+[**[${weather.latitude.toFixed(5)},${weather.longitude.toFixed(5)}](https://www.google.com/maps?q=${weather.latitude},${
+		weather.longitude
+	})**]\n`;
+}
 export function parseRaid(
 	raid: RaidEventData,
 	guildId: string,
