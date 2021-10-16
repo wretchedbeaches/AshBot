@@ -84,9 +84,11 @@ export default class BaseWebhooksetCommand extends Command {
 		this.client.setInterval(channelId);
 		this.client.trains.delete(channelId);
 		const finalError = error === '' ? '' : ` However the following errors occurred:\n\n${error.trim()}`;
-		return interaction.editReply(
-			`Successfully updated ${channel.name} channel's ${this.webhookType} webhook configuration.${finalError}`,
-		);
+		const configEmbed = this.getConfigEmbed(guildId, (channel as GuildChannel).toString(), channelConfiguration);
+		return interaction.editReply({
+			content: `Successfully updated ${channel.name} channel's ${this.webhookType} webhook configuration.${finalError}`,
+			embeds: [configEmbed],
+		});
 	}
 
 	public handleBaseArguments(interaction: CommandInteraction): BaseArgumentError | BaseArguments {
@@ -162,5 +164,23 @@ export default class BaseWebhooksetCommand extends Command {
 			error = `City '${cityArgument}' was provided but could not be found, geofilter was not ${errorSuffix}.`;
 		}
 		return error;
+	}
+
+	public getConfigEmbed(guildId: string, channelString: string, channelConfiguration) {
+		const embed = this.client.embed(guildId).setTitle(`Webhook Configuration For Channel ${channelString}`);
+
+		const configEntries = Object.entries(channelConfiguration);
+		if (configEntries.length > 0) {
+			embed.addFields(
+				configEntries.map((entry) => ({
+					name: entry[0],
+					value: JSON.stringify(entry[1]),
+					inline: true,
+				})),
+			);
+		} else {
+			embed.setDescription(`Configuration was created but without any filters...`);
+		}
+		return embed;
 	}
 }
