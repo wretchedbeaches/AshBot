@@ -162,18 +162,14 @@ export default class AshBot extends BaseClient {
 						.then((channel) => {
 							if (channel?.isText() && this.embedQueue.has(channelId)) {
 								const channelQueue: ChannelEmbed[] = this.embedQueue.get(channelId)!;
-								if (channelQueue.length > 0) {
-									const embed = channelQueue[0];
+								const embed = channelQueue.shift();
+								if (embed) {
 									channel
 										.send({
 											content: embed.coordinates
 												? `${embed.coordinates[0].toFixed(5)}, ${embed.coordinates[1].toFixed(5)}`
 												: embed.message,
 											embeds: [embed.embed],
-										})
-										.then((_) => {
-											// if (embed.shiny) this.handleShinyReactions(embedMessage, embed.user);
-											this.embedQueue.set(channelId, channelQueue.slice(1, channelQueue.length));
 										})
 										.catch((error) => this.logger.error(error));
 								}
