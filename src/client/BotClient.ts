@@ -1,3 +1,5 @@
+import axios from 'axios';
+import cheerio from 'cheerio';
 import { Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import CommandHandler from '../struct/commands/CommandHandler';
@@ -6,11 +8,8 @@ import SequelizeProvider from '../util/SequelizeProvider';
 import { Dialect, Sequelize } from 'sequelize';
 import { initModels as initManualModels } from '../manualdbModels/init-models';
 import { initModels } from '../rdmdbModels/init-models';
-import puppeteer from 'puppeteer';
-// import { device } from '../rdmdbModels/device';
 import { guild } from '../rdmdbModels/guild';
 import { join } from 'path';
-// import { WebhookFilter } from '../models/WebhookFilters';
 import express, { RequestHandler } from 'express';
 import hookRouter from '../routes/hook';
 import cors from 'cors';
@@ -58,11 +57,7 @@ export default class AshBot extends BaseClient {
 		});
 
 		this.commandHandler = new CommandHandler(this, {
-			directories: [
-				join(__dirname, '..', 'commands/Owner'),
-				join(__dirname, '..', 'commands/Public Commands'),
-				join(__dirname, '..', 'commands/Configuration/Webhooks'),
-			],
+			directories: [join(__dirname, '..', 'commands')],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
 		});
@@ -112,16 +107,10 @@ export default class AshBot extends BaseClient {
 
 	public async updateNestMigrationDate() {
 		try {
-			const browser = await puppeteer.launch();
-			const page = await browser.newPage();
-			await page.goto('https://p337.info/pokemongo/countdowns/?id=nest-migration');
-			await page.waitForSelector('#local_time3', {
-				visible: true,
-				timeout: 10000,
-			});
-			const nestMigrationDate = await page.evaluate(() => document.getElementById('local_time3')?.innerHTML);
-			this.nestMigrationDate = new Date(nestMigrationDate!);
-			await browser.close();
+			const nestMigrationRequest = (await axios.get(`https://p337.info/pokemongo/countdowns/?id=nest-migration`)).data;
+			const $ = cheerio.load(nestMigrationRequest);
+			const nestMigrationDate = $('#local_time3').text().trim();
+			this.nestMigrationDate = new Date(nestMigrationDate);
 		} catch (e) {
 			this.logger.error(`[Bot] Error while attempting to grab nest migration date: \n\n${e as string}\n\n`);
 		}
