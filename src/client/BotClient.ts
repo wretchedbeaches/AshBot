@@ -17,6 +17,7 @@ import cors from 'cors';
 import CooldownManager from '../struct/commands/CooldownManager';
 import LogManager from '../util/LogManager';
 import BaseClient, { BaseClientOptions } from '../struct/BaseClient';
+import RankingDataManager from '../util/RankingDataManager';
 
 interface BotConfig {
 	token: string;
@@ -40,6 +41,7 @@ export default class AshBot extends BaseClient {
 	public intervals: Collection<string, NodeJS.Timeout>;
 	public trains: Collection<string, { longitude: number; latitude: number }>;
 	public logger: LogManager;
+	public rankingData: RankingDataManager;
 
 	public constructor(config: BotConfig, options: BaseClientOptions) {
 		super({ ...options });
@@ -69,11 +71,12 @@ export default class AshBot extends BaseClient {
 			idColumn: 'id',
 			dataColumn: 'settings',
 		});
+		this.rankingData = new RankingDataManager();
 	}
 
 	private async _init(): Promise<void> {
 		await super.init();
-
+		await this.rankingData.init();
 		await this.updateNestMigrationDate();
 		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		setInterval(this.updateNestMigrationDate, parseInt(process.env.NEST_MIGRATION_UPDATE_TIME!, 10));
