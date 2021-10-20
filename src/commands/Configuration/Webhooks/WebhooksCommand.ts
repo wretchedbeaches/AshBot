@@ -149,7 +149,7 @@ export default class WebhooksCommand extends Command {
 	}
 
 	public async handleShow(interaction: CommandInteraction) {
-		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
+		const channelArgument = interaction.options.getChannel('channel', false) as TextChannel | null;
 		const channels = this.client.settings.get(interaction.guildId, 'channels', null);
 		const channelConfigurations = Object.values(channels);
 
