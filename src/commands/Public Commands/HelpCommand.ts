@@ -28,9 +28,7 @@ export default class HelpCommand extends Command {
 			const command = this.client.commandHandler.modules.get(commandArgument);
 			// TODO: permission check on the command here to ensure users don't get help for commands they can't use.
 			if (!command) {
-				return interaction.editReply(`No command by the name '${commandArgument}' seems to exist...`) as Promise<
-					Message | APIMessage
-				>;
+				return interaction.editReply(`No command by the name '${commandArgument}' seems to exist...`);
 			}
 			const commandHelpEmbed = this.client.embed(interaction.guildId).setAuthor(`Help | ${commandArgument}`, avatarUrl)
 				.setDescription(stripIndents`
@@ -47,7 +45,7 @@ export default class HelpCommand extends Command {
 							: 'No examples provided.'
 					}
           `);
-			return interaction.editReply({ embeds: [commandHelpEmbed] }) as Promise<Message | APIMessage>;
+			return interaction.editReply({ embeds: [commandHelpEmbed] });
 		}
 
 		const embed = this.client
@@ -64,6 +62,6 @@ export default class HelpCommand extends Command {
 			);
 		}
 
-		return interaction.editReply({ embeds: [embed] }) as Promise<Message | APIMessage>;
+		return interaction.editReply({ embeds: [embed] });
 	}
 }
