@@ -49,7 +49,7 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 				levelOption
 					.setName('level')
 					.setDescription('Search for raids of a particular level')
-					.addChoices(getNumberChoices(6)),
+					.addChoices(getNumberChoices(1, 6)),
 			);
 	}
 
