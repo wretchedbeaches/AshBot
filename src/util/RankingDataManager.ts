@@ -28,14 +28,14 @@ export default class RankingDataManager {
 
 	public async init() {
 		const request = (await axios.get('https://pvpoke.com/rankings/')).data;
-		const $ = await cheerio.load(request);
+		const $ = await cheerio.load(request as string);
 		this.version = $($('footer p.copyright a').toArray()[0]).text().trim();
 		const replaceText = '[ranking]';
 		const url = `https://pvpoke.com/data/rankings/all/overall/rankings-[ranking].json?v=${this.version}`;
 
-		const greatLeagueData: RankingDataType[] = (await axios.get(url.replace(replaceText, '1500'))).data;
-		const ultraLeagueData: RankingDataType[] = (await axios.get(url.replace(replaceText, '2500'))).data;
-		const masterLeagueData: RankingDataType[] = (await axios.get(url.replace(replaceText, '10000'))).data;
+		const greatLeagueData = (await axios.get(url.replace(replaceText, '1500'))).data as RankingDataType[];
+		const ultraLeagueData = (await axios.get(url.replace(replaceText, '2500'))).data as RankingDataType[];
+		const masterLeagueData = (await axios.get(url.replace(replaceText, '10000'))).data as RankingDataType[];
 
 		this.initCollection(this.greatLeagueData, greatLeagueData);
 		this.initCollection(this.ultraLeagueData, ultraLeagueData);

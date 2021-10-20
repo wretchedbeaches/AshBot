@@ -1,5 +1,4 @@
-import { APIMessage } from 'discord-api-types/v9';
-import { CommandInteraction, Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import Command from '../../struct/commands/Command';
 
 // TODO: Need to setup Command Permissions stuff.
@@ -34,7 +33,7 @@ export default class AdminCommand extends Command {
 		);
 	}
 
-	public async execute(interaction: CommandInteraction): Promise<Message | APIMessage> {
+	public async execute(interaction: CommandInteraction) {
 		const roleType = interaction.options.getString('type', true);
 		const role = interaction.options.getRole('role', true);
 		await this.client.settings.set(interaction.guild!.id, `${roleType}RoleId`, role.id);

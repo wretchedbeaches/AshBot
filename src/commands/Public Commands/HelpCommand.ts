@@ -1,7 +1,6 @@
-import { CommandInteraction, Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { stripIndents } from 'common-tags';
 import Command from '../../struct/commands/Command';
-import { APIMessage } from 'discord-api-types/v9';
 
 export default class HelpCommand extends Command {
 	public constructor() {
@@ -20,7 +19,7 @@ export default class HelpCommand extends Command {
 		);
 	}
 
-	public execute(interaction: CommandInteraction): Promise<Message | APIMessage> {
+	public execute(interaction: CommandInteraction) {
 		const commandArgument = interaction.options.getString('command', false);
 		const avatarUrl = this.client.user!.avatarURL() ?? '';
 

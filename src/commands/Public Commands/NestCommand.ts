@@ -33,7 +33,7 @@ export default class NestListCommand extends Command {
 	public async execute(interaction: CommandInteraction) {
 		const typeArgument = interaction.options.getString('type', false) ?? 'global';
 		const data = (await axios.get('https://themasternest.net/')).data;
-		const $ = cheerio.load(data);
+		const $ = cheerio.load(data as string);
 		const nestingPokemonHtml = $('#nesting-species').find('strong').html() ?? $('#nesting-species').html();
 		if (nestingPokemonHtml === null)
 			return interaction.editReply(`There was a problem fetching the current nesting pokemon.`);

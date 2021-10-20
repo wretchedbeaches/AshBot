@@ -108,7 +108,7 @@ export default class AshBot extends BaseClient {
 	public async updateNestMigrationDate() {
 		try {
 			const nestMigrationRequest = (await axios.get(`https://p337.info/pokemongo/countdowns/?id=nest-migration`)).data;
-			const $ = cheerio.load(nestMigrationRequest);
+			const $ = cheerio.load(nestMigrationRequest as string);
 			const nestMigrationDate = $('#local_time3').text().trim();
 			this.nestMigrationDate = new Date(nestMigrationDate);
 		} catch (e) {

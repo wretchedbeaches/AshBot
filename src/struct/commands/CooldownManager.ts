@@ -1,9 +1,9 @@
-import { CooldownData } from 'discord-akairo';
 import { Collection, CommandInteraction, Interaction } from 'discord.js';
 import { EventEmitter } from 'events';
 import BotClient from '../../client/BotClient';
 import { CooldownManagerEvents } from '../Util';
 import Command, { CooldownIgnorer } from './Command';
+import { CooldownData } from './CommandHandler';
 
 export enum CooldownScope {
 	USER = 'user',
