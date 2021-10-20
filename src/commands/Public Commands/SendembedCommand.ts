@@ -1,3 +1,4 @@
+import { ChannelType } from 'discord-api-types/v9';
 import { CommandInteraction, TextChannel } from 'discord.js';
 import Command from '../../struct/commands/Command';
 
@@ -15,7 +16,11 @@ export default class SendEmbedCommand extends Command {
 		});
 		this.data
 			.addChannelOption((channelOption) =>
-				channelOption.setName('channel').setDescription('The channel to send the embed to.').setRequired(true),
+				channelOption
+					.setName('channel')
+					.setDescription('The channel to send the embed to.')
+					.addChannelType(ChannelType.GuildText)
+					.setRequired(true),
 			)
 			.addStringOption((contentOption) =>
 				contentOption.setName('content').setDescription('The content to send in the embed.').setRequired(true),

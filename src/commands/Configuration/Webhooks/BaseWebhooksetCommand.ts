@@ -1,7 +1,7 @@
-import { CommandInteraction, GuildChannel } from 'discord.js';
+import { CommandInteraction, GuildChannel, TextChannel } from 'discord.js';
 import Command, { CommandOptions } from '../../../struct/commands/Command';
 import config from '../../../config.json';
-import { APIInteractionDataResolvedChannel } from 'discord-api-types/v9';
+import { APIInteractionDataResolvedChannel, ChannelType } from 'discord-api-types/v9';
 import { addGeofilterOptions } from '../../../util/WebhookFilterOptions';
 
 interface BaseArgumentError {
@@ -17,7 +17,7 @@ export interface BaseArguments {
 	isUpdate: boolean;
 	guildId: string;
 	channelId: string;
-	channel: GuildChannel | APIInteractionDataResolvedChannel;
+	channel: TextChannel | APIInteractionDataResolvedChannel;
 }
 
 export interface WebhooksetCommandOptions extends CommandOptions {
@@ -30,12 +30,23 @@ export default class BaseWebhooksetCommand extends Command {
 
 	public constructor(id, options: WebhooksetCommandOptions) {
 		const { webhookType, ...rest } = options;
-		super(id, { ...rest, scope: 'guild', category: 'Webhooks', rateLimit: 3, isEphemeral: true });
+		super(id, {
+			...rest,
+			scope: 'guild',
+			category: 'Webhooks',
+			rateLimit: 3,
+			defaultPermission: false,
+			isEphemeral: true,
+		});
 		this.webhookType = webhookType;
 		this.argumentConfigBlacklist = new Set(['channel', 'update', 'radius', 'city', 'latitude', 'longitude', 'unit']);
 		this.data
 			.addChannelOption((option) =>
-				option.setName('channel').setDescription('The channel to create the raid webhook for.').setRequired(false),
+				option
+					.setName('channel')
+					.setDescription('The channel to create the raid webhook for.')
+					.addChannelType(ChannelType.GuildText)
+					.setRequired(false),
 			)
 			.addBooleanOption((updateOption) =>
 				updateOption
@@ -96,18 +107,13 @@ export default class BaseWebhooksetCommand extends Command {
 		const isUpdate = interaction.options.getBoolean('update', false) ?? false;
 		// TODO: once https://github.com/discordjs/builders/pull/41 is merged
 		// Only allow for only text channels to be selected for this argument.
-		const channel = interaction.options.getChannel('channel', false) ?? interaction.channel;
-		const guildId = interaction.guildId;
-		if (guildId == null || channel === null) {
-			return {
-				error: `No channel was provided for the Webhook Configuration and the command was not used in a channel.`,
-			};
-		}
+		const channel = (interaction.options.getChannel('channel', false) ?? interaction.channel) as TextChannel;
+		const guildId = interaction.guildId!;
 
 		return {
 			isUpdate,
 			guildId,
-			channel: channel as GuildChannel | APIInteractionDataResolvedChannel,
+			channel: channel,
 			channelId: channel.id,
 		};
 	}

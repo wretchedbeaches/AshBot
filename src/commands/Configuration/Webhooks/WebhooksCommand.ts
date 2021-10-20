@@ -1,6 +1,7 @@
 import { ButtonInteraction, CommandInteraction, GuildChannel, MessageButton, TextChannel } from 'discord.js';
 import Command from '../../../struct/commands/Command';
 import { ActionRowPaginator } from '@psibean/discord.js-pagination';
+import { ChannelType } from 'discord-api-types/v9';
 
 export default class WebhooksCommand extends Command {
 	public constructor() {
@@ -23,6 +24,7 @@ export default class WebhooksCommand extends Command {
 						option
 							.setName('channel')
 							.setDescription('The channel to view configuration for, otherwise all of them.')
+							.addChannelType(ChannelType.GuildText)
 							.setRequired(false),
 					),
 			)
@@ -31,7 +33,11 @@ export default class WebhooksCommand extends Command {
 					.setName('remove')
 					.setDescription('Remove a Webhook Configuration.')
 					.addChannelOption((option) =>
-						option.setName('channel').setDescription('The channel to remove configuration for.').setRequired(true),
+						option
+							.setName('channel')
+							.setDescription('The channel to remove configuration for.')
+							.addChannelType(ChannelType.GuildText)
+							.setRequired(true),
 					),
 			);
 	}
@@ -143,7 +149,7 @@ export default class WebhooksCommand extends Command {
 	}
 
 	public async handleShow(interaction: CommandInteraction) {
-		const channelArgument = interaction.options.getChannel('channel', false);
+		const channelArgument = interaction.options.getChannel('channel', false) ?? interaction.channel;
 		const channels = this.client.settings.get(interaction.guildId, 'channels', null);
 		const channelConfigurations = Object.values(channels);
 
