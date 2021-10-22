@@ -31,7 +31,6 @@ export default class CommandHandler extends BaseHandler {
 	public blockClient: boolean;
 	public blockBots: boolean;
 	public cooldownManager: CooldownManager | null;
-	public cooldowns: Collection<string, Collection<string, CooldownData>>;
 	public inhibitorHandler?: InhibitorHandler;
 	public listenerHandler: ListenerHandler;
 	public modules: Collection<string, Command>;
@@ -44,7 +43,6 @@ export default class CommandHandler extends BaseHandler {
 		this.classToHandle = Command;
 		this.blockClient = blockClient ?? true;
 		this.blockBots = blockBots ?? true;
-		this.cooldowns = new Collection();
 		this.cooldownManager = cooldownManager ?? null;
 		this.inhibitorHandler = undefined;
 		this.guildCommandManagers = new Collection();
