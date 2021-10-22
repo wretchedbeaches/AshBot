@@ -13,6 +13,7 @@ export default class WebhooksCommand extends Command {
 			},
 			category: 'Webhooks',
 			rateLimit: 3,
+			cooldown: 3e5,
 			isEphemeral: true,
 		});
 		this.data

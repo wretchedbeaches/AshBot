@@ -3,6 +3,7 @@ import Command, { CommandOptions } from '../../../struct/commands/Command';
 import config from '../../../config.json';
 import { APIInteractionDataResolvedChannel, ChannelType } from 'discord-api-types/v9';
 import { addGeofilterOptions } from '../../../util/WebhookFilterOptions';
+import { CooldownScope } from '../../../struct/commands/CooldownManager';
 
 interface BaseArgumentError {
 	error: string;
@@ -37,6 +38,7 @@ export default class BaseWebhooksetCommand extends Command {
 			rateLimit: 3,
 			defaultPermission: false,
 			isEphemeral: true,
+			cooldownScope: CooldownScope.GUILD,
 		});
 		this.webhookType = webhookType;
 		this.argumentConfigBlacklist = new Set(['channel', 'update', 'radius', 'city', 'latitude', 'longitude', 'unit']);

@@ -25,6 +25,7 @@ export default class RankSearchCommand extends Command {
 			},
 			category: 'Search',
 			rateLimit: 3,
+			cooldown: 3e5,
 		});
 
 		this.data
@@ -58,7 +59,7 @@ export default class RankSearchCommand extends Command {
 		const embed = new MessageEmbed();
 		if (leagueArgument === null) leagueArgument = 1500;
 		const leagueName: LeagueName = RankSearchCommand.LeagueMap[leagueArgument];
-		console.log(`LEAGUE NAME: ${leagueName}`);
+
 		const rankingData: RankingDataCollection = this.client.rankingData.leagueDataMap![leagueName];
 		if (nameArgument === null) {
 			// Search by rank only

@@ -54,7 +54,7 @@ export default class BaseSearchCommand extends Command {
 	}
 
 	public constructor(id, options: CommandOptions) {
-		super(id, { ...options, category: 'Search', rateLimit: 3 });
+		super(id, { ...options, category: 'Search', rateLimit: 3, cooldown: 3e5 });
 	}
 
 	public parseCommonArgs(interaction: CommandInteraction) {
