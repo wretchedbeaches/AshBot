@@ -28,13 +28,13 @@ export default class WeatherSearchCommand extends BaseSearchCommand {
 				.setName('weather')
 				.setDescription('The weather to search for')
 				.addChoices([
-					['cloudy', 'cloudy'],
-					['sunny', 'sunny'],
-					['windy', 'windy'],
-					['rain', 'rain'],
-					['fog', 'fog'],
-					['partly cloudy', 'partly cloudy'],
-					['snow', 'snow'],
+					['cloudy', '4'],
+					['sunny', '1'],
+					['windy', '5'],
+					['rain', '2'],
+					['fog', '7'],
+					['partly cloudy', '3'],
+					['snow', '6'],
 				]),
 		);
 		WeatherSearchCommand.addCityOption(this.data);
@@ -53,7 +53,7 @@ export default class WeatherSearchCommand extends BaseSearchCommand {
 		if (weatherArgument !== null) {
 			if (weatherData[weatherArgument]) {
 				const weatherObj = weatherData[weatherArgument];
-				weatherFilters.where['gameplay_condition'] = weatherObj.id;
+				weatherFilters.where['gameplay_condition'] = weatherObj!.id;
 				hasFailed = false;
 				title = `${weatherArgument.charAt(0).toUpperCase()}${weatherArgument
 					.substring(1)
