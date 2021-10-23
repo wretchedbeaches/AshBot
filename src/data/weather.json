@@ -1,42 +1,51 @@
 {
-  "normal": {
-    "id": 0,
-    "name": "",
-    "emoji": ""
-  },
-  "sunny": {
+  "1": {
     "id": 1,
-    "name": "sunny",
-    "emoji": ":sunny:"
+    "name": "Sunny",
+    "emoji": "weather_11",
+    "emojiBackup": ":sunny:",
+    "boosted": ["Grass", "Ground", "Fire"]
   },
-  "rain": {
+  "2": {
     "id": 2,
-    "name": "rain",
-    "emoji": ":cloud_rain:"
+    "name": "Rain",
+    "emoji": "weather_21",
+    "emojiBackup": ":cloud_rain:",
+    "boosted": ["Water", "Electric", "Bug"]
   },
-  "partly cloudy": {
+  "3": {
     "id": 3,
-    "name": "partly cloudy",
-    "emoji": ":white_sun_small_cloud:"
+    "name": "Partly Cloudy",
+    "emoji": "weather_31",
+    "emojiBackup": ":white_sun_small_cloud:",
+    "boosted": ["Normal", "Rock"]
   },
-  "cloudy": {
+  "4": {
     "id": 4,
-    "name": "cloudy",
-    "emoji": ":cloud:"
+    "name": "Cloudy",
+    "emoji": "weather_41",
+    "emojiBackup": ":cloud:",
+    "boosted": ["Fairy", "Fighting", "Poison"]
   },
-  "windy": {
+  "5": {
     "id": 5,
-    "name": "windy",
-    "emoji": ":leaves:"
+    "name": "Windy",
+    "emoji": "weather_51",
+    "emojiBackup": ":leaves:",
+    "boosted": ["Dragon", "Flying", "Psychic"]
   },
-  "snow": {
+  "6": {
     "id": 6,
-    "name": "snow",
-    "emoji": ":snowflake:"
+    "name": "Snow",
+    "emoji": "weather_61",
+    "emojiBackup": ":snowflake:",
+    "boosted": ["Ice", "Steel"]
   },
-  "fog": {
+  "7": {
     "id": 7,
-    "name": "fog",
-    "emoji": ":foggy:"
+    "name": "Fog",
+    "emoji": "weather_71",
+    "emojiBackup": ":foggy:",
+    "boosted": ["Dark", "Ghost"]
   }
 }
