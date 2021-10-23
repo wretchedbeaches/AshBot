@@ -1,0 +1,20 @@
+{
+	"grass": { "id": 12, "name": "Grass", "emoji": "🌿", "color": 7915600 },
+	"poison": { "id": 4, "name": "Poison", "emoji": "☠", "color": 10502304 },
+	"fire": { "id": 10, "name": "Fire", "emoji": "🔥", "color": 15761456 },
+	"flying": { "id": 3, "name": "Flying", "emoji": "🐦", "color": 11047152 },
+	"water": { "id": 11, "name": "Water", "emoji": "💧", "color": 6852848 },
+	"bug": { "id": 7, "name": "Bug", "emoji": "🐛", "color": 11057184 },
+	"normal": { "id": 1, "name": "Normal", "emoji": "⭕", "color": 9079385 },
+	"dark": { "id": 17, "name": "Dark" , "emoji": "🌑", "color": 7368816 },
+	"electric": { "id": 13, "name": "Electric", "emoji": "⚡", "color": 16306224 },
+	"rock": { "id": 6, "emoji": "🗿", "color": 12099640, "name": "Rock" },
+	"ground": { "id": 5, "emoji": "⛰️", "color": 14729320, "name": "Ground" },
+	"fairy": { "id": 18, "emoji": "🦋", "color": 15243496, "name": "Fairy" },
+	"fighting": { "id": 2, "emoji": "👊", "color": 12595240, "name": "Fighting" },
+	"psychic": { "id": 14, "emoji": "🔮", "color": 16275592, "name": "Psychic" },
+	"steel": { "id": 9, "emoji": "🔩", "color": 12105936, "name": "Steel" },
+	"ice": { "id": 15, "emoji": "❄", "color": 10016984, "name": "Ice" },
+	"ghost": { "id": 8, "emoji": "👻", "color": 7362712, "name": "Ghost" },
+	"dragon": { "id": 16, "emoji": "🐲", "color": 7354616, "name": "Dragon" }
+}
