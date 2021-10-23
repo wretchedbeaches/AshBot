@@ -1,5 +1,3 @@
-import masterfile from '../util/masterfile.json';
-import util from '../util/util.json';
 import { Router } from 'express';
 import client from '../Bot';
 import { parsePokemon, parseRaid, parseQuest, parseInvasion } from '../util/parse';
@@ -23,41 +21,22 @@ import {
 	isValid,
 } from './filters';
 import { InvasionEventData, PokemonEventData, QuestEventData, RaidEventData } from '../models/WebhookData';
-
-const boosted = {
-	'partly cloudy': ['Normal', 'Rock'],
-	cloudy: ['Fairy', 'Fighting', 'Poison'],
-	fog: ['Dark', 'Ghost'],
-	rain: ['Water', 'Electric', 'Bug'],
-	snow: ['Ice', 'Steel'],
-	sunny: ['Grass', 'Ground', 'Fire'],
-	clear: ['Grass', 'Ground', 'Fire'],
-	windy: ['Dragon', 'Flying', 'Psychic'],
-};
+import { pokemonData, pokemonTypesData, questRewardTypesData, weatherData } from '../data/Data';
+import { PokemonData, TypeElement } from '../data/DataTypes';
 
 const handlePokemon = (
 	client: BotClient,
-	pokemonData,
+	pokemon: PokemonData,
 	event: PokemonEventData,
 	{ channelConfig, channelId, guildId },
 ) => {
-	const {
-		cp,
-		pokemon_level,
-		individual_attack,
-		individual_defense,
-		individual_stamina,
-		latitude,
-		longitude,
-		weather,
-		shiny,
-	} = event;
+	const { cp, pokemon_level, individual_attack, individual_defense, individual_stamina, latitude, longitude, weather } =
+		event;
 
+	const weatherInfo = weather === null || weather === undefined ? null : weatherData[weather];
 	const isBoosted =
-		isValid(weather) &&
-		weather !== 0 &&
-		pokemonData.types &&
-		Object.values(pokemonData.types).some((type) => boosted[util.weather[`${weather!}`].name].includes(type));
+		isValid(weatherInfo) &&
+		pokemon.types.some((type) => weatherInfo!.boosted.includes(pokemonTypesData[type]?.name as TypeElement));
 	let iv: number | undefined = undefined;
 	if (individual_attack && individual_defense && individual_stamina)
 		iv = ((individual_attack + individual_defense + individual_stamina) / 45) * 100;
@@ -68,7 +47,7 @@ const handlePokemon = (
 		filterLevel(channelConfig, pokemon_level) &&
 		filterIV(channelConfig, iv) &&
 		filterRawIV(channelConfig, { individual_attack, individual_defense, individual_stamina }) &&
-		filterName(channelConfig, pokemonData.name) &&
+		filterName(channelConfig, pokemon.name) &&
 		(filterLongLat(latitude, longitude) ||
 			(filterGeo(channelConfig, { latitude, longitude }) &&
 				filterTrain(client, channelId, channelConfig, { latitude, longitude })))
@@ -98,8 +77,8 @@ const handlePokemon = (
 
 const handleRaid = (client: BotClient, event: RaidEventData, { channelConfig, channelId, guildId }) => {
 	const { cp, pokemon_id, latitude, longitude, team_id, level, ex_raid_eligible } = event;
-	const pokemonData = masterfile.pokemon[`${pokemon_id ?? ''}`];
-	if (isInvalid(pokemonData)) {
+	const pokemon = pokemonData[pokemon_id ?? ''];
+	if (isInvalid(pokemon)) {
 		return false;
 	}
 	if (
@@ -107,7 +86,7 @@ const handleRaid = (client: BotClient, event: RaidEventData, { channelConfig, ch
 		filterTeam(channelConfig, team_id) &&
 		filterCP(channelConfig, cp) &&
 		filterLevel(channelConfig, level) &&
-		filterName(channelConfig, pokemonData.name) &&
+		filterName(channelConfig, pokemon!.name) &&
 		(filterLongLat(latitude, longitude) ||
 			(filterGeo(channelConfig, { latitude, longitude }) &&
 				filterTrain(client, channelId, channelConfig, { latitude, longitude })))
@@ -136,10 +115,12 @@ const handleRaid = (client: BotClient, event: RaidEventData, { channelConfig, ch
 const handleQuest = async (client: BotClient, event: QuestEventData, { channelConfig, channelId, guildId }) => {
 	const { pokestop_id, latitude, longitude, rewards } = event;
 	const dbPokestop = await pokestop.findByPk(pokestop_id);
+	const reward = rewards![0];
+	const rewardData = questRewardTypesData[reward.type];
 	if (
 		channelConfig.rewardType !== undefined ||
-		(masterfile.quest_reward_types[rewards![0].type] &&
-			masterfile.quest_reward_types[rewards![0].type].text.toLowerCase() === channelConfig.rewardType &&
+		(rewardData &&
+			rewardData.text.toLowerCase() === channelConfig.rewardType &&
 			(filterLongLat(latitude, longitude) || filterGeo(channelConfig, { latitude, longitude })))
 	) {
 		const questEmbed = parseQuest(event, guildId, true, dbPokestop?.incident_expire_timestamp);
@@ -181,14 +162,14 @@ router.post('', async (req, res) => {
 						continue;
 					}
 					let handled = false;
-					let pokemonData = null;
+					let pokemon: PokemonData | undefined;
 					try {
 						switch (event.type) {
 							case 'pokemon':
 								if (event.message.capture_1 === 0) continue;
-								pokemonData = masterfile.pokemon[`${event.message.pokemon_id as number}`];
+								pokemon = pokemonData[event.message.pokemon_id];
 								if (isInvalid(pokemonData)) continue;
-								handled = handlePokemon(client, pokemonData, event.message as PokemonEventData, {
+								handled = handlePokemon(client, pokemon!, event.message as PokemonEventData, {
 									channelConfig,
 									channelId,
 									guildId,
