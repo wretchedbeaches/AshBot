@@ -4,7 +4,7 @@ import sequelize, { Op } from 'sequelize';
 import { stripIndents } from 'common-tags';
 import cities from 'all-the-cities';
 import BaseSearchCommand from './BaseSearchCommand';
-import weatherData from '../../data/weather.json';
+import { weatherData } from '../../data/Data';
 import { Literal } from 'sequelize/types/lib/utils';
 import { parseWeatherDb } from '../../util/parse';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
