@@ -2,7 +2,7 @@ import { getPreciseDistance } from 'geolib';
 import inside from 'point-in-polygon';
 import BotClient from '../client/BotClient';
 import config from '../config.json';
-import util from '../util/util.json';
+import { teamsData } from '../data/Data';
 
 export const isInvalid = (value: any): boolean => {
 	return value === undefined || value === null;
@@ -134,7 +134,7 @@ export const filterExRaid = (channelConfig, isEligible) => {
 
 export const filterTeam = (channelConfig, teamId?: number) => {
 	if (isInvalid(channelConfig.team) || isInvalid(teamId)) return true;
-	return util.teams[`${teamId!}`]?.name.toLowerCase() === channelConfig.team;
+	return teamsData[teamId!]?.name.toLowerCase() === channelConfig.team;
 };
 
 export const filterLeader = (channelConfig, gruntType: number): boolean => {

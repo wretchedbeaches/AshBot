@@ -8,13 +8,20 @@ import 'moment-timezone';
 import 'moment-precise-range-plugin';
 import config from '../config.json';
 import client from '../Bot';
-import { GuildEmoji, HexColorString, MessageEmbed } from 'discord.js';
+import { GuildEmoji, MessageEmbed } from 'discord.js';
 import countryFlagEmoji from 'country-flag-emoji';
 import nearbyCities from 'nearby-cities';
 import { stripIndents } from 'common-tags';
 import proto from './en.json';
-import masterfile from '../util/masterfile.json';
-import util from '../util/util.json';
+import {
+	pokemonData,
+	movesData,
+	pokemonTypesData,
+	questTypesData,
+	weatherData,
+	teamsData,
+	gruntTypesData,
+} from '../data/Data';
 import {
 	InvasionEventData,
 	PokemonEventData,
@@ -23,6 +30,12 @@ import {
 	RaidEventData,
 } from '../models/WebhookData';
 import { isNonEmptyArray, isValid } from '../routes/filters';
+import { nests } from '../manualdbModels/nests';
+import { pokestop } from '../rdmdbModels/pokestop';
+import { weather } from '../rdmdbModels/weather';
+import { gym } from '../rdmdbModels/gym';
+import { PokemonData, Weather } from '../data/DataTypes';
+import { pokemon as PokemonModel } from '../rdmdbModels/pokemon';
 
 export interface LocationEmoji {
 	name: string;
@@ -35,51 +48,6 @@ export interface RankingData {
 	level?: number;
 	percentage?: number;
 }
-
-export interface PokemonDataEvolution {
-	pokemon: number;
-	form?: number;
-	gender_reequirement?: number;
-}
-
-export interface TypeData {}
-
-export interface PokemonDataType {
-	attack?: number;
-	buddy_distance?: number;
-	buddy_group_number?: number;
-	capture_rate?: number;
-	charged_moves?: string[];
-	default_form_id?: number;
-	defense?: number;
-	evolutions?: PokemonDataEvolution[];
-	flee_rate?: number;
-	forms?: any[];
-	gym_defender_eligible?: boolean;
-	height?: number;
-	legendary?: boolean;
-	mythic?: boolean;
-	name: string;
-	pokedex_id?: number;
-	quick_moves?: string[];
-	stamina?: number;
-	temp_evolutions?: any[];
-	third_move_candy?: number;
-	third_move_stardust?: number;
-	types?: { [key: string]: { typeId: number; typeName: string } };
-	weight?: number;
-}
-
-const boosted = {
-	'partly cloudy': ['Normal', 'Rock'],
-	cloudy: ['Fairy', 'Fighting', 'Poison'],
-	fog: ['Dark', 'Ghost'],
-	rain: ['Water', 'Electric', 'Bug'],
-	snow: ['Ice', 'Steel'],
-	sunny: ['Grass', 'Ground', 'Fire'],
-	clear: ['Grass', 'Ground', 'Fire'],
-	windy: ['Dragon', 'Flying', 'Psychic'],
-};
 
 // function to get custom discord emoji string from its name
 const emoji = (name: string | undefined) => {
@@ -114,9 +82,9 @@ const parseGender = (gender?: number | null): string => {
 	return '';
 };
 
-const parseLocation = (locationEmoji: LocationEmoji | undefined, city) => {
+const parseLocation = (locationEmoji: LocationEmoji | undefined, city: { name: string | undefined }) => {
 	if (isValid(locationEmoji)) {
-		return `**${locationEmoji!.emoji} ${(city?.name as string | undefined) ?? 'unknown'}, ${locationEmoji!.name}**\n`;
+		return `**${locationEmoji!.emoji} ${city.name ?? 'unknown'}, ${locationEmoji!.name}**\n`;
 	}
 	return '';
 };
@@ -130,7 +98,7 @@ const parseAppleGoogle = (latitude: number, longitude: number) => {
 };
 
 export function parsePokemon(
-	pokemon: PokemonEventData,
+	pokemonEvent: PokemonEventData,
 	guildId: string,
 	webhook: boolean,
 	distanceFromPrevious?: number,
@@ -159,8 +127,8 @@ export function parsePokemon(
 		weather,
 		iv,
 		pokestop,
-	} = pokemon;
-	const pokemonData: PokemonDataType | undefined = masterfile.pokemon[`${pokemon_id!}`];
+	} = pokemonEvent;
+	const pokemon: PokemonData = pokemonData[pokemon_id!]!;
 	// calculating time when pokemon expires and remaining time until pokemon expires
 	const disappearTime = moment.utc(disappear_time! * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
@@ -179,20 +147,15 @@ export function parsePokemon(
 			iv = ((individual_attack! + individual_defense! + individual_stamina!) / 45) * 100;
 
 	const embed = client.embed(guildId);
-	// TODO: Define a pokemonData type based on the data in the file.
-	if (!webhook)
-		embed.setTitle(`${pokemonData ? pokemonData.name : ''} ${latitude!.toFixed(5)},${longitude!.toFixed(5)}`);
-	if (pokemonData?.types)
-		embed.setColor(
-			`#${util.types[Object.values(pokemonData.types)[0].typeName].color.toString(16) as string}` as HexColorString,
-		);
-	if (pokemonData)
-		embed.setThumbnail(
-			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.toLowerCase().split(' ').join('')}.gif`,
-		);
+
+	if (!webhook) embed.setTitle(`${pokemon.name} ${latitude!.toFixed(5)},${longitude!.toFixed(5)}`);
+	embed.setColor(pokemonTypesData[pokemon.types[0]]!.color);
+	embed.setThumbnail(
+		`https://play.pokemonshowdown.com/sprites/xyani/${pokemon.name.toLowerCase().split(' ').join('')}.gif`,
+	);
 
 	// line 1: name and gender
-	let description = `${pokemonData ? `**${pokemonData.name}**` : ''}`;
+	let description = `**${pokemon.name}**`;
 	description = `${description} ${parseGender(gender)}`.trim();
 
 	// line 2, 3: cp, iv and 1v1
@@ -208,46 +171,38 @@ export function parsePokemon(
 
 	// line 4: moveset
 	if (isValid(move_1) && isValid(move_2)) {
-		description += `${emoji(config.statsEmojis.moveset)!} ${masterfile.moves[`${move_1!}`].name as string}/${
-			masterfile.moves[`${move_2!}`].name as string
+		description += `${emoji(config.statsEmojis.moveset)!} ${movesData[move_1!]?.name ?? ''}/${
+			movesData[move_2!]?.name ?? ''
 		}\n`;
 	}
 
 	// line 5: despawn time and time remaining
 	description += `${emoji(config.statsEmojis.despawn)!}: ${duration}\n`;
-	const pokemonDataIsValid = isValid(pokemonData);
-	const pokemonDataTypesAreValid = isValid(pokemonData?.types);
+	const pokemonDataIsValid = isValid(pokemon);
 	// line 6: types and weather
-	if (pokemonDataIsValid && pokemonDataTypesAreValid) {
-		description += `**Types:** ${Object.values(pokemonData!.types!)
-			.map((type) => {
-				return emoji(config.typeEmojis[type.typeName]) === config.typeEmojis[type.typeName]
-					? util.types[type.typeName].emoji
-					: emoji(config.typeEmojis[type.typeName]);
+	if (pokemonDataIsValid) {
+		description += `**Types:** ${pokemon.types
+			.map((type: string | number) => {
+				const typeData = pokemonTypesData[type]!;
+				const typeEmoji = emoji(typeData.emoji);
+				return typeEmoji === typeData.name ? typeData.emojiBackup : typeEmoji;
 			})
 			.join(' ')} `;
 	}
 
 	if (weather !== 0 && isValid(weather)) {
-		description += `| **Weather:** `;
-		const weatherString = `${weather!}`;
-		const weatherEmoji = emoji(config.weatherEmojis[weatherString]);
-		const utilWeatherName = util.weather[weatherString].name ?? '';
-		if (weatherEmoji === weatherString) {
-			description += `${util.weather[weatherString].emoji as string}`;
-		} else {
-			description += `${weatherEmoji!}`;
-		}
-		if (util.weather[weatherString]) {
-			description += utilWeatherName;
-		}
-		if (
-			pokemonDataIsValid &&
-			pokemonDataTypesAreValid &&
-			pokemonData?.types &&
-			Object.values(pokemonData.types).some((type) => (boosted[utilWeatherName] ?? []).includes(type))
-		) {
-			description += `**BOOSTED**`;
+		const weatherInfo: Weather | undefined = weatherData[weather!];
+		if (weatherInfo) {
+			description += `| **Weather:** `;
+			const weatherEmoji = emoji(weatherInfo.emoji);
+			if (weatherEmoji && weatherEmoji !== weatherInfo.emoji) {
+				description += weatherEmoji === weatherInfo.emoji ? weatherInfo.emojiBackup : weatherEmoji;
+			} else {
+				description += weatherInfo.emojiBackup;
+			}
+			if (pokemon.types.some((type) => weatherInfo.boosted.includes(type))) {
+				description += `**BOOSTED**`;
+			}
 		}
 	}
 
@@ -280,7 +235,7 @@ export function parsePokemon(
 			description += `\n${emoji(config.leagueEmojis.great)!}**Great League**:\n${pvp_rankings_great_league!
 				.map((ranking, index) => {
 					// TODO: This ranking.pokemon may already be a string.
-					const p: PokemonDataType | undefined = masterfile.pokemon[`${ranking.pokemon}`];
+					const p: PokemonData | undefined = pokemonData[ranking.pokemon];
 					// TODO: Make this a function since it's repeated
 					return (
 						(ranking.rank ? `Rank #${ranking.rank}` : '') +
@@ -298,7 +253,7 @@ export function parsePokemon(
 			// ultra league pvp data
 			description += `\n${emoji(config.leagueEmojis.ultra)!}**Ultra League**:\n${pvp_rankings_ultra_league!
 				.map((ranking, index) => {
-					const p: PokemonDataType | undefined = masterfile.pokemon[`${ranking.pokemon}`];
+					const p: PokemonData | undefined = pokemonData[ranking.pokemon];
 					return (
 						(ranking.rank ? `Rank #${ranking.rank}` : '') +
 						(p?.name ?? '') +
@@ -321,42 +276,46 @@ export function parsePokemon(
 	embed.setDescription(description);
 	return {
 		embed: embed,
-		message: `${emoji(`pokemon_${pokemon_id!}`)!} ${pokemonData!.name} | ${latitude?.toFixed(5) ?? 'unknown'},${
+		message: `${emoji(`pokemon_${pokemon_id!}`)!} ${pokemon.name} | ${latitude?.toFixed(5) ?? 'unknown'},${
 			longitude?.toFixed(5) ?? 'unknown'
 		}`,
 	};
 }
 
-export function parsePokemonDb(pokemon, guildId: string, webhook: boolean): MessageEmbed {
-	pokemon.dataValues.pokemon_level = pokemon.dataValues.level;
-	pokemon.dataValues.latitude = pokemon.dataValues.lat;
-	pokemon.dataValues.longitude = pokemon.dataValues.lon;
-	pokemon.dataValues.individual_attack = pokemon.dataValues.atk_iv;
-	pokemon.dataValues.individual_defense = pokemon.dataValues.def_iv;
-	pokemon.dataValues.individual_stamina = pokemon.dataValues.sta_iv;
-	pokemon.dataValues.disappear_time = pokemon.dataValues.expire_timestamp;
-	pokemon.dataValues.pvp_rankings_great_league = JSON.parse(pokemon.dataValues.pvp_rankings_great_league);
-	pokemon.dataValues.pvp_rankings_ultra_league = JSON.parse(pokemon.dataValues.pvp_rankings_ultra_league);
-	return parsePokemon(pokemon.dataValues, guildId, webhook).embed;
+export function parsePokemonDb(pokemon: PokemonModel, guildId: string, webhook: boolean): MessageEmbed {
+	const eventPokemon: PokemonEventData = {
+		pokemon_level: pokemon.level,
+		latitude: pokemon.lat,
+		longitude: pokemon.lon,
+		individual_attack: pokemon.atk_iv,
+		individual_defense: pokemon.def_iv,
+		individual_stamina: pokemon.sta_iv,
+		disappear_time: pokemon.expire_timestamp,
+		pvp_rankings_great_league:
+			pokemon.pvp_rankings_great_league === undefined ? null : JSON.parse(pokemon.pvp_rankings_great_league),
+		pvp_rankings_ultra_league:
+			pokemon.pvp_rankings_ultra_league === undefined ? null : JSON.parse(pokemon.pvp_rankings_great_league!),
+		spawnpoint_id: null,
+		username: 'data',
+	};
+	return parsePokemon(eventPokemon, guildId, webhook).embed;
 }
-export function parseNestDb(nest): { value: string } {
+export function parseNestDb(nest: nests): { value: string } {
 	const { lat, lon } = nest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
 	return stripIndents`${emoji.emoji} ${city.name}, ${emoji.name}
-    [**[${lat.toFixed(5)},${lon.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`;
+    [**[${lat!.toFixed(5)},${lon!.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`;
 }
-export function parseQuestDb(quest): { value: string } {
+export function parseQuestDb(quest: pokestop): { value: string } {
 	const { lat, lon, quest_type, quest_target } = quest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
-	return stripIndents`**Type:** ${masterfile.quest_types[`${quest_type as number}`].type
-		.split('{0}')
-		.join(quest_target)}
+	return stripIndents`**Type:** ${questTypesData[quest_type!]!.split('{0}').join(`${quest_target ?? ' '}`)}
     ${emoji.emoji} ${emoji.name}
     [**[${lat.toFixed(5)},${lon.toFixed(5)}]](https://www.google.com/maps?q=${lat},${lon})**`;
 }
-export function parseWeatherDb(weather): string {
+export function parseWeatherDb(weather: weather): string {
 	const city = nearbyCities({
 		latitude: weather.latitude,
 		longitude: weather.longitude,
@@ -392,10 +351,10 @@ export function parseRaid(
 		ex_raid_eligible,
 	} = raid;
 
-	const pokemonData: PokemonDataType = masterfile.pokemon[`${pokemon_id ?? ''}`];
+	const pokemon: PokemonData = pokemonData[pokemon_id ?? '']!;
 
 	// calculating time when pokemon expires and remaining time until pokemon expires
-	const disappearTime = moment.utc(end * 1000).tz(geoTz(latitude, longitude).toString());
+	const disappearTime = moment.utc((end ?? 0) * 1000).tz(geoTz(latitude, longitude).toString());
 	const now = moment.utc(moment.now()).tz(geoTz(latitude, longitude).toString());
 	const duration = moment.preciseDiff(disappearTime, now);
 
@@ -407,13 +366,11 @@ export function parseRaid(
 	const locationEmoji: LocationEmoji | undefined = countryFlagEmoji.get(city.country);
 
 	const embed = client.embed(guildId);
-	if (isValid(pokemonData.types)) {
-		const color: number = util.types[Object.values(pokemonData.types!)[0].typeName].color;
-		embed.setColor(`#${color.toString(16)}` as HexColorString);
-	}
+	const typeData = pokemonTypesData[pokemon.types[0]];
+	if (typeData) embed.setColor(typeData.color);
 
 	// line 1: name and gender
-	let description = `${`**${pokemonData.name}**`}`;
+	let description = `${`**${pokemon.name}**`}`;
 	if (isValid(gender)) {
 		const genderEmojiName: string | undefined = config.genderEmojis[`${gender!}`];
 		let genderEmoji = emoji(genderEmojiName);
@@ -440,9 +397,9 @@ export function parseRaid(
 
 	// line 4: moveset
 	if (isValid(move_1) && isValid(move_2)) {
-		description += `${emoji(config.statsEmojis.moveset)!} ${masterfile.moves[`${move_1!}`].name as string}/${
-			masterfile.moves[`${move_2!}`].name as string
-		}\n`;
+		const moveOneName = movesData[move_1!]?.name ?? `Unknown move '${move_1!}'`;
+		const moveTwoName = movesData[move_2!]?.name ?? `Unknown move '${move_2!}'`;
+		description += `${emoji(config.statsEmojis.moveset)!} ${moveOneName}/${moveTwoName}\n`;
 	}
 
 	if (isValid(cp)) {
@@ -451,19 +408,20 @@ export function parseRaid(
 		)} (${duration} left)\n`;
 	}
 
-	if (isValid(pokemonData.types)) {
-		description += `**Types:** ${Object.values(pokemonData.types!)
+	if (isValid(pokemon.types)) {
+		description += `**Types:** ${pokemon.types
 			.map((type) => {
-				const weaknesses: string[] = util.typeWeaknesses[type.typeName].weaknesses;
-				return `${emoji(config.typeEmojis[type.typeName])!} (**Weaknesses**: ${weaknesses
-					.map((weakness: string) => emoji(config.typeEmojis[weakness])!)
+				const typeData = pokemonTypesData[type]!;
+				const weaknesses: string[] = typeData.weaknesses;
+				return `${emoji(typeData.emoji) ?? typeData.emojiBackup} (**Weaknesses**: ${weaknesses
+					.map((weakness: string) => emoji(typeData[weakness].emoji) ?? typeData[weakness].emojiBackup)
 					.join(' ')})`;
 			})
 			.join(', ')}\n`;
 	}
 
 	if (isValid(level)) description += `**Level:** ${level!} | `;
-	if (isValid(team_id)) description += `${emoji(config.teamEmojis[util.teams[`${team_id!}`].name])!}`;
+	if (isValid(team_id)) description += `${emoji(teamsData[team_id!]?.name ?? '')!}`;
 	if (isValid(ex_raid_eligible)) description += emoji('ex');
 	description += `Gym\n`;
 	if (isValid(distanceFromPrevious)) description += `**Distance From Previous**: ${distanceFromPrevious!}\n`;
@@ -476,26 +434,28 @@ export function parseRaid(
 	embed
 		.setURL(gym_url!)
 		.setThumbnail(
-			`https://play.pokemonshowdown.com/sprites/xyani/${pokemonData.name.split(' ').join('').toLowerCase()}.gif`,
+			`https://play.pokemonshowdown.com/sprites/xyani/${pokemon.name.split(' ').join('').toLowerCase()}.gif`,
 		)
 		.setAuthor(gym_name!, gym_url)
 		.setDescription(description);
 	return { embed: embed, coordinates: [latitude!, longitude!] };
 }
 
-export function parseRaidDb(raid, guildId: string): MessageEmbed {
-	raid.dataValues.gym_name = raid.dataValues.name;
-	raid.dataValues.latitude = raid.dataValues.lat;
-	raid.dataValues.longitude = raid.dataValues.lon;
-	raid.dataValues.move_1 = raid.dataValues.raid_pokemon_move_1;
-	raid.dataValues.move_2 = raid.dataValues.raid_pokemon_move_2;
-	raid.dataValues.gender = raid.dataValues.raid_pokemon_gender;
-	raid.dataValues.gym_url = raid.dataValues.url;
-	raid.dataValues.level = raid.dataValues.raid_level;
-	raid.dataValues.end = raid.dataValues.raid_end_timestamp;
-	raid.dataValues.cp = raid.dataValues.raid_pokemon_cp;
-	raid.dataValues.pokemon_id = raid.dataValues.raid_pokemon_id;
-	return parseRaid(raid.dataValues, guildId, true, null).embed;
+export function parseRaidDb(raid: gym, guildId: string): MessageEmbed {
+	const raidEvent: RaidEventData = {
+		gym_name: raid.name,
+		latitude: raid.lat,
+		longitude: raid.lon,
+		move_1: raid.raid_pokemon_move_1,
+		move_2: raid.raid_pokemon_move_2,
+		gender: raid.raid_pokemon_gender,
+		gym_url: raid.url,
+		level: raid.raid_level,
+		end: raid.raid_end_timestamp,
+		cp: raid.raid_pokemon_cp,
+		pokemon_id: raid.raid_pokemon_id,
+	};
+	return parseRaid(raidEvent, guildId, true, null).embed;
 }
 
 export function parseQuest(
@@ -508,9 +468,8 @@ export function parseQuest(
 	embed: MessageEmbed;
 	coordinates: number[];
 } {
-	const { latitude, longitude, type, pokestop_name, rewards } = quest;
+	const { latitude, longitude, pokestop_name, rewards } = quest;
 
-	const questData = masterfile.quest_types[`${type!}`];
 	// let disappearTime: Moment;
 	// let now: Moment;
 	// let duration: string;
@@ -529,8 +488,6 @@ export function parseQuest(
 
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${pokestop_name ?? 'Unknown Pokestop'}`);
-	const questTypeColor: number | undefined = isValid(questData?.type) ? util.types[questData.type].color : undefined;
-	if (isValid(questTypeColor)) embed.setColor(`#${questTypeColor!.toString(16)}` as HexColorString);
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (isNonEmptyArray(quest.rewards)) {
 		const reward: QuestEventRewards = rewards![0];
@@ -563,7 +520,6 @@ export function parseQuest(
 	}
 
 	let description = '';
-	if (isValid(quest.gender)) description += `**Gender** ${parseGender(quest.gender)!}`.trim();
 	if (isNonEmptyArray(quest.rewards)) description += `\n**Reward:** ${getQuestReward(quest)}\n`;
 	if (isValid(quest.template)) description += `**Task**: ${getQuestTask(quest)}\n`;
 	else description += '\n';
@@ -592,7 +548,7 @@ export function parseInvasion(
 } {
 	const { latitude, longitude, grunt_type, name, url, incident_expire_timestamp } = invasion;
 
-	const invasionGruntData = masterfile.grunt_types[`${grunt_type}`];
+	const invasionGruntData = gruntTypesData[grunt_type];
 	let disappearTime: Moment;
 	let now: Moment;
 	let duration: string;
@@ -611,31 +567,26 @@ export function parseInvasion(
 
 	const embed = client.embed(guildId);
 	if (webhook) embed.setTitle(`${(city?.name as string | undefined) ?? 'Unknown'}: ${name!}`);
-	const gruntType = util.gruntTypes[`${grunt_type}`];
-	if (gruntType?.type && util.types[gruntType.type]) {
-		const color: number = util.types[gruntType.type].color;
-		embed.setColor(`#${color.toString(16)}` as HexColorString);
+	if (invasionGruntData?.type && pokemonTypesData[invasionGruntData.type]) {
+		embed.setColor(pokemonTypesData[invasionGruntData.type]!.color);
 	}
 	embed.setURL(`https://www.google.com/maps?q=${latitude!},${longitude!})`);
 	if (url) embed.setThumbnail(url);
-	if (invasionGruntData && util.gruntImages[invasionGruntData.grunt])
-		embed.setThumbnail(util.gruntImages[invasionGruntData.grunt]);
-	if (invasionGruntData && util.gruntImages[invasionGruntData.type])
-		embed.setThumbnail(util.gruntImages[invasionGruntData.type]);
+	if (invasionGruntData?.image) embed.setThumbnail(invasionGruntData.image);
 
 	let description = '';
 	if (incident_expire_timestamp)
 		description = `**Expires**: ${disappearTime!.format('hh:mm:ss A')} (${duration!} left)\n`;
 	if (isValid(invasionGruntData?.type)) {
-		const typeOutput = config.typeEmojis[invasionGruntData.type]
-			? emoji(config.typeEmojis[invasionGruntData.type])
-			: invasionGruntData.type;
+		const typeOutput = config.typeEmojis[invasionGruntData!.type]
+			? emoji(config.typeEmojis[invasionGruntData!.type])
+			: invasionGruntData!.type;
 		description += `**Type:** ${typeOutput as string}`;
 	}
 
-	description += `**Gender** ${parseGender(invasionGruntData.gender)}`;
+	description += `**Gender** ${parseGender(invasionGruntData?.gender)}`;
 
-	if (isValid(invasionGruntData?.grunt)) description += `**Grunt Type:** ${invasionGruntData.grunt as string}\n`;
+	if (isValid(invasionGruntData?.grunt)) description += `**Grunt Type:** ${invasionGruntData?.grunt ?? 'Unknown'}\n`;
 
 	description += parseLocation(locationEmoji, city);
 	description += parseAppleGoogle(latitude!, longitude!);
@@ -670,9 +621,7 @@ export function getQuestTask(quest: QuestEventData): string {
 	// CATCHING SPECIFIC POKEMON
 	if (questTemplate.includes('catch_specific')) {
 		if (validTargetAndConditions && isNonEmptyArray(quest.conditions[0].info.pokemon_ids))
-			return `Catch ${quest.target!} ${
-				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]!]!.name! as string
-			}`;
+			return `Catch ${quest.target!} ${pokemonData[quest.conditions[0]!.info.pokemon_ids![0]!]!.name}`;
 	}
 	// CATCH POKEMON TYPES
 	if (questTemplate.includes('catch_types')) {
@@ -810,7 +759,7 @@ export function getQuestTask(quest: QuestEventData): string {
 		) {
 			let quest_pokemon = '';
 			for (const pid of quest.conditions[0].info.pokemon_ids!) {
-				quest_pokemon += `${(masterfile.pokemon[pid]?.name as string | undefined) ?? `<Unknown id ${pid}`}, `;
+				quest_pokemon += `${pokemonData[pid]?.name ?? `<Unknown id ${pid}`}, `;
 			}
 			return `Evolve a ${quest_pokemon.slice(0, -2)}`;
 		}
@@ -854,7 +803,7 @@ export function getQuestTask(quest: QuestEventData): string {
 	if (questTemplate.includes('snapshot')) {
 		if (questTemplate.includes('easy') && validConditions && isNonEmptyArray(quest.conditions[0].info.pokemon_ids)) {
 			return `Take ${questTarget} Snapshots of ${
-				masterfile.pokemon[quest.conditions[0]!.info.pokemon_ids![0]].name as string
+				pokemonData[quest.conditions[0]!.info.pokemon_ids![0]]?.name ?? 'Unknown'
 			}`;
 		}
 		if (questTemplate.includes('gen2_jan21')) {

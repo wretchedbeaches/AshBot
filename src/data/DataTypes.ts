@@ -10,6 +10,65 @@ export interface Weather {
 	boosted: TypeElement[];
 }
 
+export interface WeatherApiDataCoord {
+	lat: number;
+	lon: number;
+}
+
+export interface WeatherApiDataWeather {
+	id: number;
+	main: string;
+	description: string;
+	icon: string;
+}
+
+export interface WeatherApiDataMain {
+	temp: number;
+	feels_like: number;
+	temp_min: number;
+	temp_max: number;
+	pressure: number;
+	humidity: number;
+}
+
+export interface WeatherApiDataWind {
+	speed: number;
+	deg: number;
+	gust?: number;
+}
+
+export interface WeatherApiDataCloud {
+	all: number;
+}
+
+export interface WeatherApiDataSys {
+	type: number;
+	id: number;
+	country: string;
+	sunrise: number;
+	sunset: number;
+}
+export interface WeatherApiData {
+	coord: WeatherApiDataCoord;
+	weather: WeatherApiDataWeather[];
+	base: string;
+	main: WeatherApiDataMain;
+	visibility: number;
+	wind: WeatherApiDataWind;
+	clouds: WeatherApiDataCloud;
+	dt: number;
+	sys: WeatherApiDataSys;
+	timezone: number;
+	id: number;
+	name: string;
+	cod: number;
+}
+
+export interface WeatherApiDataError {
+	cod: string;
+	message: string;
+}
+
 // GRUNT
 
 export interface Grunt {
@@ -18,6 +77,7 @@ export interface Grunt {
 	grunt?: string;
 	second_reward: boolean;
 	encounters: Encounters;
+	image?: string;
 }
 
 export interface Encounters {
@@ -29,6 +89,7 @@ export interface Encounters {
 // ITEM
 
 export interface Item {
+	id: number;
 	name: string;
 	proto: string;
 	type: string;
@@ -43,19 +104,36 @@ export interface QuestGeneric {
 	text: string;
 }
 
-// TEAMS
 export interface Team {
 	id: number;
 	name: string;
 	color: number;
+	emoji: string;
 }
 
-export interface TeamsData {
-	uncontested: Team;
-	mystic: Team;
-	valor: Team;
-	instinct: Team;
-	any: Team;
+export interface RankingMatchupData {
+	opponent: string;
+	rating: number;
+}
+
+export interface RankingMoveData {
+	moveId: string;
+	uses: number;
+}
+export interface RankingMovesData {
+	fastMoves: RankingMoveData[];
+	chargedMoves: RankingMoveData[];
+}
+export interface RankingData {
+	speciesId: string;
+	speciesName: string;
+	rating: number;
+	matchups: RankingMatchupData[];
+	counters: RankingMatchupData[];
+	moves: RankingMovesData;
+	moveset: string[];
+	score: number;
+	scores: number[];
 }
 
 // POKEMON DATA TYPES

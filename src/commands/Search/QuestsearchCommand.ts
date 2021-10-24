@@ -1,16 +1,15 @@
 import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
 import { stripIndents } from 'common-tags';
 import ntim from '../../util/name_to_id_map.json';
-import masterfile from '../../util/masterfile.json';
 import { pokestop } from '../../rdmdbModels/pokestop';
 import sequelize, { Op } from 'sequelize';
-import util from '../../util/util.json';
 import { parseQuestDb } from '../../util/parse';
 import { Literal, Where } from 'sequelize/types/lib/utils';
-import { PokemonItemDataType, PokemonTypeDataType } from '../../models/Data';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
 import BaseSearchCommand from './BaseSearchCommand';
 import config from '../../config.json';
+import { itemsData, pokemonData, pokemonTypesData } from '../../data/Data';
+import { Item, PokemonData } from '../../data/DataTypes';
 
 interface HandleData {
 	title: string;
@@ -103,35 +102,29 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 
 		let nameArgument = '';
 		let pokemonId: string | undefined = '';
-		let item: PokemonItemDataType | undefined;
+		let pokemon: PokemonData | undefined;
+		let item: Item | undefined;
 		let title: string | undefined;
 		let color: HexColorString | undefined;
 		let thumbnail: string | undefined;
 		if (subcommand === 'pookemon' || subcommand === 'mega') {
 			nameArgument = interaction.options.getString('name', true);
 			pokemonId = ntim[nameArgument.toLowerCase()];
-			if (!pokemonId)
+			pokemon = pokemonData[pokemonId ?? ''];
+			if (pokemonId === undefined || pokemon === undefined)
 				return interaction.editReply(`THe provided pokemon name '${nameArgument}' could not be resolved to a pokemon`);
 		}
 
 		if (subcommand === 'item') {
 			nameArgument = interaction.options.getString('name', true);
-			for (const itemId in masterfile.items) {
-				if (masterfile.items.hasOwnProperty(itemId)) {
-					if (masterfile.items[itemId] && masterfile.items[itemId].name === nameArgument)
-						item = {
-							...masterfile.items[itemId],
-							id: itemId,
-						};
-					break;
-				}
-			}
-			if (!item) return interaction.editReply(`Could not find an item by the provided name '${nameArgument}'`);
+			item = itemsData[nameArgument.toLowerCase()];
+			if (item === undefined)
+				return interaction.editReply(`Could not find an item by the provided name '${nameArgument}'`);
 		}
 
 		switch (subcommand) {
 			case 'pokemon':
-				({ title, color, thumbnail } = this.handlePokemon(nameArgument, pokemonId, dbQuestsAnd));
+				({ title, color, thumbnail } = this.handlePokemon(nameArgument, pokemon!, dbQuestsAnd));
 				break;
 			case 'item':
 				({ title, color, thumbnail } = this.handleItem(item!, dbQuestsAnd));
@@ -140,7 +133,7 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 				({ title, color, thumbnail } = this.handleStardust(interaction, dbQuestsAnd));
 				break;
 			case 'mega':
-				({ title, color, thumbnail } = this.handleMega(pokemonId, nameArgument.toLowerCase()!, dbQuestsAnd));
+				({ title, color, thumbnail } = this.handleMega(pokemon!, dbQuestsAnd));
 				break;
 		}
 
@@ -204,43 +197,43 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 		};
 	}
 
-	public handlePokemon(pokemonId: string, pokemonName: string, dbQuestsAnd): HandleData {
+	public handlePokemon(pokemonName: string, pokemon: PokemonData, dbQuestsAnd): HandleData {
 		dbQuestsAnd.push({
 			quest_reward_type: 7,
-			quest_pokemon_id: pokemonId,
+			quest_pokemon_id: pokemon.pokedexId,
 		});
 
-		const pokemonDataTypes = Object.values(masterfile.pokemon[pokemonId]!.types) as unknown as PokemonTypeDataType[];
+		const pokemonTypeData = pokemonTypesData[pokemon.types[0]];
+		const typeColor = pokemonTypeData?.color;
 
 		return {
 			title: `Quests For Pokemon ${pokemonName.charAt(0).toUpperCase()}${pokemonName.substring(1).toLowerCase()}`,
-			color: `#${util.types[pokemonDataTypes[0].typeName].color.toString(16) as string}` as HexColorString,
+			color: typeColor,
 			thumbnail: `https://play.pokemonshowdown.com/sprites/xyani/${pokemonName.toLowerCase()}.gif`,
 		};
 	}
 
-	public handleItem(item: PokemonItemDataType, dbQuestsAnd): HandleData {
+	public handleItem(item: Item, dbQuestsAnd): HandleData {
 		dbQuestsAnd.push({
 			quest_reward_type: 2,
-			quest_item_id: item.id!,
+			quest_item_id: item.id,
 		});
 		return {
 			title: `Quest With Reward ${item.name}`,
-			thumbnail: `https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${item.id!}_1.png`,
+			thumbnail: `https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_${item.id}_1.png`,
 		};
 	}
 
-	public handleMega(pokemonId: string, pokemonName: string, dbQuestsAnd): HandleData {
+	public handleMega(pokemon: PokemonData, dbQuestsAnd): HandleData {
 		dbQuestsAnd.push({
 			quest_reward_type: 12,
-			quest_rewards: { [Op.like]: `%"pokemon_id":${pokemonId}%` },
+			quest_rewards: { [Op.like]: `%"pokemon_id":${pokemon.pokedexId}%` },
 		});
-
-		const pokemonDataTypes = Object.values(masterfile.pokemon[pokemonId]!.types) as unknown as PokemonTypeDataType[];
+		const typeColor = pokemonTypesData[pokemon.types[0] ?? '']?.color;
 		return {
-			title: `Mega Energy Quests For ${pokemonName.charAt(0).toUpperCase()}${pokemonName.substring(1).toLowerCase()}`,
-			color: `#${util.types[pokemonDataTypes[0].typeName].color.toString(16) as string}` as HexColorString,
-			thumbnail: `https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${pokemonId}.png`,
+			title: `Mega Energy Quests For ${pokemon.name}`,
+			color: typeColor,
+			thumbnail: `https://raw.githubusercontent.com/nileplumb/PkmnShuffleMap/master/PMSF_icons_large/rewards/reward_mega_energy_${pokemon.pokedexId}.png`,
 		};
 	}
 }

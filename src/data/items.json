@@ -1,433 +1,489 @@
 {
-  "1": {
-    "name": "Poke Ball",
-    "proto": "ITEM_POKE_BALL",
-    "type": "Pokeball",
-    "category": "Pokeball",
-    "min_trainer_level": 1
-  },
-  "2": {
-    "name": "Great Ball",
-    "proto": "ITEM_GREAT_BALL",
-    "type": "Pokeball",
-    "category": "Pokeball",
-    "min_trainer_level": 12
-  },
-  "3": {
-    "name": "Ultra Ball",
-    "proto": "ITEM_ULTRA_BALL",
-    "type": "Pokeball",
-    "category": "Pokeball",
-    "min_trainer_level": 20
-  },
-  "4": {
-    "name": "Master Ball",
-    "proto": "ITEM_MASTER_BALL",
-    "type": "Pokeball",
-    "category": "Pokeball",
-    "min_trainer_level": 100
-  },
-  "5": {
-    "name": "Premier Ball",
-    "proto": "ITEM_PREMIER_BALL",
-    "type": "Pokeball",
-    "category": "Pokeball",
-    "min_trainer_level": 100
-  },
-  "101": {
-    "name": "Potion",
-    "proto": "ITEM_POTION",
-    "type": "Potion",
-    "category": "Medicine",
-    "min_trainer_level": 5
-  },
-  "102": {
-    "name": "Super Potion",
-    "proto": "ITEM_SUPER_POTION",
-    "type": "Potion",
-    "category": "Medicine",
-    "min_trainer_level": 10
-  },
-  "103": {
-    "name": "Hyper Potion",
-    "proto": "ITEM_HYPER_POTION",
-    "type": "Potion",
-    "category": "Medicine",
-    "min_trainer_level": 15
-  },
-  "104": {
-    "name": "Max Potion",
-    "proto": "ITEM_MAX_POTION",
-    "type": "Potion",
-    "category": "Medicine",
-    "min_trainer_level": 25
-  },
-  "201": {
-    "name": "Revive",
-    "proto": "ITEM_REVIVE",
-    "type": "Revive",
-    "category": "Medicine",
-    "min_trainer_level": 5
-  },
-  "202": {
-    "name": "Max Revive",
-    "proto": "ITEM_MAX_REVIVE",
-    "type": "Revive",
-    "category": "Medicine",
-    "min_trainer_level": 30
-  },
-  "301": {
-    "name": "Lucky Egg",
-    "proto": "ITEM_LUCKY_EGG",
-    "type": "Xp Boost",
-    "category": "Xp Boost",
-    "min_trainer_level": 1
-  },
-  "401": {
-    "name": "Incense Ordinary",
-    "proto": "ITEM_INCENSE_ORDINARY",
-    "type": "Incense",
-    "category": "Incense",
-    "min_trainer_level": 1
-  },
-  "405": {
-    "name": "Incense Beluga Box",
-    "proto": "ITEM_INCENSE_BELUGA_BOX",
-    "type": "Incense",
-    "category": "Incense",
-    "min_trainer_level": 1
-  },
-  "501": {
-    "name": "Troy Disk",
-    "proto": "ITEM_TROY_DISK",
-    "type": "Disk",
-    "category": "Disk",
-    "min_trainer_level": 1
-  },
-  "502": {
-    "name": "Troy Disk Glacial",
-    "proto": "ITEM_TROY_DISK_GLACIAL",
-    "type": "Disk",
-    "category": "Disk",
-    "min_trainer_level": 1
-  },
-  "503": {
-    "name": "Troy Disk Mossy",
-    "proto": "ITEM_TROY_DISK_MOSSY",
-    "type": "Disk",
-    "category": "Disk",
-    "min_trainer_level": 1
-  },
-  "504": {
-    "name": "Troy Disk Magnetic",
-    "proto": "ITEM_TROY_DISK_MAGNETIC",
-    "type": "Disk",
-    "category": "Disk",
-    "min_trainer_level": 1
-  },
-  "505": {
-    "name": "Troy Disk Rainy",
-    "proto": "ITEM_TROY_DISK_RAINY",
-    "type": "Disk",
-    "category": "Disk",
-    "min_trainer_level": 1
-  },
-  "602": {
-    "name": "X Attack",
-    "proto": "ITEM_X_ATTACK",
-    "type": "Battle",
-    "category": "Boost",
-    "min_trainer_level": 100
-  },
-  "603": {
-    "name": "X Defense",
-    "proto": "ITEM_X_DEFENSE",
-    "type": "Battle",
-    "category": "Boost",
-    "min_trainer_level": 100
-  },
-  "604": {
-    "name": "X Miracle",
-    "proto": "ITEM_X_MIRACLE",
-    "type": "Battle",
-    "category": "Boost",
-    "min_trainer_level": 100
-  },
-  "701": {
-    "name": "Razz Berry",
-    "proto": "ITEM_RAZZ_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 8
-  },
-  "702": {
-    "name": "Bluk Berry",
-    "proto": "ITEM_BLUK_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 100
-  },
-  "703": {
-    "name": "Nanab Berry",
-    "proto": "ITEM_NANAB_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 4
-  },
-  "704": {
-    "name": "Wepar Berry",
-    "proto": "ITEM_WEPAR_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 100
-  },
-  "705": {
-    "name": "Pinap Berry",
-    "proto": "ITEM_PINAP_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 18
-  },
-  "706": {
-    "name": "Golden Razz Berry",
-    "proto": "ITEM_GOLDEN_RAZZ_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 10
-  },
-  "708": {
-    "name": "Golden Pinap Berry",
-    "proto": "ITEM_GOLDEN_PINAP_BERRY",
-    "type": "Food",
-    "category": "Food",
-    "min_trainer_level": 20
-  },
-  "709": {
-    "name": "Poffin",
-    "proto": "ITEM_POFFIN",
-    "type": "Food",
-    "category": "Buddy Exclusive Food"
-  },
-  "801": {
-    "name": "Special Camera",
-    "proto": "ITEM_SPECIAL_CAMERA",
-    "type": "Camera",
-    "category": "Camera",
-    "min_trainer_level": 100
-  },
-  "802": {
-    "name": "Sticker Inventory",
-    "proto": "ITEM_STICKER_INVENTORY",
-    "type": "Sticker Inventory",
-    "category": "Sticker",
-    "min_trainer_level": 100
-  },
-  "901": {
-    "name": "Incubator Basic Unlimited",
-    "proto": "ITEM_INCUBATOR_BASIC_UNLIMITED",
-    "type": "Incubator",
-    "category": "Incubator",
-    "min_trainer_level": 100
-  },
-  "902": {
-    "name": "Incubator Basic",
-    "proto": "ITEM_INCUBATOR_BASIC",
-    "type": "Incubator",
-    "category": "Incubator",
-    "min_trainer_level": 1
-  },
-  "903": {
-    "name": "Incubator Super",
-    "proto": "ITEM_INCUBATOR_SUPER",
-    "type": "Incubator",
-    "category": "Incubator",
-    "min_trainer_level": 1
-  },
-  "1001": {
-    "name": "Pokemon Storage Upgrade",
-    "proto": "ITEM_POKEMON_STORAGE_UPGRADE",
-    "type": "Inventory Upgrade",
-    "category": "Inventory Upgrade",
-    "min_trainer_level": 100
-  },
-  "1002": {
-    "name": "Item Storage Upgrade",
-    "proto": "ITEM_ITEM_STORAGE_UPGRADE",
-    "type": "Inventory Upgrade",
-    "category": "Inventory Upgrade",
-    "min_trainer_level": 100
-  },
-  "1101": {
-    "name": "Sun Stone",
-    "proto": "ITEM_SUN_STONE",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1102": {
-    "name": "Kings Rock",
-    "proto": "ITEM_KINGS_ROCK",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1103": {
-    "name": "Metal Coat",
-    "proto": "ITEM_METAL_COAT",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1104": {
-    "name": "Dragon Scale",
-    "proto": "ITEM_DRAGON_SCALE",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1105": {
-    "name": "Up Grade",
-    "proto": "ITEM_UP_GRADE",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1106": {
-    "name": "Gen4 Evolution Stone",
-    "proto": "ITEM_GEN4_EVOLUTION_STONE",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1107": {
-    "name": "Gen5 Evolution Stone",
-    "proto": "ITEM_GEN5_EVOLUTION_STONE",
-    "type": "Evolution Requirement",
-    "category": "Evolution Requirement",
-    "min_trainer_level": 10
-  },
-  "1201": {
-    "name": "Move Reroll Fast Attack",
-    "proto": "ITEM_MOVE_REROLL_FAST_ATTACK",
-    "type": "Move Reroll",
-    "category": "Move Reroll",
-    "min_trainer_level": 15
-  },
-  "1202": {
-    "name": "Move Reroll Special Attack",
-    "proto": "ITEM_MOVE_REROLL_SPECIAL_ATTACK",
-    "type": "Move Reroll",
-    "category": "Move Reroll",
-    "min_trainer_level": 25
-  },
-  "1203": {
-    "name": "Move Reroll Elite Fast Attack",
-    "proto": "ITEM_MOVE_REROLL_ELITE_FAST_ATTACK",
-    "type": "Move Reroll",
-    "category": "Move Reroll",
-    "min_trainer_level": 1
-  },
-  "1204": {
-    "name": "Move Reroll Elite Special Attack",
-    "proto": "ITEM_MOVE_REROLL_ELITE_SPECIAL_ATTACK",
-    "type": "Move Reroll",
-    "category": "Move Reroll",
-    "min_trainer_level": 1
-  },
-  "1301": {
-    "name": "Rare Candy",
-    "proto": "ITEM_RARE_CANDY",
-    "type": "Candy",
-    "category": "Candy",
-    "min_trainer_level": 5
-  },
-  "1302": {
-    "name": "XL Rare Candy",
-    "proto": "ITEM_XL_RARE_CANDY",
-    "type": "Candy",
-    "category": "Candy",
-    "min_trainer_level": 40
-  },
-  "1401": {
-    "name": "Free Raid Ticket",
-    "proto": "ITEM_FREE_RAID_TICKET",
-    "type": "Raid Ticket",
-    "category": "Raid Ticket",
-    "min_trainer_level": 100
-  },
-  "1402": {
-    "name": "Paid Raid Ticket",
-    "proto": "ITEM_PAID_RAID_TICKET",
-    "type": "Raid Ticket",
-    "category": "Raid Ticket",
-    "min_trainer_level": 1
-  },
-  "1403": {
-    "name": "Legendary Raid Ticket",
-    "proto": "ITEM_LEGENDARY_RAID_TICKET",
-    "type": "Raid Ticket",
-    "category": "Raid Ticket",
-    "min_trainer_level": 100
-  },
-  "1404": {
-    "name": "Star Piece",
-    "proto": "ITEM_STAR_PIECE",
-    "type": "Stardust Boost",
-    "category": "Stardust Boost",
-    "min_trainer_level": 1
-  },
-  "1405": {
-    "name": "Friend Gift Box",
-    "proto": "ITEM_FRIEND_GIFT_BOX",
-    "type": "Friend Gift Box",
-    "category": "Friend Gift Box",
-    "min_trainer_level": 100
-  },
-  "1406": {
-    "name": "Team Change",
-    "proto": "ITEM_TEAM_CHANGE",
-    "type": "Team Change",
-    "category": "Team Change",
-    "min_trainer_level": 100
-  },
-  "1408": {
-    "name": "Remote Raid Ticket",
-    "proto": "ITEM_REMOTE_RAID_TICKET",
-    "type": "Raid Ticket",
-    "category": "Raid Ticket",
-    "min_trainer_level": 5
-  },
-  "1501": {
-    "name": "Leader Map Fragment",
-    "proto": "ITEM_LEADER_MAP_FRAGMENT",
-    "type": "Incident Ticket",
-    "category": "Incident Ticket",
-    "min_trainer_level": 8
-  },
-  "1502": {
-    "name": "Leader Map",
-    "proto": "ITEM_LEADER_MAP",
-    "type": "Incident Ticket",
-    "category": "Incident Ticket",
-    "min_trainer_level": 8
-  },
-  "1503": {
-    "name": "Giovanni Map",
-    "proto": "ITEM_GIOVANNI_MAP",
-    "type": "Incident Ticket",
-    "category": "Incident Ticket",
-    "min_trainer_level": 8
-  },
-  "1600": {
-    "name": "Global Event Ticket",
-    "proto": "ITEM_GLOBAL_EVENT_TICKET",
-    "type": "Global Event Ticket",
-    "category": "Global Event Ticket"
-  },
-  "1601": {
-    "name": "Event Ticket Pink",
-    "proto": "ITEM_EVENT_TICKET_PINK",
-    "type": "Global Event Ticket",
-    "category": "Global Event Ticket"
-  }
+	"poke_ball": {
+		"name": "Poke Ball",
+		"proto": "ITEM_POKE_BALL",
+		"type": "Pokeball",
+		"category": "Pokeball",
+		"min_trainer_level": 1,
+		"id": 1
+	},
+	"great_ball": {
+		"name": "Great Ball",
+		"proto": "ITEM_GREAT_BALL",
+		"type": "Pokeball",
+		"category": "Pokeball",
+		"min_trainer_level": 12,
+		"id": 2
+	},
+	"ultra_ball": {
+		"name": "Ultra Ball",
+		"proto": "ITEM_ULTRA_BALL",
+		"type": "Pokeball",
+		"category": "Pokeball",
+		"min_trainer_level": 20,
+		"id": 3
+	},
+	"master_ball": {
+		"name": "Master Ball",
+		"proto": "ITEM_MASTER_BALL",
+		"type": "Pokeball",
+		"category": "Pokeball",
+		"min_trainer_level": 100,
+		"id": 4
+	},
+	"premier_ball": {
+		"name": "Premier Ball",
+		"proto": "ITEM_PREMIER_BALL",
+		"type": "Pokeball",
+		"category": "Pokeball",
+		"min_trainer_level": 100,
+		"id": 5
+	},
+	"potion": {
+		"name": "Potion",
+		"proto": "ITEM_POTION",
+		"type": "Potion",
+		"category": "Medicine",
+		"min_trainer_level": 5,
+		"id": 101
+	},
+	"super_potion": {
+		"name": "Super Potion",
+		"proto": "ITEM_SUPER_POTION",
+		"type": "Potion",
+		"category": "Medicine",
+		"min_trainer_level": 10,
+		"id": 102
+	},
+	"hyper_potion": {
+		"name": "Hyper Potion",
+		"proto": "ITEM_HYPER_POTION",
+		"type": "Potion",
+		"category": "Medicine",
+		"min_trainer_level": 15,
+		"id": 103
+	},
+	"max_potion": {
+		"name": "Max Potion",
+		"proto": "ITEM_MAX_POTION",
+		"type": "Potion",
+		"category": "Medicine",
+		"min_trainer_level": 25,
+		"id": 104
+	},
+	"revive": {
+		"name": "Revive",
+		"proto": "ITEM_REVIVE",
+		"type": "Revive",
+		"category": "Medicine",
+		"min_trainer_level": 5,
+		"id": 201
+	},
+	"max_revive": {
+		"name": "Max Revive",
+		"proto": "ITEM_MAX_REVIVE",
+		"type": "Revive",
+		"category": "Medicine",
+		"min_trainer_level": 30,
+		"id": 202
+	},
+	"lucky_egg": {
+		"name": "Lucky Egg",
+		"proto": "ITEM_LUCKY_EGG",
+		"type": "Xp Boost",
+		"category": "Xp Boost",
+		"min_trainer_level": 1,
+		"id": 301
+	},
+	"incense_ordinary": {
+		"name": "Incense Ordinary",
+		"proto": "ITEM_INCENSE_ORDINARY",
+		"type": "Incense",
+		"category": "Incense",
+		"min_trainer_level": 1,
+		"id": 401
+	},
+	"incense_beluga box": {
+		"name": "Incense Beluga Box",
+		"proto": "ITEM_INCENSE_BELUGA_BOX",
+		"type": "Incense",
+		"category": "Incense",
+		"min_trainer_level": 1,
+		"id": 405
+	},
+	"troy_disk": {
+		"name": "Troy Disk",
+		"proto": "ITEM_TROY_DISK",
+		"type": "Disk",
+		"category": "Disk",
+		"min_trainer_level": 1,
+		"id": 501
+	},
+	"troy_disk glacial": {
+		"name": "Troy Disk Glacial",
+		"proto": "ITEM_TROY_DISK_GLACIAL",
+		"type": "Disk",
+		"category": "Disk",
+		"min_trainer_level": 1,
+		"id": 502
+	},
+	"troy_disk mossy": {
+		"name": "Troy Disk Mossy",
+		"proto": "ITEM_TROY_DISK_MOSSY",
+		"type": "Disk",
+		"category": "Disk",
+		"min_trainer_level": 1,
+		"id": 503
+	},
+	"troy_disk magnetic": {
+		"name": "Troy Disk Magnetic",
+		"proto": "ITEM_TROY_DISK_MAGNETIC",
+		"type": "Disk",
+		"category": "Disk",
+		"min_trainer_level": 1,
+		"id": 504
+	},
+	"troy_disk rainy": {
+		"name": "Troy Disk Rainy",
+		"proto": "ITEM_TROY_DISK_RAINY",
+		"type": "Disk",
+		"category": "Disk",
+		"min_trainer_level": 1,
+		"id": 505
+	},
+	"x_attack": {
+		"name": "X Attack",
+		"proto": "ITEM_X_ATTACK",
+		"type": "Battle",
+		"category": "Boost",
+		"min_trainer_level": 100,
+		"id": 602
+	},
+	"x_defense": {
+		"name": "X Defense",
+		"proto": "ITEM_X_DEFENSE",
+		"type": "Battle",
+		"category": "Boost",
+		"min_trainer_level": 100,
+		"id": 603
+	},
+	"x_miracle": {
+		"name": "X Miracle",
+		"proto": "ITEM_X_MIRACLE",
+		"type": "Battle",
+		"category": "Boost",
+		"min_trainer_level": 100,
+		"id": 604
+	},
+	"razz_berry": {
+		"name": "Razz Berry",
+		"proto": "ITEM_RAZZ_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 8,
+		"id": 701
+	},
+	"bluk_berry": {
+		"name": "Bluk Berry",
+		"proto": "ITEM_BLUK_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 100,
+		"id": 702
+	},
+	"nanab_berry": {
+		"name": "Nanab Berry",
+		"proto": "ITEM_NANAB_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 4,
+		"id": 703
+	},
+	"wepar_berry": {
+		"name": "Wepar Berry",
+		"proto": "ITEM_WEPAR_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 100,
+		"id": 704
+	},
+	"pinap_berry": {
+		"name": "Pinap Berry",
+		"proto": "ITEM_PINAP_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 18,
+		"id": 705
+	},
+	"golden_razz berry": {
+		"name": "Golden Razz Berry",
+		"proto": "ITEM_GOLDEN_RAZZ_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 10,
+		"id": 706
+	},
+	"golden_pinap berry": {
+		"name": "Golden Pinap Berry",
+		"proto": "ITEM_GOLDEN_PINAP_BERRY",
+		"type": "Food",
+		"category": "Food",
+		"min_trainer_level": 20,
+		"id": 708
+	},
+	"poffin": { "name": "Poffin", "proto": "ITEM_POFFIN", "type": "Food", "category": "Buddy Exclusive Food", "id": 709 },
+	"special_camera": {
+		"name": "Special Camera",
+		"proto": "ITEM_SPECIAL_CAMERA",
+		"type": "Camera",
+		"category": "Camera",
+		"min_trainer_level": 100,
+		"id": 801
+	},
+	"sticker_inventory": {
+		"name": "Sticker Inventory",
+		"proto": "ITEM_STICKER_INVENTORY",
+		"type": "Sticker Inventory",
+		"category": "Sticker",
+		"min_trainer_level": 100,
+		"id": 802
+	},
+	"incubator_basic unlimited": {
+		"name": "Incubator Basic Unlimited",
+		"proto": "ITEM_INCUBATOR_BASIC_UNLIMITED",
+		"type": "Incubator",
+		"category": "Incubator",
+		"min_trainer_level": 100,
+		"id": 901
+	},
+	"incubator_basic": {
+		"name": "Incubator Basic",
+		"proto": "ITEM_INCUBATOR_BASIC",
+		"type": "Incubator",
+		"category": "Incubator",
+		"min_trainer_level": 1,
+		"id": 902
+	},
+	"incubator_super": {
+		"name": "Incubator Super",
+		"proto": "ITEM_INCUBATOR_SUPER",
+		"type": "Incubator",
+		"category": "Incubator",
+		"min_trainer_level": 1,
+		"id": 903
+	},
+	"pokemon_storage upgrade": {
+		"name": "Pokemon Storage Upgrade",
+		"proto": "ITEM_POKEMON_STORAGE_UPGRADE",
+		"type": "Inventory Upgrade",
+		"category": "Inventory Upgrade",
+		"min_trainer_level": 100,
+		"id": 1001
+	},
+	"item_storage upgrade": {
+		"name": "Item Storage Upgrade",
+		"proto": "ITEM_ITEM_STORAGE_UPGRADE",
+		"type": "Inventory Upgrade",
+		"category": "Inventory Upgrade",
+		"min_trainer_level": 100,
+		"id": 1002
+	},
+	"sun_stone": {
+		"name": "Sun Stone",
+		"proto": "ITEM_SUN_STONE",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1101
+	},
+	"kings_rock": {
+		"name": "Kings Rock",
+		"proto": "ITEM_KINGS_ROCK",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1102
+	},
+	"metal_coat": {
+		"name": "Metal Coat",
+		"proto": "ITEM_METAL_COAT",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1103
+	},
+	"dragon_scale": {
+		"name": "Dragon Scale",
+		"proto": "ITEM_DRAGON_SCALE",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1104
+	},
+	"up_grade": {
+		"name": "Up Grade",
+		"proto": "ITEM_UP_GRADE",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1105
+	},
+	"gen4_evolution stone": {
+		"name": "Gen4 Evolution Stone",
+		"proto": "ITEM_GEN4_EVOLUTION_STONE",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1106
+	},
+	"gen5_evolution stone": {
+		"name": "Gen5 Evolution Stone",
+		"proto": "ITEM_GEN5_EVOLUTION_STONE",
+		"type": "Evolution Requirement",
+		"category": "Evolution Requirement",
+		"min_trainer_level": 10,
+		"id": 1107
+	},
+	"move_reroll fast attack": {
+		"name": "Move Reroll Fast Attack",
+		"proto": "ITEM_MOVE_REROLL_FAST_ATTACK",
+		"type": "Move Reroll",
+		"category": "Move Reroll",
+		"min_trainer_level": 15,
+		"id": 1201
+	},
+	"move_reroll special attack": {
+		"name": "Move Reroll Special Attack",
+		"proto": "ITEM_MOVE_REROLL_SPECIAL_ATTACK",
+		"type": "Move Reroll",
+		"category": "Move Reroll",
+		"min_trainer_level": 25,
+		"id": 1202
+	},
+	"move_reroll elite fast attack": {
+		"name": "Move Reroll Elite Fast Attack",
+		"proto": "ITEM_MOVE_REROLL_ELITE_FAST_ATTACK",
+		"type": "Move Reroll",
+		"category": "Move Reroll",
+		"min_trainer_level": 1,
+		"id": 1203
+	},
+	"move_reroll elite special attack": {
+		"name": "Move Reroll Elite Special Attack",
+		"proto": "ITEM_MOVE_REROLL_ELITE_SPECIAL_ATTACK",
+		"type": "Move Reroll",
+		"category": "Move Reroll",
+		"min_trainer_level": 1,
+		"id": 1204
+	},
+	"rare_candy": {
+		"name": "Rare Candy",
+		"proto": "ITEM_RARE_CANDY",
+		"type": "Candy",
+		"category": "Candy",
+		"min_trainer_level": 5,
+		"id": 1301
+	},
+	"xl_rare candy": {
+		"name": "XL Rare Candy",
+		"proto": "ITEM_XL_RARE_CANDY",
+		"type": "Candy",
+		"category": "Candy",
+		"min_trainer_level": 40,
+		"id": 1302
+	},
+	"free_raid ticket": {
+		"name": "Free Raid Ticket",
+		"proto": "ITEM_FREE_RAID_TICKET",
+		"type": "Raid Ticket",
+		"category": "Raid Ticket",
+		"min_trainer_level": 100,
+		"id": 1401
+	},
+	"paid_raid ticket": {
+		"name": "Paid Raid Ticket",
+		"proto": "ITEM_PAID_RAID_TICKET",
+		"type": "Raid Ticket",
+		"category": "Raid Ticket",
+		"min_trainer_level": 1,
+		"id": 1402
+	},
+	"legendary_raid ticket": {
+		"name": "Legendary Raid Ticket",
+		"proto": "ITEM_LEGENDARY_RAID_TICKET",
+		"type": "Raid Ticket",
+		"category": "Raid Ticket",
+		"min_trainer_level": 100,
+		"id": 1403
+	},
+	"star_piece": {
+		"name": "Star Piece",
+		"proto": "ITEM_STAR_PIECE",
+		"type": "Stardust Boost",
+		"category": "Stardust Boost",
+		"min_trainer_level": 1,
+		"id": 1404
+	},
+	"friend_gift box": {
+		"name": "Friend Gift Box",
+		"proto": "ITEM_FRIEND_GIFT_BOX",
+		"type": "Friend Gift Box",
+		"category": "Friend Gift Box",
+		"min_trainer_level": 100,
+		"id": 1405
+	},
+	"team_change": {
+		"name": "Team Change",
+		"proto": "ITEM_TEAM_CHANGE",
+		"type": "Team Change",
+		"category": "Team Change",
+		"min_trainer_level": 100,
+		"id": 1406
+	},
+	"remote_raid ticket": {
+		"name": "Remote Raid Ticket",
+		"proto": "ITEM_REMOTE_RAID_TICKET",
+		"type": "Raid Ticket",
+		"category": "Raid Ticket",
+		"min_trainer_level": 5,
+		"id": 1408
+	},
+	"leader_map fragment": {
+		"name": "Leader Map Fragment",
+		"proto": "ITEM_LEADER_MAP_FRAGMENT",
+		"type": "Incident Ticket",
+		"category": "Incident Ticket",
+		"min_trainer_level": 8,
+		"id": 1501
+	},
+	"leader_map": {
+		"name": "Leader Map",
+		"proto": "ITEM_LEADER_MAP",
+		"type": "Incident Ticket",
+		"category": "Incident Ticket",
+		"min_trainer_level": 8,
+		"id": 1502
+	},
+	"giovanni_map": {
+		"name": "Giovanni Map",
+		"proto": "ITEM_GIOVANNI_MAP",
+		"type": "Incident Ticket",
+		"category": "Incident Ticket",
+		"min_trainer_level": 8,
+		"id": 1503
+	},
+	"global_event ticket": {
+		"name": "Global Event Ticket",
+		"proto": "ITEM_GLOBAL_EVENT_TICKET",
+		"type": "Global Event Ticket",
+		"category": "Global Event Ticket",
+		"id": 1600
+	},
+	"event_ticket pink": {
+		"name": "Event Ticket Pink",
+		"proto": "ITEM_EVENT_TICKET_PINK",
+		"type": "Global Event Ticket",
+		"category": "Global Event Ticket",
+		"id": 1601
+	}
 }

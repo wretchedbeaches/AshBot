@@ -2,7 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import axios from 'axios';
 import { stripIndents } from 'common-tags';
 import Command from '../../struct/commands/Command';
-import { WeatherApiDataErrorType, WeatherApiDataType } from '../../models/Data';
+import { WeatherApiData, WeatherApiDataError } from '../../data/DataTypes';
 
 export default class Weather2Command extends Command {
 	private readonly mapApiKey: string;
@@ -50,7 +50,7 @@ export default class Weather2Command extends Command {
         __**Example**__:
         \`.weather2 34.009033 -118.497279\``);
 		let queryString: string;
-		let apiResponse: WeatherApiDataType | WeatherApiDataErrorType | undefined;
+		let apiResponse: WeatherApiData | WeatherApiDataError | undefined;
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (city !== null) {
@@ -59,14 +59,14 @@ export default class Weather2Command extends Command {
 					await axios.get(
 						`http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${this.mapApiKey}`,
 					)
-				).data as WeatherApiDataType | WeatherApiDataErrorType;
+				).data as WeatherApiData | WeatherApiDataError;
 			} else if (latitude !== null && longitude !== null) {
 				queryString = `${latitude}, ${longitude}`;
 				apiResponse = (
 					await axios.get(
 						`http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${this.mapApiKey}`,
 					)
-				).data as WeatherApiDataType | WeatherApiDataErrorType;
+				).data as WeatherApiData | WeatherApiDataError;
 			}
 			if (apiResponse === undefined || 'message' in apiResponse) {
 				return interaction.editReply(`There was an error trying to find the weather data for '${queryString!}'`);

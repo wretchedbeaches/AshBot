@@ -43,7 +43,7 @@ export interface RaidEventData {
 	gender?: number;
 	gym_url?: string;
 	level?: number;
-	end: number;
+	end?: number;
 	cp?: number;
 	pokemon_id?: number;
 	team_id?: number;
@@ -81,8 +81,8 @@ export interface QuestEventData {
 	longitude?: number;
 	type?: number;
 	target?: number;
-	gender?: number;
 	pokestop_name?: string;
+	pokestop_url?: string;
 	rewards?: QuestEventRewards[];
 	updated?: number;
 	template?: string;

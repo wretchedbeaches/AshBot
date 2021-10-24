@@ -1,12 +1,10 @@
-import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import ntim from '../../util/name_to_id_map.json';
 import { nests } from '../../manualdbModels/nests';
 import { parseNestDb } from '../../util/parse';
-import util from '../../util/util.json';
-import masterfile from '../../util/masterfile.json';
 import Command from '../../struct/commands/Command';
-import { PokemonTypeDataType, UtilsTypesDataType } from '../../models/Data';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
+import { pokemonData, pokemonTypesData } from '../../data/Data';
 
 export default class NestSearchCommand extends Command {
 	public constructor() {
@@ -63,12 +61,8 @@ export default class NestSearchCommand extends Command {
 					}`,
 				);
 				embed.setThumbnail(`https://play.pokemonshowdown.com/sprites/xyani/${nameArgument.toLowerCase()}.gif`);
-				const pokemonType = masterfile.pokemon[pokemonId].types as PokemonTypeDataType;
-				embed.setColor(
-					`#${(util.types as UtilsTypesDataType)[Object.values(pokemonType)[0]!.typeName].color.toString(
-						16,
-					)}` as HexColorString,
-				);
+				const pokemonType = pokemonTypesData[pokemonData[pokemonId]!.types[0]];
+				embed.setColor(pokemonType!.color);
 				embed.setDescription(
 					`**Nests**\n${dbNests
 						.slice(sliceStart, sliceEnd)

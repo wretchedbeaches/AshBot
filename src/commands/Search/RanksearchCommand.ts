@@ -1,6 +1,6 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { RankingData } from '../../data/DataTypes';
 import Command from '../../struct/commands/Command';
-import { RankingDataType } from '../../models/Data';
 import { RankingDataCollection } from '../../util/RankingDataManager';
 
 type LeagueIdentifier = 1500 | 2500 | 10000;
@@ -55,7 +55,7 @@ export default class RankSearchCommand extends Command {
 				`Must specify either a name or league or both as search parameters. Example: **rank umbreon ultra**.`,
 			);
 		}
-		let data: RankingDataType | null = null;
+		let data: RankingData | null = null;
 		const embed = new MessageEmbed();
 		if (leagueArgument === null) leagueArgument = 1500;
 		const leagueName: LeagueName = RankSearchCommand.LeagueMap[leagueArgument];
@@ -65,7 +65,7 @@ export default class RankSearchCommand extends Command {
 			// Search by rank only
 			return interaction.editReply(`Command is WIP.`);
 		} else if (rankingData.has(nameArgument.toLowerCase())) {
-			data = rankingData.get(nameArgument.toLowerCase())!;
+			data = rankingData.get(nameArgument.toLowerCase()) as RankingData;
 			embed.setTitle(`${data.rating} ${data.speciesName}`);
 			embed.addField('Matchups', data.matchups.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);
 			embed.addField('Counters', data.counters.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);

@@ -1,9 +1,9 @@
 import Collection from '@discordjs/collection';
 import axios from 'axios';
 import cheerio from 'cheerio';
-import { RankingDataType } from '../models/Data';
+import { RankingData } from '../data/DataTypes';
 
-export type RankingDataCollection = Collection<string, RankingDataType>;
+export type RankingDataCollection = Collection<string, RankingData>;
 
 interface LeagueDataMap {
 	great: RankingDataCollection;
@@ -33,9 +33,9 @@ export default class RankingDataManager {
 		const replaceText = '[ranking]';
 		const url = `https://pvpoke.com/data/rankings/all/overall/rankings-[ranking].json?v=${this.version}`;
 
-		const greatLeagueData = (await axios.get(url.replace(replaceText, '1500'))).data as RankingDataType[];
-		const ultraLeagueData = (await axios.get(url.replace(replaceText, '2500'))).data as RankingDataType[];
-		const masterLeagueData = (await axios.get(url.replace(replaceText, '10000'))).data as RankingDataType[];
+		const greatLeagueData = (await axios.get(url.replace(replaceText, '1500'))).data as RankingData[];
+		const ultraLeagueData = (await axios.get(url.replace(replaceText, '2500'))).data as RankingData[];
+		const masterLeagueData = (await axios.get(url.replace(replaceText, '10000'))).data as RankingData[];
 
 		this.initCollection(this.greatLeagueData, greatLeagueData);
 		this.initCollection(this.ultraLeagueData, ultraLeagueData);
@@ -47,7 +47,7 @@ export default class RankingDataManager {
 		};
 	}
 
-	private initCollection(collection: RankingDataCollection, rankingData: RankingDataType[]) {
+	private initCollection(collection: RankingDataCollection, rankingData: RankingData[]) {
 		rankingData.forEach((rank) => collection.set(rank.speciesName.toLowerCase(), rank));
 	}
 }

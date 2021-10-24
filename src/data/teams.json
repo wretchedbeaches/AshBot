@@ -1,27 +1,32 @@
 {
-  "uncontested": {
+  "0": {
     "id": 0,
     "name": "Uncontested",
-    "color": 7915600
+    "color": 7915600,
+    "emoji": "uncontested"
   },
-  "mystic": {
+  "1": {
     "id": 1,
     "name": "Mystic",
-    "color": 6852848
+    "color": 6852848,
+    "emoji": "mystic"
   },
-  "valor": {
+  "2": {
     "id": 2,
     "name": "Valor",
-    "color": 12595240
+    "color": 12595240,
+    "emoji": "valor"
   },
-  "instinct": {
+  "3": {
     "id": 3,
     "name": "Instinct",
-    "color": 16306224
+    "color": 16306224,
+    "emoji": "instinct"
   },
-  "any": {
+  "4": {
     "id": 4,
     "name": "Any team",
-    "color": 1300169
+    "color": 1300169,
+    "emoji": "anyteam"
   }
 }

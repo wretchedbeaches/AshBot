@@ -24,15 +24,15 @@ export default class RaidsetCommand extends BaseWebhooksetCommand {
 		this.argumentConfigBlacklist.add('name');
 		this.data
 			.addBooleanOption((exOption) => exOption.setName('ex').setDescription('Whether to filter on ex raid.'))
-			.addStringOption((teamOption) =>
+			.addIntegerOption((teamOption) =>
 				teamOption
 					.setName('team')
 					.setDescription('The team to filter on.')
 					.addChoices([
-						['uncontested', 'uncontested'],
-						['mystic', 'mystic'],
-						['valor', 'valor'],
-						['instinct', 'instinct'],
+						['Uncontested', 0],
+						['Mystic', 1],
+						['Valor', 2],
+						['Instinct', 3],
 					]),
 			)
 			.addStringOption((pokemonNameOption) =>
