@@ -156,7 +156,7 @@ export default class BaseWebhooksetCommand extends Command {
 					error = `A radius of '${radiusArgument}' was provided without a unit (m or km), geofilter was not ${errorSuffix}.`;
 				} else if (hasLatLong) {
 					channelConfiguration.geofilter = {
-						center: [latitudeArgument, longitudeArgument!],
+						center: [latitudeArgument, longitudeArgument],
 						radius: radiusArgument,
 						unit: unitArgument,
 					};
