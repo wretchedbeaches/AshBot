@@ -8,10 +8,11 @@ import { weatherData } from '../../data/Data';
 import { Literal } from 'sequelize/types/lib/utils';
 import { parseWeatherDb } from '../../util/parse';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class WeatherSearchCommand extends BaseSearchCommand {
 	public constructor() {
-		super('weathersearch', {
+		super(COMMAND_NAMES.SEARCH.WEATHER, {
 			description: {
 				content: 'Search for weather by type or by coordinate.',
 				usage: stripIndents`weather \`weather type\`

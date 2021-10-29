@@ -1,6 +1,7 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { RankingData } from '../../data/DataTypes';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 import { RankingDataCollection } from '../../util/RankingDataManager';
 
 type LeagueIdentifier = 1500 | 2500 | 10000;
@@ -17,7 +18,7 @@ export default class RankSearchCommand extends Command {
 	};
 
 	public constructor() {
-		super('rank', {
+		super(COMMAND_NAMES.SEARCH.RANK, {
 			description: {
 				content: 'Search for PVP ranks by league and pokemon.',
 				usage: 'rank `pokemon name` `league name`',

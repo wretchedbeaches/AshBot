@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 import { latitudeLongitudeCitySearchOptions, unitAndDistanceSearchOptions } from '../Base/CommonOptions';
 
 export default {
-	name: 'raidsearch',
+	name: COMMAND_NAMES.SEARCH.RAID,
 	description: 'Search for raids.',
 	options: [
 		{

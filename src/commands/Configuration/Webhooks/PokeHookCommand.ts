@@ -1,16 +1,17 @@
 import { stripIndents } from 'common-tags';
 import { CommandInteraction } from 'discord.js';
 import { PokesetConfig } from '../../../models/WebhookConfigurations';
-import BaseWebhooksetCommand from './BaseWebhooksetCommand';
+import BaseHookCommand from './BaseHookCommand';
 import ntim from '../../../util/name_to_id_map.json';
+import COMMAND_NAMES from '../../../util/CommandNames';
 
 // Eventually the discord API will allow for native support of min/max number values.
 // But in the mean time will need to do it on the client:
 // TODO: Need to put min/max level and cp validations in
 
-export default class PokesetCommand extends BaseWebhooksetCommand {
+export default class PokeHookCommand extends BaseHookCommand {
 	public constructor() {
-		super('pokeset', {
+		super(COMMAND_NAMES.CONFIGURATION.WEBHOOKS.POKEMON, {
 			webhookType: 'pokemon',
 			description: {
 				content: 'Set or remove the pokemon webhook configuration for a particular channel.',

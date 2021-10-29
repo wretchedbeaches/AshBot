@@ -10,6 +10,7 @@ import BaseSearchCommand from './BaseSearchCommand';
 import config from '../../config.json';
 import { itemsData, pokemonData, pokemonTypesData } from '../../data/Data';
 import { Item, PokemonData } from '../../data/DataTypes';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 interface HandleData {
 	title: string;
@@ -19,7 +20,7 @@ interface HandleData {
 
 export default class QuestSearchCommand extends BaseSearchCommand {
 	public constructor() {
-		super('quest', {
+		super(COMMAND_NAMES.SEARCH.QUEST, {
 			description: {
 				content: 'Search for quests by reward type.',
 				usage: stripIndents`quest pokemon \`pokemon name\` \`distance latitude longitude\` \`city\`

@@ -5,10 +5,11 @@ import { parseNestDb } from '../../util/parse';
 import Command from '../../struct/commands/Command';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
 import { pokemonData, pokemonTypesData } from '../../data/Data';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class NestSearchCommand extends Command {
 	public constructor() {
-		super('nestsearch', {
+		super(COMMAND_NAMES.SEARCH.NEST, {
 			description: {
 				content: 'Search for nests by pokemon name.',
 				usage: 'nestsearch `pokemon name`',

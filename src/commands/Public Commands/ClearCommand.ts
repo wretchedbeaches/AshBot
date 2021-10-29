@@ -1,9 +1,10 @@
 import { CommandInteraction, MessageEmbed, Permissions } from 'discord.js';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class ClearCommand extends Command {
 	public constructor() {
-		super('clear', {
+		super(COMMAND_NAMES.PUBLIC.CLEAR, {
 			description: {
 				content: 'Deletes a specific number of messages.',
 				usage: '<amount>',

@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'nest',
+	name: COMMAND_NAMES.PUBLIC.NEST,
 	description: 'Retrieves a list of the current nesting pokemon.',
 	options: [
 		{

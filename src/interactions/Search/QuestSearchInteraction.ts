@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 import { latitudeLongitudeCitySearchOptions, unitAndDistanceSearchOptions } from '../Base/CommonOptions';
 
 export default {
-	name: 'quest',
+	name: COMMAND_NAMES.SEARCH.QUEST,
 	description: 'Search for quests by reward type.',
 	options: [
 		{

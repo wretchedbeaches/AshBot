@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { ChannelTypes } from 'discord.js/typings/enums';
+import COMMAND_NAMES from '../../../util/CommandNames';
 
 export default {
-	name: 'webhooks',
+	name: COMMAND_NAMES.CONFIGURATION.WEBHOOKS.MANAGE,
 	description: 'Show or remove Webhook Configurations.',
 	options: [
 		{

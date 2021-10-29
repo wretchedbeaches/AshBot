@@ -1,5 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 const responses = [
 	'It is certain',
@@ -26,7 +27,7 @@ const responses = [
 
 export default class EightBall extends Command {
 	public constructor() {
-		super('8ball', {
+		super(COMMAND_NAMES.PUBLIC.EIGHT_BALL, {
 			category: 'Public Commands',
 			description: {
 				content: 'Let the bot decide your future',

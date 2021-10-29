@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'nestsearch',
+	name: COMMAND_NAMES.SEARCH.NEST,
 	description: 'Search for nests by pokemon name.',
 	options: [
 		{

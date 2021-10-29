@@ -3,10 +3,11 @@ import { stripIndents } from 'common-tags';
 import * as moment from 'moment';
 import 'moment-duration-format';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class WhoIsCommand extends Command {
 	public constructor() {
-		super('whois', {
+		super(COMMAND_NAMES.PUBLIC.WHO_IS, {
 			scope: 'guild',
 			description: {
 				content: 'Gets info about a member.',

@@ -3,10 +3,11 @@ import cheerio from 'cheerio';
 import axios from 'axios';
 import Command from '../../struct/commands/Command';
 import ntim from '../../util/name_to_id_map.json';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class NestListCommand extends Command {
 	public constructor() {
-		super('nest', {
+		super(COMMAND_NAMES.PUBLIC.NEST, {
 			category: 'Utilities',
 			description: {
 				content: 'Retrieves a list of the current nesting pokemon.',

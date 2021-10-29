@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 import { latitudeLongitudeCitySearchOptions } from '../Base/CommonOptions';
 
 export default {
-	name: 'weathersearch',
+	name: COMMAND_NAMES.SEARCH.WEATHER,
 	description: 'Search for weather by type or by coordinate.',
 	options: [
 		{

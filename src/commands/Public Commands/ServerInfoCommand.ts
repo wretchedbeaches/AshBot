@@ -3,6 +3,7 @@ import { stripIndents } from 'common-tags';
 import * as moment from 'moment';
 import 'moment-duration-format';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 interface HumanLevels {
 	[key: number]: string;
@@ -18,7 +19,7 @@ const HUMAN_LEVELS: HumanLevels = {
 
 export default class ServerInfoCommand extends Command {
 	public constructor() {
-		super('server', {
+		super(COMMAND_NAMES.PUBLIC.SERVER_INFO, {
 			description: {
 				content: 'Gets info about a server',
 			},

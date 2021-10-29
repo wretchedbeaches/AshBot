@@ -1,10 +1,11 @@
 import { CommandInteraction } from 'discord.js';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 // TODO: Need to setup Command Permissions stuff.
 export default class AdminCommand extends Command {
 	public constructor() {
-		super('admin', {
+		super(COMMAND_NAMES.CONFIGURATION.ADMIN, {
 			category: 'Configuration',
 			description: {
 				content: 'Access admin commands.',

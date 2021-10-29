@@ -1,10 +1,11 @@
 import { ButtonInteraction, CommandInteraction, GuildChannel, MessageButton, TextChannel } from 'discord.js';
 import Command from '../../../struct/commands/Command';
 import { ActionRowPaginator } from '@psibean/discord.js-pagination';
+import COMMAND_NAMES from '../../../util/CommandNames';
 
 export default class WebhooksCommand extends Command {
 	public constructor() {
-		super('webhooks', {
+		super(COMMAND_NAMES.CONFIGURATION.WEBHOOKS.MANAGE, {
 			description: {
 				content: 'Show or remove Webhook Configurations.',
 				usage: 'webhooks',

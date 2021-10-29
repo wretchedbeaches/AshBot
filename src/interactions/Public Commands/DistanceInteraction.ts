@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'distance',
+	name: COMMAND_NAMES.PUBLIC.DISTANCE,
 	description: 'Check the distance and associated softban cooldown time between two points.',
 	options: [
 		{

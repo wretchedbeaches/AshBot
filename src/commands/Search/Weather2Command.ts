@@ -3,12 +3,13 @@ import axios from 'axios';
 import { stripIndents } from 'common-tags';
 import Command from '../../struct/commands/Command';
 import { WeatherApiData, WeatherApiDataError } from '../../data/DataTypes';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class Weather2Command extends Command {
 	private readonly mapApiKey: string;
 
 	public constructor() {
-		super('weather2', {
+		super(COMMAND_NAMES.SEARCH.WEATHER_API, {
 			category: 'Search',
 			description: {
 				content: 'Search for the weather at a particular location using the Open Weather Map API.',

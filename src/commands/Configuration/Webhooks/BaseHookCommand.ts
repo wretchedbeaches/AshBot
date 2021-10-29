@@ -24,7 +24,7 @@ export interface WebhooksetCommandOptions extends CommandOptions {
 	webhookType: string;
 }
 
-export default class BaseWebhooksetCommand extends Command {
+export default class BaseHookCommand extends Command {
 	public argumentConfigBlacklist: Set<string>;
 	public webhookType: string;
 

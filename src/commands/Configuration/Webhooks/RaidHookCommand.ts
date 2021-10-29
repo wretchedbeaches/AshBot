@@ -2,11 +2,12 @@ import { CommandInteraction } from 'discord.js';
 import ntim from '../../../util/name_to_id_map.json';
 import { stripIndents } from 'common-tags';
 import { RaidsetConfig } from '../../../models/WebhookConfigurations';
-import BaseWebhooksetCommand from './BaseWebhooksetCommand';
+import BaseHookCommand from './BaseHookCommand';
+import COMMAND_NAMES from '../../../util/CommandNames';
 
-export default class RaidsetCommand extends BaseWebhooksetCommand {
+export default class RaidsetCommand extends BaseHookCommand {
 	public constructor() {
-		super('raidset', {
+		super(COMMAND_NAMES.CONFIGURATION.WEBHOOKS.RAID, {
 			webhookType: 'raid',
 			description: {
 				content: 'Set or update the raid webhook configuration for a particular channel.',

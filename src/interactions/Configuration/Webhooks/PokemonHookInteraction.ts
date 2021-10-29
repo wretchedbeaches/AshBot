@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../../util/CommandNames';
 import { commonHookOptions } from '../../Base/CommonOptions';
 
 export default {
-	name: 'pokeset',
+	name: COMMAND_NAMES.CONFIGURATION.WEBHOOKS.POKEMON,
 	description: 'Set or remove the pokemon webhook configuration for a particular channel.',
 	options: [
 		...commonHookOptions,

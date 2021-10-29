@@ -1,9 +1,10 @@
 import { CommandInteraction, TextChannel } from 'discord.js';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class SendEmbedCommand extends Command {
 	public constructor() {
-		super('sendembed', {
+		super(COMMAND_NAMES.PUBLIC.SEND_EMBED, {
 			description: {
 				content: 'Send an embed to a specific channel.',
 				usage: 'sendembed #`channel` `message content`',

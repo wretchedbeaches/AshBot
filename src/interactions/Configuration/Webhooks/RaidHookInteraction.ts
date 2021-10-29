@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../../util/CommandNames';
 import { commonHookOptions } from '../../Base/CommonOptions';
 
 export default {
-	name: 'raidset',
+	name: COMMAND_NAMES.CONFIGURATION.WEBHOOKS.RAID,
 	description: 'Set or update the raid webhook configuration for a particular channel.',
 	options: [
 		...commonHookOptions,

@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'stealemoji',
+	name: COMMAND_NAMES.PUBLIC.STEAL_EMOJI,
 	description: "To steal emoji's from any server",
 	options: [
 		{ type: ApplicationCommandOptionType.String, name: 'emoji', description: 'The emoji to steal.', required: true },

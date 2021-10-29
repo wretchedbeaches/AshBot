@@ -1,10 +1,11 @@
 import { CommandInteraction } from 'discord.js';
 import { stripIndents } from 'common-tags';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class HelpCommand extends Command {
 	public constructor() {
-		super('help', {
+		super(COMMAND_NAMES.PUBLIC.HELP, {
 			category: 'Public Commands',
 			description: {
 				content: 'View available commands on the bot',

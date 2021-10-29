@@ -5,10 +5,11 @@ import 'moment-duration-format';
 import Command from '../../struct/commands/Command';
 
 import modulePackage from '../../../package.json';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class StatsCommand extends Command {
 	public constructor() {
-		super('stats', {
+		super(COMMAND_NAMES.PUBLIC.STATS, {
 			description: {
 				content: 'Displays statistics about the bot.',
 			},

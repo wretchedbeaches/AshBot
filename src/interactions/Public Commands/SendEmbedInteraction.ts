@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { ChannelTypes } from 'discord.js/typings/enums';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'sendembed',
+	name: COMMAND_NAMES.PUBLIC.SEND_EMBED,
 	description: 'Send an embed to a specific channel.',
 	options: [
 		{

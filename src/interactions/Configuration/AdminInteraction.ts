@@ -1,7 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default {
-	name: 'admin',
+	name: COMMAND_NAMES.CONFIGURATION.ADMIN,
 	description: 'Access admin commands.',
 	options: [
 		{

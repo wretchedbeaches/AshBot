@@ -9,10 +9,11 @@ import BaseSearchCommand from './BaseSearchCommand';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 import teams from '../../data/teams.json';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class RaidSearchCommand extends BaseSearchCommand {
 	public constructor() {
-		super('raidsearch', {
+		super(COMMAND_NAMES.SEARCH.RAID, {
 			description: {
 				content: 'Search for raids.',
 				usage: stripIndents`raidsearch

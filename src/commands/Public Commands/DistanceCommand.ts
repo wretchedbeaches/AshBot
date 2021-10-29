@@ -2,10 +2,11 @@ import { CommandInteraction } from 'discord.js';
 import { getPreciseDistance } from 'geolib';
 import config from '../../config.json';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class DistanceCommand extends Command {
 	public constructor() {
-		super('distance', {
+		super(COMMAND_NAMES.PUBLIC.DISTANCE, {
 			description: {
 				content: 'Check the distance and associated softban cooldown time between two points.',
 				usage: 'distance `latitude` `longitude` `latitude` `longitude`',

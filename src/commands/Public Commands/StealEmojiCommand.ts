@@ -1,9 +1,10 @@
 import { CommandInteraction, Util } from 'discord.js';
 import Command from '../../struct/commands/Command';
+import COMMAND_NAMES from '../../util/CommandNames';
 
 export default class StealEmojiCommand extends Command {
 	public constructor() {
-		super('stealemoji', {
+		super(COMMAND_NAMES.PUBLIC.STEAL_EMOJI, {
 			description: {
 				content: "To steal emoji's from any server",
 				usage: 'emoji < emoji >',

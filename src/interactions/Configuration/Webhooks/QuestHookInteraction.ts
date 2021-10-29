@@ -1,8 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import COMMAND_NAMES from '../../../util/CommandNames';
 import { commonHookOptions } from '../../Base/CommonOptions';
 
 export default {
-	name: 'questset',
+	name: COMMAND_NAMES.CONFIGURATION.WEBHOOKS.QUEST,
 	description: 'Set or remove the quest webhook configuration for a particular channel',
 	options: [
 		...commonHookOptions,

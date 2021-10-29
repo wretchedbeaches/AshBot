@@ -1,9 +1,10 @@
 import { stripIndents } from 'common-tags';
-import BaseWebhooksetCommand from './BaseWebhooksetCommand';
+import COMMAND_NAMES from '../../../util/CommandNames';
+import BaseHookCommand from './BaseHookCommand';
 
-export default class InvasionSetCommand extends BaseWebhooksetCommand {
+export default class InvasionHookCommand extends BaseHookCommand {
 	public constructor() {
-		super('invasionset', {
+		super(COMMAND_NAMES.CONFIGURATION.WEBHOOKS.INVASION, {
 			webhookType: 'invasion',
 			description: {
 				content: 'Set or remove the invasion webhook configuration for a particular channel.',
