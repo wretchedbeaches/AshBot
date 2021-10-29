@@ -9,7 +9,6 @@ import BaseSearchCommand from './BaseSearchCommand';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 import teams from '../../data/teams.json';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
-import { getNumberChoices } from '../../util/WebhookFilterOptions';
 
 export default class RaidSearchCommand extends BaseSearchCommand {
 	public constructor() {
@@ -26,31 +25,6 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 				examples: ['raidsearch name pikachu geofilter 10km 85.4,-92.8 ex true team valor level 5'],
 			},
 		});
-
-		this.data.addStringOption((pokemonNameOption) =>
-			pokemonNameOption.setName('name').setDescription('The name of the pokemon to search by').setRequired(true),
-		);
-		RaidSearchCommand.addCommonOptions(this.data);
-		this.data
-			.addBooleanOption((exOption) => exOption.setName('ex').setDescription('Whether to search for ex raids'))
-			.addStringOption((teamOption) =>
-				teamOption
-					.setName('team')
-					.setDescription('Search for raids on the specified team')
-					.addChoices([
-						['uncontested', 'uncontested'],
-						['mystic', 'mystic'],
-						['valor', 'valor'],
-						['instinct', 'instinct'],
-						['any', 'any'],
-					]),
-			)
-			.addIntegerOption((levelOption) =>
-				levelOption
-					.setName('level')
-					.setDescription('Search for raids of a particular level')
-					.addChoices(getNumberChoices(1, 6)),
-			);
 	}
 
 	public async execute(interaction: CommandInteraction) {

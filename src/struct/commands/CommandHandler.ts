@@ -7,7 +7,6 @@ import ListenerHandler from '../listeners/ListenerHandler';
 import { CommandHandlerEvents } from '../Util';
 import Command from './Command';
 import CooldownManager from './CooldownManager';
-import GuildCommandManager from './GuildCommandManager';
 
 export interface CommandHandlerOptions extends BaseHandlerOptions {
 	blockClient?: boolean;
@@ -34,7 +33,6 @@ export default class CommandHandler extends BaseHandler {
 	public inhibitorHandler?: InhibitorHandler;
 	public listenerHandler: ListenerHandler;
 	public modules: Collection<string, Command>;
-	public guildCommandManagers: Collection<string, GuildCommandManager>;
 	public classToHandle: new (...args: any[]) => Command;
 	public ownerOnlyCommands: IterableIterator<Command>;
 
@@ -45,7 +43,6 @@ export default class CommandHandler extends BaseHandler {
 		this.blockBots = blockBots ?? true;
 		this.cooldownManager = cooldownManager ?? null;
 		this.inhibitorHandler = undefined;
-		this.guildCommandManagers = new Collection();
 		this.setup();
 	}
 
@@ -57,7 +54,7 @@ export default class CommandHandler extends BaseHandler {
 			const guilds = this.client.guilds.cache.values();
 			const ownerGuilds: Guild[] = [];
 			for (const guild of guilds) {
-				await this.initGuild(guild);
+				await this.client.interactionManager?.registerInteractions();
 				if (this.client.owners.includes(guild.ownerId)) ownerGuilds.push(guild);
 			}
 
@@ -67,28 +64,6 @@ export default class CommandHandler extends BaseHandler {
 		});
 	}
 
-	public async initGuild(guild: Guild): Promise<GuildCommandManager> {
-		const guildCommandManager = new GuildCommandManager(this.client, guild);
-		await guildCommandManager.init(
-			this.modules.filter(
-				(val) => val.scope === 'guild' && (!val.ownerOnly || this.client.owners.includes(guild.ownerId)),
-			),
-		);
-
-		this.guildCommandManagers.set(guild.id, guildCommandManager);
-		if (this.client.owners.includes(guild.ownerId))
-			await guildCommandManager.updateOwnerOnlyCommandPermissions(this.ownerOnlyCommands, guild.ownerId);
-		return guildCommandManager;
-	}
-
-	public removeGuild(guildId: string) {
-		const guildManager = this.guildCommandManagers.get(guildId);
-		if (guildManager) {
-			guildManager.commands.clear();
-			this.guildCommandManagers.delete(guildId);
-		}
-	}
-
 	public getGlobalCommand(command: Command) {
 		if (command.registeredId)
 			return this.client.restApi.get(
@@ -96,35 +71,10 @@ export default class CommandHandler extends BaseHandler {
 			);
 	}
 
-	public createGlobalCommand(command: Command): Promise<APIApplicationCommand> {
-		return (
-			this.client.restApi.post(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
-				body: command.data.toJSON(),
-			}) as Promise<APIApplicationCommand>
-		).then((registeredCommand) => {
-			command.registeredId = registeredCommand.id;
-			return registeredCommand;
-		});
-	}
-
-	public updateGlobalCommand(command: Command) {
-		if (command.registeredId)
-			return this.client.restApi.put(
-				Routes.applicationCommand(this.client.config.clientId, command.registeredId) as unknown as `/${string}`,
-				{ body: command.data.toJSON() },
-			) as Promise<APIApplicationCommand>;
-	}
-
 	public getGlobalCommands(): Promise<APIApplicationCommand[]> {
 		return this.client.restApi.get(
 			Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`,
 		) as Promise<APIApplicationCommand[]>;
-	}
-
-	public async setGlobalCommands(commands: Command[]) {
-		return this.client.restApi.put(Routes.applicationCommands(this.client.config.clientId) as unknown as `/${string}`, {
-			body: this.commandsToData(commands),
-		});
 	}
 
 	public deleteGlobalCommand(registeredId: string, command?: Command) {
@@ -136,53 +86,9 @@ export default class CommandHandler extends BaseHandler {
 			});
 	}
 
-	public async updateGuildCommand(command: Command) {
-		let updateCount = 0;
-		for (const guildCommandManager of this.guildCommandManagers.values()) {
-			const updatedCommand = await guildCommandManager.updateGuildCommand(command);
-			console.log(`New id: ${updatedCommand?.id ?? 'unk'}`);
-			if (updatedCommand) updateCount++;
-		}
-		return updateCount;
-	}
-
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {
 		await super.loadAll(directories);
 		this.ownerOnlyCommands = this.modules.filter((value) => value.ownerOnly).values();
-		const globalCommands = this.modules.filter((val) => !val.ownerOnly && val.scope === 'global');
-
-		const registeredGlobalCommands = await this.getGlobalCommands();
-
-		for (const registeredGlobalCommand of registeredGlobalCommands) {
-			if (globalCommands.has(registeredGlobalCommand.name)) {
-				this.modules.get(registeredGlobalCommand.name)!.registeredId = registeredGlobalCommand.id;
-			} else {
-				try {
-					await this.deleteGlobalCommand(registeredGlobalCommand.id, globalCommands.get(registeredGlobalCommand.name));
-				} catch (error) {
-					this.emit(CommandHandlerEvents.COMMAND_API_ERROR, {
-						error: `There was an error deleting a global command:\n\n${error as string}`,
-						command: registeredGlobalCommand,
-						type: 'deletion',
-					});
-				}
-			}
-		}
-
-		for (const globalCommand of globalCommands.values()) {
-			if (!registeredGlobalCommands.some((val) => val.name === globalCommand.id)) {
-				try {
-					await this.createGlobalCommand(globalCommand);
-				} catch (error) {
-					this.emit(CommandHandlerEvents.COMMAND_API_ERROR, {
-						error: `There was an error creating a global command:\n\n${error as string}`,
-						command: globalCommand,
-						type: 'creation',
-					});
-				}
-			}
-		}
-
 		return this;
 	}
 
@@ -292,9 +198,5 @@ export default class CommandHandler extends BaseHandler {
 		}
 
 		throw error;
-	}
-
-	private commandsToData(commands: Command[]) {
-		return commands.map((command) => command.data.toJSON());
 	}
 }

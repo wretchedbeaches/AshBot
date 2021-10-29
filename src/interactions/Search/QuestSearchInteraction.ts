@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import { latitudeLongitudeCitySearchOptions, unitAndDistanceSearchOptions } from '../Base/CommonOptions';
 
 export default {
 	name: 'quest',
@@ -101,36 +102,8 @@ export default {
 					description: 'The amount of stardust',
 					required: false,
 				},
-				{
-					type: ApplicationCommandOptionType.Integer,
-					name: 'distance',
-					description: 'The radius to search, defaults to km (see unit)',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.String,
-					name: 'unit',
-					description: 'The metric of the distance, metres or kilometres',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.String,
-					name: 'city',
-					description: 'The city to search within',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.Number,
-					name: 'latitude',
-					description: 'The latitude to search from',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.Number,
-					name: 'longitude',
-					description: 'The longitude to search from',
-					required: false,
-				},
+				...unitAndDistanceSearchOptions,
+				...latitudeLongitudeCitySearchOptions,
 			],
 		},
 		{
@@ -144,36 +117,8 @@ export default {
 					description: 'The name of the Pokemon mega energy',
 					required: false,
 				},
-				{
-					type: ApplicationCommandOptionType.Integer,
-					name: 'distance',
-					description: 'The radius to search, defaults to km (see unit)',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.String,
-					name: 'unit',
-					description: 'The metric of the distance, metres or kilometres',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.String,
-					name: 'city',
-					description: 'The city to search within',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.Number,
-					name: 'latitude',
-					description: 'The latitude to search from',
-					required: false,
-				},
-				{
-					type: ApplicationCommandOptionType.Number,
-					name: 'longitude',
-					description: 'The longitude to search from',
-					required: false,
-				},
+				...unitAndDistanceSearchOptions,
+				...latitudeLongitudeCitySearchOptions,
 			],
 		},
 	],

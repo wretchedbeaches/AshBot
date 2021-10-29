@@ -15,20 +15,6 @@ export default class DistanceCommand extends Command {
 			rateLimit: 3,
 			isEphemeral: true,
 		});
-
-		this.data
-			.addNumberOption((fromLatOption) =>
-				fromLatOption.setName('from_latitude').setDescription('The from latitude.').setRequired(true),
-			)
-			.addNumberOption((fromLongOption) =>
-				fromLongOption.setName('from_longiutde').setDescription('The from longitude.').setRequired(true),
-			)
-			.addNumberOption((toLatOption) =>
-				toLatOption.setName('to_latitude').setDescription('The to latitude.').setRequired(true),
-			)
-			.addNumberOption((fromLongOption) =>
-				fromLongOption.setName('to_longitude').setDescription('The to longitude.').setRequired(true),
-			);
 	}
 
 	public async execute(interaction: CommandInteraction) {

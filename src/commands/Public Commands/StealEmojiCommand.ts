@@ -12,12 +12,6 @@ export default class StealEmojiCommand extends Command {
 			category: 'Utility',
 			rateLimit: 3,
 		});
-
-		this.data
-			.addStringOption((emojiOption) =>
-				emojiOption.setName('emoji').setDescription('The emoji to steal.').setRequired(true),
-			)
-			.addStringOption((nameOption) => nameOption.setName('name').setDescription('The name to give the emoji'));
 	}
 
 	public async execute(interaction: CommandInteraction) {

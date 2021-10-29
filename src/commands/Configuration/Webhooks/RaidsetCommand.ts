@@ -1,7 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import ntim from '../../../util/name_to_id_map.json';
 import { stripIndents } from 'common-tags';
-import { addCpFilterOptions, addLevelFilterOptions, addTrainFilterOption } from '../../../util/WebhookFilterOptions';
 import { RaidsetConfig } from '../../../models/WebhookConfigurations';
 import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 
@@ -22,25 +21,6 @@ export default class RaidsetCommand extends BaseWebhooksetCommand {
 			},
 		});
 		this.argumentConfigBlacklist.add('name');
-		this.data
-			.addBooleanOption((exOption) => exOption.setName('ex').setDescription('Whether to filter on ex raid.'))
-			.addIntegerOption((teamOption) =>
-				teamOption
-					.setName('team')
-					.setDescription('The team to filter on.')
-					.addChoices([
-						['Uncontested', 0],
-						['Mystic', 1],
-						['Valor', 2],
-						['Instinct', 3],
-					]),
-			)
-			.addStringOption((pokemonNameOption) =>
-				pokemonNameOption.setName('name').setDescription('The name of a pokemon to filter on.'),
-			);
-		addCpFilterOptions(this.data);
-		addLevelFilterOptions(this.data, 6);
-		addTrainFilterOption(this.data);
 	}
 
 	public async handleArguments({

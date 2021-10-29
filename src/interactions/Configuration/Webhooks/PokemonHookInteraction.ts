@@ -1,51 +1,11 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import { commonHookOptions } from '../../Base/CommonOptions';
 
 export default {
 	name: 'pokeset',
 	description: 'Set or remove the pokemon webhook configuration for a particular channel.',
 	options: [
-		{
-			type: 7,
-			name: 'channel',
-			description: 'The channel to create the raid webhook for.',
-			required: false,
-			channel_types: [0],
-		},
-		{
-			type: ApplicationCommandOptionType.Boolean,
-			name: 'update',
-			description: 'If true, existing config will be updated instead of overwritten.',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Number,
-			name: 'latitude',
-			description: 'The latitude to filter on with radius.',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Number,
-			name: 'longitude',
-			description: 'The longitude to filter on with radius.',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Number,
-			name: 'radius',
-			description: 'The radius (in km or m based on server configuration) to filter on from the given city or lat/long',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: 'unit',
-			description: 'Radius metric: km (kilometres) | m (miles)',
-			required: false,
-			choices: [
-				{ name: 'm', value: 'm' },
-				{ name: 'km', value: 'km' },
-			],
-		},
-		{ type: ApplicationCommandOptionType.String, name: 'city', description: 'The city to filter on', required: false },
+		...commonHookOptions,
 		{
 			type: ApplicationCommandOptionType.Boolean,
 			name: 'boosted',

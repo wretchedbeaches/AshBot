@@ -24,5 +24,5 @@ export default {
 			],
 		},
 	],
-	default_permission: true,
+	default_permission: false,
 } as const;

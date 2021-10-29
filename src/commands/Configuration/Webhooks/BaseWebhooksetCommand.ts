@@ -1,8 +1,7 @@
 import { CommandInteraction, GuildChannel, TextChannel } from 'discord.js';
 import Command, { CommandOptions } from '../../../struct/commands/Command';
 import config from '../../../config.json';
-import { APIInteractionDataResolvedChannel, ChannelType } from 'discord-api-types/v9';
-import { addGeofilterOptions } from '../../../util/WebhookFilterOptions';
+import { APIInteractionDataResolvedChannel } from 'discord-api-types/v9';
 import { CooldownScope } from '../../../struct/commands/CooldownManager';
 
 interface BaseArgumentError {
@@ -42,20 +41,6 @@ export default class BaseWebhooksetCommand extends Command {
 		});
 		this.webhookType = webhookType;
 		this.argumentConfigBlacklist = new Set(['channel', 'update', 'radius', 'city', 'latitude', 'longitude', 'unit']);
-		this.data
-			.addChannelOption((option) =>
-				option
-					.setName('channel')
-					.setDescription('The channel to create the raid webhook for.')
-					.addChannelType(ChannelType.GuildText)
-					.setRequired(false),
-			)
-			.addBooleanOption((updateOption) =>
-				updateOption
-					.setName('update')
-					.setDescription('If true, existing config will be updated instead of overwritten.'),
-			);
-		addGeofilterOptions(this.data);
 	}
 
 	public async execute(interaction: CommandInteraction) {

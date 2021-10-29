@@ -10,7 +10,9 @@ export default class GuildCreateListener extends Listener {
 		});
 	}
 
-	public async execute(guild: Guild) {
-		await this.client?.commandHandler.initGuild(guild);
+	public execute(guild: Guild) {
+		return this.client?.interactionManager?.registerInteractionForGuild(guild).catch((error) => {
+			this.client?.logger.error(`Failed to register interactions for a new guild`, { error, guild });
+		});
 	}
 }

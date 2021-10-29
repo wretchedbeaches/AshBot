@@ -40,45 +40,6 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 				],
 			},
 		});
-
-		this.data.addSubcommand((pokemonSubcommand) => {
-			pokemonSubcommand
-				.setName('pokemon')
-				.setDescription('Search for quest by Pokemon reward type')
-				.addStringOption((nameOption) =>
-					nameOption.setName('name').setDescription('The name of the pokemon to search by').setRequired(true),
-				);
-			QuestSearchCommand.addCommonOptions(pokemonSubcommand);
-			return pokemonSubcommand;
-		});
-		this.data.addSubcommand((itemSubcommand) => {
-			itemSubcommand
-				.setName('item')
-				.setDescription('Search quest by item reward type')
-				.addStringOption((nameOption) =>
-					nameOption.setName('name').setDescription('The name of the item to search by'),
-				);
-			QuestSearchCommand.addCommonOptions(itemSubcommand);
-			return itemSubcommand;
-		});
-		this.data.addSubcommand((stardustSubcommand) => {
-			stardustSubcommand
-				.setName('stardust')
-				.setDescription('Search quest by stardust reward type')
-				.addIntegerOption((amountOption) => amountOption.setName('amount').setDescription('The amount of stardust'));
-			QuestSearchCommand.addCommonOptions(stardustSubcommand);
-			return stardustSubcommand;
-		});
-		this.data.addSubcommand((megaSubcommand) => {
-			megaSubcommand
-				.setName('mega')
-				.setDescription('Search quest by mega energy reward type')
-				.addIntegerOption((nameOption) =>
-					nameOption.setName('name').setDescription('The name of the Pokemon mega energy'),
-				);
-			QuestSearchCommand.addCommonOptions(megaSubcommand);
-			return megaSubcommand;
-		});
 	}
 
 	public async execute(interaction: CommandInteraction) {

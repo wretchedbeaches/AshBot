@@ -34,9 +34,6 @@ export default class EightBall extends Command {
 				examples: ['8ball will i get a gf'],
 			},
 		});
-		this.data.addStringOption((option) =>
-			option.setName('question').setDescription('What would you like to ask the 8ball?'),
-		);
 	}
 
 	public execute(interaction: CommandInteraction) {

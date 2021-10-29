@@ -15,19 +15,6 @@ export default class NestListCommand extends Command {
 			},
 			isEphemeral: true,
 		});
-
-		this.data.addStringOption((nestTypeOption) =>
-			nestTypeOption
-				.setName('type')
-				.setDescription('Whether to list by global (default, shows all), worldwide, northern or southern.')
-				.addChoices([
-					['global', 'global'],
-					['worldwide', 'worldwide'],
-					['north', 'north'],
-					['south', 'south'],
-				])
-				.setRequired(false),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {

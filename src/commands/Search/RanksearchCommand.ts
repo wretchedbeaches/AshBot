@@ -27,21 +27,6 @@ export default class RankSearchCommand extends Command {
 			rateLimit: 3,
 			cooldown: 3e5,
 		});
-
-		this.data
-			.addStringOption((pokemonNameOption) =>
-				pokemonNameOption.setName('name').setDescription('The name of the pokemon to search by'),
-			)
-			.addIntegerOption((leagueOption) =>
-				leagueOption
-					.setName('league')
-					.setDescription('The league to search by')
-					.addChoices([
-						['great', 1500],
-						['ultra', 2500],
-						['master', 10000],
-					]),
-			);
 	}
 
 	public execute(interaction: CommandInteraction) {

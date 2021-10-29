@@ -3,7 +3,6 @@ import { CommandInteraction } from 'discord.js';
 import { PokesetConfig } from '../../../models/WebhookConfigurations';
 import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 import ntim from '../../../util/name_to_id_map.json';
-import { addCommonFilterOptions, getNumberChoices } from '../../../util/WebhookFilterOptions';
 
 // Eventually the discord API will allow for native support of min/max number values.
 // But in the mean time will need to do it on the client:
@@ -38,30 +37,6 @@ export default class PokesetCommand extends BaseWebhooksetCommand {
 				],
 			},
 		});
-		this.argumentConfigBlacklist.add('names');
-		this.argumentConfigBlacklist.add('rmpokemon');
-		this.argumentConfigBlacklist.add('atkiv');
-		this.argumentConfigBlacklist.add('defiv');
-		this.argumentConfigBlacklist.add('staiv');
-
-		addCommonFilterOptions(this.data);
-		const ivChoices = getNumberChoices(0, 15);
-		this.data
-			.addStringOption((rmpokemonOption) =>
-				rmpokemonOption.setName('rmpokemon').setDescription('Pokemon to remove from the filter, update must be true.'),
-			)
-			.addStringOption((namesOption) =>
-				namesOption.setName('names').setDescription('Comma separated Pokemon names to filter on.'),
-			)
-			.addIntegerOption((atkivOption) =>
-				atkivOption.setName('atkiv').setDescription('The atk IV to filter on').addChoices(ivChoices),
-			)
-			.addIntegerOption((defivOption) =>
-				defivOption.setName('defiv').setDescription('The def IV to filter on').addChoices(ivChoices),
-			)
-			.addIntegerOption((staivOption) =>
-				staivOption.setName('staiv').setDescription('The sta IV to filter on').addChoices(ivChoices),
-			);
 	}
 
 	public handleArguments({

@@ -17,9 +17,6 @@ export default class NestSearchCommand extends Command {
 			category: 'Search',
 			rateLimit: 3,
 		});
-		this.data.addStringOption((nameOption) =>
-			nameOption.setName('name').setDescription('The name of the pokemon to search by'),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {

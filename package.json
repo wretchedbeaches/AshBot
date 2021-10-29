@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/MaheshNat/Ash-Bot#readme",
   "dependencies": {
-    "@discordjs/builders": "^0.7.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@psibean/discord.js-pagination": "^4.0.2",
     "add-zero": "^1.0.0",

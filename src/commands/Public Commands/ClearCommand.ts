@@ -14,10 +14,6 @@ export default class ClearCommand extends Command {
 			isEphemeral: true,
 			rateLimit: 2,
 		});
-
-		this.data.addIntegerOption((amountOption) =>
-			amountOption.setName('amount').setDescription('The number of messages to delete.').setRequired(true),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {

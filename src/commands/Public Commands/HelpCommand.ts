@@ -14,9 +14,6 @@ export default class HelpCommand extends Command {
 			rateLimit: 3,
 			isEphemeral: true,
 		});
-		this.data.addStringOption((option) =>
-			option.setName('command').setDescription('The command to get help for.').setRequired(false),
-		);
 	}
 
 	public execute(interaction: CommandInteraction) {

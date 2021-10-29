@@ -1,6 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
-import { Collection, GuildEmoji, MessageEmbed, User } from 'discord.js';
+import { Collection, Guild, GuildEmoji, MessageEmbed, User } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import CommandHandler from '../struct/commands/CommandHandler';
 import ListenerHandler from '../struct/listeners/ListenerHandler';
@@ -17,6 +17,11 @@ import CooldownManager from '../struct/commands/CooldownManager';
 import LogManager from '../util/LogManager';
 import BaseClient, { BaseClientOptions } from '../struct/BaseClient';
 import RankingDataManager from '../util/RankingDataManager';
+import InteractionManager from '../struct/InteractionManager';
+import {
+	ApplicationCommandPermissionType,
+	RESTPutAPIGuildApplicationCommandsPermissionsJSONBody,
+} from 'discord-api-types';
 
 interface BotConfig {
 	token: string;
@@ -60,6 +65,39 @@ export default class AshBot extends BaseClient {
 			directories: [join(__dirname, '..', 'commands')],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
+		});
+
+		this.interactionManager = new InteractionManager(this, {
+			clientId: this.config.clientId,
+			directories: [join(__dirname, '..', 'interactions')],
+			filterPath: (path) => !path.toLowerCase().includes('base'),
+			guildPermissions: async (guild: Guild, registeredCommands: any) => {
+				const guildCommandPermissions: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
+				for (const command of registeredCommands) {
+					const commandPermissions: any = {
+						id: command.id,
+						permissions: [],
+					};
+					commandPermissions.permissions.push({
+						id: guild.ownerId,
+						type: ApplicationCommandPermissionType.User,
+						permission: true,
+					});
+					const adminRoleId = this.settings.get(guild.id, 'adminRoleId', null);
+					if (adminRoleId !== null) {
+						const adminRole = await guild.roles.fetch(adminRoleId);
+						if (adminRole)
+							commandPermissions.permissions.push({
+								id: adminRole.id,
+								type: ApplicationCommandPermissionType.Role,
+								permission: true,
+							});
+						else await this.settings.delete(guild.id, 'adminRoleId');
+					}
+					guildCommandPermissions.push(commandPermissions);
+				}
+				return guildCommandPermissions;
+			},
 		});
 
 		this.settings = new SequelizeProvider(guild, {

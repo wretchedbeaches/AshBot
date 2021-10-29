@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, ThreadChannelTypes } from 'discord.js';
 import BaseModule, { BaseModuleAttributes, BaseModuleOptions } from '../BaseModule';
 import CommandHandler from './CommandHandler';
@@ -55,7 +54,6 @@ export default class Command extends BaseModule implements CommandAttributes {
 	public shouldDefer: boolean;
 	public isEphemeral: boolean | ((interaction: CommandInteraction, command: Command) => Promise<boolean> | boolean);
 	public scope: CommandScope;
-	public data: SlashCommandBuilder;
 	public handler: CommandHandler;
 	public client: BotClient;
 	public registeredId?: string;
@@ -70,7 +68,6 @@ export default class Command extends BaseModule implements CommandAttributes {
 			ignoreCooldown,
 			rateLimit,
 			description,
-			defaultPermission,
 			clientPermissions,
 			userPermissions,
 			shouldDefer,
@@ -93,10 +90,6 @@ export default class Command extends BaseModule implements CommandAttributes {
 		this.shouldDefer = shouldDefer ?? true;
 		this.isEphemeral = isEphemeral ?? false;
 		this.scope = scope ?? 'guild';
-		this.data = new SlashCommandBuilder()
-			.setName(id)
-			.setDescription(this.description.content)
-			.setDefaultPermission(defaultPermission ?? true);
 	}
 
 	public shouldExecute(_: CommandInteraction): Promise<boolean> | boolean {

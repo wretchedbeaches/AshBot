@@ -17,9 +17,6 @@ export default class WhoIsCommand extends Command {
 			rateLimit: 2,
 			clientPermissions: [Permissions.FLAGS.MANAGE_MESSAGES],
 		});
-		this.data.addUserOption((userOption) =>
-			userOption.setName('member').setDescription('The member to get info for.').setRequired(true),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {

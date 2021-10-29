@@ -29,7 +29,6 @@ export default class CooldownManager extends EventEmitter {
 	}
 
 	public async runCooldowns(interaction: CommandInteraction, command: Command): Promise<boolean> {
-		console.log(`Checking cooldown for ${command.id}`);
 		if (command.cooldown <= 0) return false;
 		const cooldownIdentifier = this.getCooldownIdentifier(interaction, command);
 		if (cooldownIdentifier != null) {
@@ -39,7 +38,6 @@ export default class CooldownManager extends EventEmitter {
 				: await ignorer({ interaction, command });
 
 			if (isIgnored) return false;
-			console.log('Not ignored.');
 			const time = command.cooldown >= 0 ? command.cooldown : this.defaultCooldown;
 			if (!time) return false;
 
@@ -68,7 +66,6 @@ export default class CooldownManager extends EventEmitter {
 			}
 
 			cooldown.uses++;
-			console.log(`Used command: ${cooldown.uses}`);
 			return false;
 		}
 		return false;

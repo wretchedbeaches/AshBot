@@ -1,38 +1,9 @@
 import sequelize from 'sequelize';
 import Command, { CommandOptions } from '../../struct/commands/Command';
 import config from '../../config.json';
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
 
 export default class BaseSearchCommand extends Command {
-	public static addCommonOptions(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
-		commandBuilder
-			.addIntegerOption((distanceOption) =>
-				distanceOption.setName('distance').setDescription('The radius to search, defaults to km (see unit)'),
-			)
-			.addStringOption((unitOption) =>
-				unitOption.setName('unit').setDescription('The metric of the distance, metres or kilometres'),
-			);
-		BaseSearchCommand.addCityOption(commandBuilder);
-		BaseSearchCommand.addLatLongOptions(commandBuilder);
-	}
-
-	public static addLatLongOptions(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
-		commandBuilder
-			.addNumberOption((latitudeOption) =>
-				latitudeOption.setName('latitude').setDescription('The latitude to search from'),
-			)
-			.addNumberOption((longitudeOption) =>
-				longitudeOption.setName('longitude').setDescription('The longitude to search from'),
-			);
-	}
-
-	public static addCityOption(commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder) {
-		commandBuilder.addStringOption((cityOption) =>
-			cityOption.setName('city').setDescription('The city to search within'),
-		);
-	}
-
 	public static getDistanceQuery(type: string, center: { lat: number; long: number } | null) {
 		if (center === null) return null;
 		return sequelize.literal(

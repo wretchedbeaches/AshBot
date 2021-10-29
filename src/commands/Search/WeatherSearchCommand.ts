@@ -22,23 +22,6 @@ export default class WeatherSearchCommand extends BaseSearchCommand {
 				examples: ['weather sunny\nweather 35.482501 139.631672'],
 			},
 		});
-
-		this.data.addStringOption((weatherOption) =>
-			weatherOption
-				.setName('weather')
-				.setDescription('The weather to search for')
-				.addChoices([
-					['cloudy', '4'],
-					['sunny', '1'],
-					['windy', '5'],
-					['rain', '2'],
-					['fog', '7'],
-					['partly cloudy', '3'],
-					['snow', '6'],
-				]),
-		);
-		WeatherSearchCommand.addCityOption(this.data);
-		WeatherSearchCommand.addLatLongOptions(this.data);
 	}
 
 	public async execute(interaction: CommandInteraction) {

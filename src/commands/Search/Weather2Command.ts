@@ -21,14 +21,6 @@ export default class Weather2Command extends Command {
 			},
 			rateLimit: 3,
 		});
-		this.data
-			.addStringOption((cityOption) => cityOption.setName('city').setDescription('The city to search by'))
-			.addNumberOption((latitudeOption) =>
-				latitudeOption.setName('latitude').setDescription('The latitude to search by'),
-			)
-			.addNumberOption((longitudeOption) =>
-				longitudeOption.setName('longitude').setDescription('The longitude to search by'),
-			);
 		this.mapApiKey = process.env.OPEN_WEATHER_MAP_API_KEY ?? '';
 	}
 

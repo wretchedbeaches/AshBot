@@ -1,5 +1,4 @@
 import { stripIndents } from 'common-tags';
-import { addTrainFilterOption } from '../../../util/WebhookFilterOptions';
 import BaseWebhooksetCommand from './BaseWebhooksetCommand';
 
 export default class InvasionSetCommand extends BaseWebhooksetCommand {
@@ -14,11 +13,5 @@ export default class InvasionSetCommand extends BaseWebhooksetCommand {
         train`,
 			},
 		});
-
-		this.data.addBooleanOption((leaderOption) =>
-			leaderOption.setName('leader').setDescription('Whether or not to filter on leaders.'),
-		);
-
-		addTrainFilterOption(this.data);
 	}
 }

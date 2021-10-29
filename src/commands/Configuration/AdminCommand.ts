@@ -14,23 +14,6 @@ export default class AdminCommand extends Command {
 			rateLimit: 3,
 			ownerOnly: true,
 		});
-		this.data.addSubcommand((subcommand) =>
-			subcommand
-				.setName('roles')
-				.setDescription('Manage the admin, moderator, or mute roles.')
-				.addStringOption((option) =>
-					option
-						.setName('type')
-						.setDescription('The role type to manage: admin | mod | mute')
-						.addChoices([
-							['admin', 'admin'],
-							['mod', 'mod'],
-							['mute', 'mute'],
-						])
-						.setRequired(true),
-				)
-				.addRoleOption((option) => option.setName('role').setDescription('The role to use').setRequired(true)),
-		);
 	}
 
 	public async execute(interaction: CommandInteraction) {

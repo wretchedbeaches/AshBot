@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import { latitudeLongitudeCitySearchOptions } from '../Base/CommonOptions';
 
 export default {
 	name: 'weathersearch',
@@ -19,24 +20,7 @@ export default {
 				{ name: 'fog', value: 7 },
 			],
 		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: 'city',
-			description: 'The city to search within',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Number,
-			name: 'latitude',
-			description: 'The latitude to search from',
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Number,
-			name: 'longitude',
-			description: 'The longitude to search from',
-			required: false,
-		},
+		...latitudeLongitudeCitySearchOptions,
 	],
 	default_permission: true,
 } as const;

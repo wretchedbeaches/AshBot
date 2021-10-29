@@ -10,6 +10,13 @@ export const CommandHandlerEvents = {
 	COMMAND_API_ERROR: 'commandApiError',
 };
 
+export const InteractionManagerEvents = {
+	IMPORT_ERROR: 'importError',
+	REGISTRATION_ERROR: 'registrationError',
+	PERMISSION_ERROR: 'permissionError',
+	PERMISSIONS_UPDATED: 'permissionsUpdated',
+};
+
 export const CooldownManagerEvents = {
 	COOLDOWN: 'cooldown',
 };
