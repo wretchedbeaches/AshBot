@@ -38,9 +38,13 @@ export default class PokeHookCommand extends BaseHookCommand {
 				],
 			},
 		});
+		this.argumentConfigBlacklist.add('name');
+		this.argumentConfigBlacklist.add('atkiv');
+		this.argumentConfigBlacklist.add('defiv');
+		this.argumentConfigBlacklist.add('staiv');
 	}
 
-	public handleArguments({
+	public async handleArguments({
 		interaction,
 		channelConfiguration,
 		isUpdate,
@@ -49,6 +53,7 @@ export default class PokeHookCommand extends BaseHookCommand {
 		channelConfiguration: PokesetConfig;
 		isUpdate: boolean;
 	}) {
+		await super.handleArguments({ interaction, channelConfiguration });
 		if (isUpdate && channelConfiguration.name) {
 			const rmpokemon = interaction.options.getString('name', false);
 			if (rmpokemon) {
@@ -86,19 +91,10 @@ export default class PokeHookCommand extends BaseHookCommand {
 		// TODO: Filter should be updated such that can filter on just one or 2 of them.
 		// Not necessarily filter on all 3.
 
-		if (rawAtk && rawDef && rawSta) {
-			const rawIvError = `\n\nFailed to parse the atkiv/defiv/staiv filter that was provided: '${rawAtk}/${rawDef}/${rawSta}' - not applied.\nThe rawiv must be 'atk/def/sta' or 'atk,def,sta' format with each number between 0 and 15.`;
-			if (this.validateIv(rawAtk) && this.validateIv(rawDef) && this.validateIv(rawSta)) {
-				channelConfiguration.rawiv = { attack: rawAtk, defense: rawDef, stamina: rawSta };
-			} else {
-				error += rawIvError;
-			}
+		if (rawAtk !== null && rawDef !== null && rawSta !== null) {
+			channelConfiguration.rawiv = { attack: rawAtk, defense: rawDef, stamina: rawSta };
 		}
 
 		return error.trim();
-	}
-
-	private validateIv(iv: number) {
-		return iv > 0 && iv < 15;
 	}
 }
