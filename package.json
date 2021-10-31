@@ -3,6 +3,7 @@
   "version": "1.2.2",
   "description": "",
   "main": "src/Bot.ts",
+  "type": "module",
   "engines": {
     "node": "16.11.0",
     "npm": "8.0.0"
@@ -49,20 +50,26 @@
     "point-in-polygon": "^1.1.0",
     "sequelize": "^6.7.0",
     "sequelize-typescript": "^2.1.1",
-    "typescript": "^4.2.2",
+    "typescript": "^4.4.4",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.8",
-    "@babel/eslint-parser": "^7.15.8",
+    "@babel/core": "^7.16.0",
+    "@babel/eslint-parser": "^7.16.0",
+    "@babel/plugin-proposal-decorators": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@types/cheerio": "^0.22.30",
+    "@types/common-tags": "^1.8.1",
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/moment-precise-range-plugin": "^0.2.0",
-    "@types/node": "^16.11.3",
+    "@types/node": "^16.11.6",
     "@types/sequelize": "^4.28.10",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "dotenv": "^10.0.0",
     "eslint": "7.32.0",
     "eslint-config-marine": "^9.0.6",
@@ -80,7 +87,13 @@
     "rules": {
       "@typescript-eslint/naming-convention": 0,
       "no-eq-null": 0,
-      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}]
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_"
+        }
+      ]
     }
   }
 }
