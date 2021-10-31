@@ -1,3 +1,4 @@
+import cities from './cities.json';
 import gruntTypes from './grunt-types.json';
 import items from './items.json';
 import moves from './moves.json';
@@ -11,12 +12,25 @@ import questTypes from './quest-types.json';
 import teams from './teams.json';
 import throwTypes from './throw-types.json';
 import weather from './weather.json';
-import { Grunt, Item, Move, PokemonData, PokemonForm, PokemonTypeData, QuestGeneric, Team, Weather } from './DataTypes';
+
+import type {
+	City,
+	Grunt,
+	Item,
+	Move,
+	PokemonData,
+	PokemonForm,
+	PokemonTypeData,
+	QuestGeneric,
+	Team,
+	Weather,
+} from './DataTypes';
 
 interface StringObject<T> {
 	[key: string]: T;
 }
 
+const citiesData = cities as unknown as StringObject<City | undefined>;
 const gruntTypesData = gruntTypes as StringObject<Grunt | undefined>;
 const itemsData = items as StringObject<Item | undefined>;
 const movesData = moves as StringObject<Move | undefined>;
@@ -42,6 +56,7 @@ const throwTypesData = throwTypes as StringObject<string | undefined>;
 const weatherData = weather as StringObject<Weather | undefined>;
 
 export {
+	citiesData,
 	gruntTypesData,
 	itemsData,
 	movesData,

@@ -1,4 +1,7 @@
-import { HexColorString } from 'discord.js';
+import type { HexColorString } from 'discord.js';
+
+type Coordinate = [number, number];
+export type City = Coordinate[];
 
 // WEATHER
 
