@@ -92,10 +92,9 @@ export default class BaseHookCommand extends Command {
 	public handleBaseArguments(interaction: CommandInteraction): BaseArgumentError | BaseArguments {
 		// Create/overwrite by default if update argument is not provided.
 		const isUpdate = interaction.options.getBoolean('update', false) ?? false;
-		// TODO: once https://github.com/discordjs/builders/pull/41 is merged
-		// Only allow for only text channels to be selected for this argument.
+
 		const channel = (interaction.options.getChannel('channel', false) ?? interaction.channel) as TextChannel;
-		const guildId = interaction.guildId!;
+		const guildId = interaction.guildId;
 
 		return {
 			isUpdate,
