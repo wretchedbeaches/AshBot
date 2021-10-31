@@ -1,6 +1,7 @@
-import { GeofilterOption } from './WebhookFilters';
+import type { GeofilterOption } from './WebhookFilters';
 
-export interface RaidsetConfig {
+export type WebhookChannelConfiguration = RaidHookConfig | QuestHookConfig | InvasionHookConfig | PokemonHookConfig;
+export interface RaidHookConfig {
 	type: 'raid';
 	ex?: boolean;
 	name?: string;
@@ -15,13 +16,13 @@ export interface RaidsetConfig {
 	boosted?: boolean;
 }
 
-export interface QuestsetConfig {
+export interface QuestHookConfig {
 	type: 'quest';
 	geofilter?: string | GeofilterOption;
 	rewardType?: string;
 }
 
-export interface InvasionsetConfig {
+export interface InvasionHookConfig {
 	type: 'invasion';
 	geofilter?: string | GeofilterOption;
 	leader?: boolean;
@@ -34,7 +35,7 @@ export interface PokemonIV {
 	stamina: number;
 }
 
-export interface PokesetConfig {
+export interface PokemonHookConfig {
 	type: 'pokemon';
 	boosted?: boolean;
 	name?: string | string[];
