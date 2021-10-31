@@ -70,7 +70,7 @@ export default class AshBot extends BaseClient {
 		this.interactionManager = new InteractionManager(this, {
 			clientId: this.config.clientId,
 			directories: [join(__dirname, '..', 'interactions')],
-			filterPath: (path) => !path.toLowerCase().includes('base'),
+			filterPath: (path: string) => !path.toLowerCase().includes('base'),
 			guildPermissions: async (guild: Guild, registeredCommands: any) => {
 				const guildCommandPermissions: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
 				for (const command of registeredCommands) {
@@ -175,7 +175,7 @@ export default class AshBot extends BaseClient {
 				try {
 					this.setInterval(channelId);
 				} catch (error) {
-					this.logger.error(error);
+					this.logger.error(error as string);
 				}
 			}
 		}

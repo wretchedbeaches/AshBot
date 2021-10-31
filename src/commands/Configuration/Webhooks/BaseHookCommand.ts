@@ -1,8 +1,9 @@
-import { CommandInteraction, GuildChannel, TextChannel } from 'discord.js';
+import type { CommandInteraction, GuildChannel, TextChannel } from 'discord.js';
 import Command, { CommandOptions } from '../../../struct/commands/Command';
-import config from '../../../config.json';
-import { APIInteractionDataResolvedChannel } from 'discord-api-types/v9';
+import type { APIInteractionDataResolvedChannel } from 'discord-api-types/v9';
 import { CooldownScope } from '../../../struct/commands/CooldownManager';
+import type { WebhookChannelConfiguration } from '../../../models/WebhookConfigurations';
+import { citiesData } from '../../../data/Data';
 
 interface BaseArgumentError {
 	error: string;
@@ -28,7 +29,7 @@ export default class BaseHookCommand extends Command {
 	public argumentConfigBlacklist: Set<string>;
 	public webhookType: string;
 
-	public constructor(id, options: WebhooksetCommandOptions) {
+	public constructor(id: string, options: WebhooksetCommandOptions) {
 		const { webhookType, ...rest } = options;
 		super(id, {
 			...rest,
@@ -43,7 +44,7 @@ export default class BaseHookCommand extends Command {
 		this.argumentConfigBlacklist = new Set(['channel', 'update', 'radius', 'city', 'latitude', 'longitude', 'unit']);
 	}
 
-	public async execute(interaction: CommandInteraction) {
+	public override async execute(interaction: CommandInteraction) {
 		const baseArguments = this.handleBaseArguments(interaction);
 		if (baseArguments.error) {
 			return interaction.editReply(baseArguments.error);
@@ -95,7 +96,7 @@ export default class BaseHookCommand extends Command {
 		// TODO: once https://github.com/discordjs/builders/pull/41 is merged
 		// Only allow for only text channels to be selected for this argument.
 		const channel = (interaction.options.getChannel('channel', false) ?? interaction.channel) as TextChannel;
-		const guildId = interaction.guildId!;
+		const guildId = interaction.guildId;
 
 		return {
 			isUpdate,
@@ -123,7 +124,11 @@ export default class BaseHookCommand extends Command {
 		}
 	}
 
-	public parseGeofilterOptions(interaction: CommandInteraction, channelConfiguration, errorSuffix: string) {
+	public parseGeofilterOptions(
+		interaction: CommandInteraction,
+		channelConfiguration: WebhookChannelConfiguration,
+		errorSuffix: string,
+	) {
 		let error = '';
 		const cityArgument = interaction.options.getString('city', false);
 		// If a city is provided it shall take priority.
@@ -151,7 +156,7 @@ export default class BaseHookCommand extends Command {
 				error += `\nlat/long: '${latitudeArgument ?? ''}/${longitudeArgument ?? ''}'`;
 				error += `\n\n**But no radius was provided and is required when providing a lat/long.**\nGeofilter was not ${errorSuffix}`;
 			}
-		} else if (config.cities[cityArgument.toLowerCase()]) {
+		} else if (citiesData[cityArgument.toLowerCase()]) {
 			channelConfiguration.geofilter = cityArgument.toLowerCase();
 		} else {
 			error = `City '${cityArgument}' was provided but could not be found, geofilter was not ${errorSuffix}.`;
@@ -159,7 +164,7 @@ export default class BaseHookCommand extends Command {
 		return error;
 	}
 
-	public getConfigEmbed(guildId: string, channelString: string, channelConfiguration) {
+	public getConfigEmbed(guildId: string, channelString: string, channelConfiguration: WebhookChannelConfiguration) {
 		const embed = this.client.embed(guildId).setTitle(`Webhook Configuration For Channel ${channelString}`);
 
 		const configEntries = Object.entries(channelConfiguration);

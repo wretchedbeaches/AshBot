@@ -1,6 +1,6 @@
 import { stripIndents } from 'common-tags';
-import { CommandInteraction } from 'discord.js';
-import { PokesetConfig } from '../../../models/WebhookConfigurations';
+import type { CommandInteraction } from 'discord.js';
+import type { PokemonHookConfig } from '../../../models/WebhookConfigurations';
 import BaseHookCommand from './BaseHookCommand';
 import ntim from '../../../util/name_to_id_map.json';
 import COMMAND_NAMES from '../../../util/CommandNames';
@@ -40,13 +40,13 @@ export default class PokeHookCommand extends BaseHookCommand {
 		});
 	}
 
-	public handleArguments({
+	public override handleArguments({
 		interaction,
 		channelConfiguration,
 		isUpdate,
 	}: {
 		interaction: CommandInteraction;
-		channelConfiguration: PokesetConfig;
+		channelConfiguration: PokemonHookConfig;
 		isUpdate: boolean;
 	}) {
 		if (isUpdate && channelConfiguration.name) {

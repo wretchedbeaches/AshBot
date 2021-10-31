@@ -1,7 +1,7 @@
 import sequelize from 'sequelize';
 import Command, { CommandOptions } from '../../struct/commands/Command';
-import config from '../../config.json';
-import { CommandInteraction } from 'discord.js';
+import type { CommandInteraction } from 'discord.js';
+import { citiesData } from '../../data/Data';
 
 export default class BaseSearchCommand extends Command {
 	public static getDistanceQuery(type: string, center: { lat: number; long: number } | null) {
@@ -19,12 +19,12 @@ export default class BaseSearchCommand extends Command {
 	public static getWithinCityQuery(type: string, city: string | null) {
 		if (city === null) return null;
 		return sequelize.literal(`ST_CONTAINS(ST_GEOMFROMTEXT(
-      'POLYGON((${
-				config.cities[city].map((coord: [number, number]) => `${coord[1]} ${coord[0]}`).join(', ') as string
-			}))'), POINT(\`${type}\`.\`lon\`, \`${type}\`.\`lat\`))`);
+      'POLYGON((${citiesData[city]!.map((coord: [number, number]) => `${coord[1]} ${coord[0]}`).join(
+				', ',
+			)}))'), POINT(\`${type}\`.\`lon\`, \`${type}\`.\`lat\`))`);
 	}
 
-	public constructor(id, options: CommandOptions) {
+	public constructor(id: string, options: CommandOptions) {
 		super(id, { ...options, category: 'Search', rateLimit: 3, cooldown: 3e5 });
 	}
 
