@@ -62,14 +62,14 @@ export default class AshBot extends BaseClient {
 		});
 
 		this.commandHandler = new CommandHandler(this, {
-			directories: [join(__dirname, '..', 'commands')],
+			directories: [join(__dirname, '..', 'commands', 'Search')],
 			cooldownManager: new CooldownManager(this, { defaultCooldown: 6e4 }),
 			filterPath: (path) => !path.toLowerCase().includes('base'),
 		});
 
 		this.interactionManager = new InteractionManager(this, {
 			clientId: this.config.clientId,
-			directories: [join(__dirname, '..', 'interactions')],
+			directories: [join(__dirname, '..', 'interactions', 'Search')],
 			filterPath: (path) => !path.toLowerCase().includes('base'),
 			guildPermissions: async (guild: Guild, registeredCommands: any) => {
 				const guildCommandPermissions: RESTPutAPIGuildApplicationCommandsPermissionsJSONBody = [];
