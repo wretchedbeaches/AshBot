@@ -1,4 +1,5 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { movesData } from '../../data/Data';
 import { RankingData } from '../../data/PvPokeData';
 import Command from '../../struct/commands/Command';
 import COMMAND_NAMES from '../../util/CommandNames';
@@ -53,12 +54,44 @@ export default class RankSearchCommand extends Command {
 		} else if (rankingData.has(nameArgument.toLowerCase())) {
 			data = rankingData.get(nameArgument.toLowerCase()) as RankingData;
 			embed.setTitle(`${data.rating} ${data.speciesName}`);
-			embed.addField('Matchups', data.matchups.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);
-			embed.addField('Counters', data.counters.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);
+			embed.setThumbnail(`https://play.pokemonshowdown.com/sprites/xyani/${data.speciesName.toLowerCase()}.gif`);
+			embed.addField('Matchups', data.matchups.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), false);
+			embed.addField('Counters', data.counters.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), false);
+			embed.addField(
+				'Fast Moves',
+				data.moves.fastMoves
+					.map((val) => {
+						if (movesData[val.moveId]) return movesData[val.moveId]?.name ?? '';
+						return val.moveId
+							.toLowerCase()
+							.split('_')
+							.filter((x) => x.length > 1)
+							.map((y) => y.charAt(0).toUpperCase() + y.slice(1))
+							.join(' ');
+					})
+					.join('\n'),
+				false,
+			);
+			embed.addField(
+				'Charged Moves',
+				data.moves.chargedMoves
+					.map((val) => {
+						if (movesData[val.moveId]) return movesData[val.moveId]?.name ?? '';
+						return val.moveId
+							.toLowerCase()
+							.split('_')
+							.filter((x) => x.length > 1)
+							.map((y) => y.charAt(0).toUpperCase() + y.slice(1))
+							.join(' ');
+					})
+					.join('\n'),
+				false,
+			);
 			if (data.stats) {
 				embed.addField(
 					'Stats',
 					`:crossed_swords: Attack: ${data.stats.atk}\n:shield: Defense: ${data.stats.def}\n:arrow_right: Stamina: ${data.stats.hp}`,
+					false,
 				);
 			}
 			return interaction.editReply({ embeds: [embed] });

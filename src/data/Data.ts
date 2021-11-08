@@ -34,8 +34,13 @@ const teamsData = teams as StringObject<Team | undefined>;
 // won't be duplicated in runtime memory.
 // But can be looked up by both id and name in the same data.
 for (const key of Object.keys(teamsData)) {
-	const currentTeam = teamsData[key];
-	teamsData[currentTeam!.name.toLowerCase()] = currentTeam;
+	const currentTeam = teamsData[key] as Team;
+	teamsData[currentTeam.name.toLowerCase()] = currentTeam;
+}
+
+for (const key of Object.keys(pokemonMovesData)) {
+	const currentMove = pokemonMovesData[key] as Move;
+	pokemonMovesData[currentMove.proto] = currentMove;
 }
 
 const throwTypesData = throwTypes as StringObject<string | undefined>;
