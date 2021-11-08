@@ -14,7 +14,7 @@ const COMMAND_NAMES = {
 		CLEAR: 'clear',
 		DISTANCE: 'distance',
 		HELP: 'help',
-		NEST: 'nest',
+		NEST: 'nestinglist',
 		PING: 'ping',
 		SEND_EMBED: 'sendembed',
 		SERVER_INFO: 'serverinfo',

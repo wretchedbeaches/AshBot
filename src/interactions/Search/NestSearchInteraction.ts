@@ -9,7 +9,7 @@ export default {
 			type: ApplicationCommandOptionType.String,
 			name: 'name',
 			description: 'The name of the pokemon to search by',
-			required: false,
+			required: true,
 		},
 	],
 	default_permission: true,

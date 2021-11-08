@@ -1,19 +1,29 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { ChannelTypes } from 'discord.js/typings/enums';
 
+export const getLatLongOptions = (description: string, replace = 'X') => {
+	return [
+		{
+			type: ApplicationCommandOptionType.Number,
+			name: 'latitude',
+			description: `${description.replace(replace, 'latitude')} (min: -90, max: 90)`,
+			required: false,
+			min_value: -90,
+			max_value: 90,
+		},
+		{
+			type: ApplicationCommandOptionType.Number,
+			name: 'longitude',
+			description: `${description.replace(replace, 'longitude')} (min: -180, max: 180)`,
+			required: false,
+			min_value: -180,
+			max_value: 180,
+		},
+	];
+};
+
 export const latitudeLongitudeCitySearchOptions = [
-	{
-		type: ApplicationCommandOptionType.Number,
-		name: 'latitude',
-		description: 'The latitude to search from',
-		required: false,
-	},
-	{
-		type: ApplicationCommandOptionType.Number,
-		name: 'longitude',
-		description: 'The longitude to search from',
-		required: false,
-	},
+	...getLatLongOptions('The X to search from'),
 	{
 		type: ApplicationCommandOptionType.String,
 		name: 'city',
@@ -51,18 +61,7 @@ export const commonHookOptions = [
 		description: 'If true, existing config will be updated instead of overwritten',
 		required: false,
 	},
-	{
-		type: ApplicationCommandOptionType.Number,
-		name: 'latitude',
-		description: 'The latitude to filter on with radius',
-		required: false,
-	},
-	{
-		type: ApplicationCommandOptionType.Number,
-		name: 'longitude',
-		description: 'The longitude to filter on with radius',
-		required: false,
-	},
+	...getLatLongOptions('The X to filter on with radius'),
 	{
 		type: ApplicationCommandOptionType.Number,
 		name: 'radius',

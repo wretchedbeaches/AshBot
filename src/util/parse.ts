@@ -300,14 +300,14 @@ export function parsePokemonDb(pokemon: PokemonModel, guildId: string, webhook: 
 	};
 	return parsePokemon(eventPokemon, guildId, webhook).embed;
 }
-export function parseNestDb(nest: nests): { value: string } {
+export function parseNestDb(nest: nests) {
 	const { lat, lon } = nest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
 	return stripIndents`${emoji.emoji} ${city.name}, ${emoji.name}
     [**[${lat!.toFixed(5)},${lon!.toFixed(5)}](https://www.google.com/maps?q=${lat},${lon})**]`;
 }
-export function parseQuestDb(quest: pokestop): { value: string } {
+export function parseQuestDb(quest: pokestop) {
 	const { lat, lon, quest_type, quest_target } = quest;
 	const city = nearbyCities({ latitude: lat, longitude: lon })[0];
 	const emoji = countryFlagEmoji.get(city.country);
@@ -315,7 +315,7 @@ export function parseQuestDb(quest: pokestop): { value: string } {
     ${emoji.emoji} ${emoji.name}
     [**[${lat.toFixed(5)},${lon.toFixed(5)}]](https://www.google.com/maps?q=${lat},${lon})**`;
 }
-export function parseWeatherDb(weather: weather): string {
+export function parseWeatherDb(weather: weather) {
 	const city = nearbyCities({
 		latitude: weather.latitude,
 		longitude: weather.longitude,
