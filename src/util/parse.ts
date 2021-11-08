@@ -41,13 +41,6 @@ export interface LocationEmoji {
 	name: string;
 	emoji: string;
 }
-export interface RankingData {
-	rank?: number;
-	name?: string;
-	cp?: number;
-	level?: number;
-	percentage?: number;
-}
 
 // function to get custom discord emoji string from its name
 const emoji = (name: string | undefined) => {

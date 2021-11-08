@@ -104,7 +104,7 @@ export default class AshBot extends BaseClient {
 			idColumn: 'id',
 			dataColumn: 'settings',
 		});
-		this.rankingData = new RankingDataManager();
+		this.rankingData = new RankingDataManager(this);
 	}
 
 	private async _init(): Promise<void> {
@@ -145,10 +145,12 @@ export default class AshBot extends BaseClient {
 
 	public async updateNestMigrationDate() {
 		try {
+			this.logger.info('[Bot] Updating nest migration date...');
 			const nestMigrationRequest = (await axios.get(`https://p337.info/pokemongo/countdowns/?id=nest-migration`)).data;
 			const $ = cheerio.load(nestMigrationRequest as string);
 			const nestMigrationDate = $('#local_time3').text().trim();
 			this.nestMigrationDate = new Date(nestMigrationDate);
+			this.logger.info(`[Bot] Nest migration date updated to ${this.nestMigrationDate.toString()}`);
 		} catch (e) {
 			this.logger.error(`[Bot] Error while attempting to grab nest migration date: \n\n${e as string}\n\n`);
 		}
@@ -168,6 +170,7 @@ export default class AshBot extends BaseClient {
 	}
 
 	private initGuilds(): void {
+		this.logger.info('[Bot] Initialising guilds...');
 		for (const [_, { channels }] of this.settings.items) {
 			for (const channelId in channels) {
 				if (!channels.hasOwnProperty(channelId)) continue;
@@ -212,6 +215,7 @@ export default class AshBot extends BaseClient {
 	}
 
 	private initServer() {
+		this.logger.info('[Bot] Starting express server...');
 		const PORT = process.env.PORT ?? 8080;
 		const app = express();
 		app.use(express.json({ limit: '2048kb' }) as RequestHandler);

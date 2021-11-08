@@ -1,4 +1,4 @@
-import { HexColorString } from 'discord.js';
+import type { HexColorString } from 'discord.js';
 
 // WEATHER
 
@@ -109,31 +109,6 @@ export interface Team {
 	name: string;
 	color: number;
 	emoji: string;
-}
-
-export interface RankingMatchupData {
-	opponent: string;
-	rating: number;
-}
-
-export interface RankingMoveData {
-	moveId: string;
-	uses: number;
-}
-export interface RankingMovesData {
-	fastMoves: RankingMoveData[];
-	chargedMoves: RankingMoveData[];
-}
-export interface RankingData {
-	speciesId: string;
-	speciesName: string;
-	rating: number;
-	matchups: RankingMatchupData[];
-	counters: RankingMatchupData[];
-	moves: RankingMovesData;
-	moveset: string[];
-	score: number;
-	scores: number[];
 }
 
 // POKEMON DATA TYPES

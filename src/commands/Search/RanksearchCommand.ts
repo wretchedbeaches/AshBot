@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { RankingData } from '../../data/DataTypes';
+import { RankingData } from '../../data/PvPokeData';
 import Command from '../../struct/commands/Command';
 import COMMAND_NAMES from '../../util/CommandNames';
 import { RankingDataCollection } from '../../util/RankingDataManager';
@@ -55,6 +55,12 @@ export default class RankSearchCommand extends Command {
 			embed.setTitle(`${data.rating} ${data.speciesName}`);
 			embed.addField('Matchups', data.matchups.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);
 			embed.addField('Counters', data.counters.map((val) => `${val.opponent}: ${val.rating}`).join('\n'), true);
+			if (data.stats) {
+				embed.addField(
+					'Stats',
+					`:crossed_swords: Attack: ${data.stats.atk}\n:shield: Defense: ${data.stats.def}\n:arrow_right: Stamina: ${data.stats.hp}`,
+				);
+			}
 			return interaction.editReply({ embeds: [embed] });
 		}
 		return interaction.editReply(
