@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import COMMAND_NAMES from '../../../util/CommandNames';
-import { commonHookOptions } from '../../Base/CommonOptions';
+import { commonCpOptions, commonHookOptions } from '../../Base/CommonOptions';
 
 export default {
 	name: COMMAND_NAMES.CONFIGURATION.WEBHOOKS.POKEMON,
@@ -29,22 +29,7 @@ export default {
 			min_value: 0,
 			max_value: 15,
 		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: 'mincp',
-			description: 'The minimum cp to filter on',
-			required: false,
-			min_value: 0,
-			max_value: 4000,
-		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: 'maxcp',
-			description: 'The maximum cp to filter on',
-			required: false,
-			min_value: 0,
-			max_value: 4000,
-		},
+		...commonCpOptions,
 		{
 			type: ApplicationCommandOptionType.Integer,
 			name: 'minlevel',
