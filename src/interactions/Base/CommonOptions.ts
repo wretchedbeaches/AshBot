@@ -47,6 +47,25 @@ export const unitAndDistanceSearchOptions = [
 	},
 ];
 
+export const commonCpOptions = [
+	{
+		type: ApplicationCommandOptionType.Integer,
+		name: 'mincp',
+		description: 'The minimum cp to filter on (min: 0, max: 4000)',
+		required: false,
+		min_value: 0,
+		max_value: 4000,
+	},
+	{
+		type: ApplicationCommandOptionType.Integer,
+		name: 'maxcp',
+		description: 'The maximum cp to filter on (min: 0, max: 4000)',
+		required: false,
+		min_value: 0,
+		max_value: 4000,
+	},
+];
+
 export const commonHookOptions = [
 	{
 		type: ApplicationCommandOptionType.Channel,
