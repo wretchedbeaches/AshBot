@@ -9,12 +9,12 @@ export default {
 			type: ApplicationCommandOptionType.String,
 			name: 'name',
 			description: 'The name of the pokemon to search by',
-			required: false,
+			required: true,
 		},
 		{
 			type: ApplicationCommandOptionType.Integer,
 			name: 'league',
-			description: 'The league to search by',
+			description: 'The league to search by (default: great)',
 			required: false,
 			choices: [
 				{ name: 'great', value: 1500 },
