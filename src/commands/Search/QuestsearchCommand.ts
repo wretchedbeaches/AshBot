@@ -1,15 +1,15 @@
-import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
+import type { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
 import { stripIndents } from 'common-tags';
 import ntim from '../../util/name_to_id_map.json';
 import { pokestop } from '../../rdmdbModels/pokestop';
 import sequelize, { Op } from 'sequelize';
 import { parseQuestDb } from '../../util/parse';
-import { Literal, Where } from 'sequelize/types/lib/utils';
+import type { Literal, Where } from 'sequelize/types/lib/utils';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
 import BaseSearchCommand from './BaseSearchCommand';
 import config from '../../config.json';
 import { itemsData, pokemonData, pokemonTypesData } from '../../data/Data';
-import { Item, PokemonData } from '../../data/DataTypes';
+import type { Item, PokemonData } from '../../data/DataTypes';
 import COMMAND_NAMES from '../../util/CommandNames';
 
 interface HandleData {
@@ -29,7 +29,7 @@ export default class QuestSearchCommand extends BaseSearchCommand {
         quest item "\`item name\`" \`distance latitude longitude\` \`city\`
 
         **OR**
-        quest stardust \`stardust amount\` \`distance latitude longitude\` \`city\`,
+        quest stardust \`stardust amount\` \`distance latitude longitude\` \`city\`,x
 
         **OR**
         quest mega pokemon \`pokemon name\` \`distance latitude longitude\` \`city\``,
@@ -79,7 +79,8 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 
 		if (subcommand === 'item') {
 			nameArgument = interaction.options.getString('name', true);
-			item = itemsData[nameArgument.toLowerCase()];
+			const itemKey = nameArgument.toLowerCase().split(' ').join('_');
+			item = itemsData[itemKey];
 			if (item === undefined)
 				return interaction.editReply(`Could not find an item by the provided name '${nameArgument}'`);
 		}
