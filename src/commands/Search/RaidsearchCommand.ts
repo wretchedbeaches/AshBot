@@ -26,6 +26,7 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 				examples: ['raidsearch name pikachu geofilter 10km 85.4,-92.8 ex true team valor level 5'],
 			},
 		});
+		this.hasSubCommand = false;
 	}
 
 	public async execute(interaction: CommandInteraction) {

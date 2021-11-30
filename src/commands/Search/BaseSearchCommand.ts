@@ -24,12 +24,15 @@ export default class BaseSearchCommand extends Command {
 			}))'), POINT(\`${type}\`.\`lon\`, \`${type}\`.\`lat\`))`);
 	}
 
+	public hasSubCommand: boolean;
+
 	public constructor(id, options: CommandOptions) {
 		super(id, { ...options, category: 'Search', rateLimit: 3, cooldown: 3e5 });
+		this.hasSubCommand = true;
 	}
 
 	public parseCommonArgs(interaction: CommandInteraction) {
-		const subcommand = interaction.options.getSubcommand(true);
+		const subcommand = interaction.options.getSubcommand(this.hasSubCommand);
 		const latitude = interaction.options.getNumber('latitude', false);
 		const longitude = interaction.options.getNumber('longitude', false);
 		// Default to 10km if not provided
