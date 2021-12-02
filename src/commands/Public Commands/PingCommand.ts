@@ -5,7 +5,7 @@ import COMMAND_NAMES from '../../util/CommandNames';
 export default class PingCommand extends Command {
 	public constructor() {
 		super(COMMAND_NAMES.PUBLIC.PING, {
-			category: 'Public Commands',
+			category: 'Public',
 			description: {
 				content: 'Check the latency of the ping to the Discord API',
 				usage: 'ping',

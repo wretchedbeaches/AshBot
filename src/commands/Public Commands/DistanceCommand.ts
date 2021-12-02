@@ -12,7 +12,7 @@ export default class DistanceCommand extends Command {
 				usage: 'distance `latitude` `longitude` `latitude` `longitude`',
 				examples: ['distance 41.63576 -0.90853 41.60914 -0.89437'],
 			},
-			category: 'Utilities',
+			category: 'Utility',
 			rateLimit: 3,
 			isEphemeral: true,
 		});

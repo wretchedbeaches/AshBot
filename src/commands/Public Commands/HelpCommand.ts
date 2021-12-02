@@ -6,7 +6,7 @@ import COMMAND_NAMES from '../../util/CommandNames';
 export default class HelpCommand extends Command {
 	public constructor() {
 		super(COMMAND_NAMES.PUBLIC.HELP, {
-			category: 'Public Commands',
+			category: 'Public',
 			description: {
 				content: 'View available commands on the bot',
 				usage: 'help [command]',

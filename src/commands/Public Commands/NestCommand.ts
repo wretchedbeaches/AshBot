@@ -8,7 +8,7 @@ import COMMAND_NAMES from '../../util/CommandNames';
 export default class NestListCommand extends Command {
 	public constructor() {
 		super(COMMAND_NAMES.PUBLIC.NEST, {
-			category: 'Utilities',
+			category: 'Utility',
 			description: {
 				content: 'Retrieves a list of the current nesting pokemon.',
 				usage: 'nest',

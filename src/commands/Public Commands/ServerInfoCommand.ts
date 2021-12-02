@@ -23,7 +23,7 @@ export default class ServerInfoCommand extends Command {
 			description: {
 				content: 'Gets info about a server',
 			},
-			category: 'info',
+			category: 'Utility',
 			scope: 'guild',
 			clientPermissions: [Permissions.FLAGS.MANAGE_MESSAGES],
 			rateLimit: 2,

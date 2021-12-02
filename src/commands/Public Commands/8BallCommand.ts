@@ -28,7 +28,7 @@ const responses = [
 export default class EightBall extends Command {
 	public constructor() {
 		super(COMMAND_NAMES.PUBLIC.EIGHT_BALL, {
-			category: 'Public Commands',
+			category: 'Public',
 			description: {
 				content: 'Let the bot decide your future',
 				usage: 'Fortune-Telling Game',

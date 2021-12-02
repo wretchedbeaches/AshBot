@@ -10,7 +10,7 @@ export default class SendEmbedCommand extends Command {
 				usage: 'sendembed #`channel` `message content`',
 				examples: ['sendembed #general this text will go inside of an embed.'],
 			},
-			category: 'Utilities',
+			category: 'Utility',
 			rateLimit: 3,
 			isEphemeral: true,
 		});

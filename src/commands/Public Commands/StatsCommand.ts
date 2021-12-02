@@ -15,7 +15,7 @@ export default class StatsCommand extends Command {
 			},
 			clientPermissions: [Permissions.FLAGS.VIEW_CHANNEL],
 			rateLimit: 2,
-			category: 'Utilities',
+			category: 'Utility',
 		});
 	}
 

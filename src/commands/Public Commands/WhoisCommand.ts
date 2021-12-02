@@ -14,7 +14,7 @@ export default class WhoIsCommand extends Command {
 				usage: '[member]',
 				examples: ['whois Meatloaf Dispenser', 'user @BEACH', 'member 463869229850951680'],
 			},
-			category: 'Utilities',
+			category: 'Utility',
 			rateLimit: 2,
 			clientPermissions: [Permissions.FLAGS.MANAGE_MESSAGES],
 		});

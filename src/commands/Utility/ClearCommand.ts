@@ -9,7 +9,7 @@ export default class ClearCommand extends Command {
 				content: 'Deletes a specific number of messages.',
 				usage: '<amount>',
 			},
-			category: 'Utilities',
+			category: 'Utility',
 			clientPermissions: [Permissions.FLAGS.MANAGE_MESSAGES],
 			userPermissions: [Permissions.FLAGS.MANAGE_GUILD],
 			isEphemeral: true,
@@ -38,7 +38,7 @@ export default class ClearCommand extends Command {
 		} catch (error) {
 			this.client.logger.error('Something went wrong with the clear command.', {
 				error,
-				guild: interaction.guildId ?? '',
+				guild: interaction.guildId,
 				user: interaction.user.id,
 			});
 			const fail = new MessageEmbed().setColor([245, 155, 55]).setDescription('Something went wrong.');
