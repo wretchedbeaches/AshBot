@@ -161,7 +161,7 @@ export default class WebhooksCommand extends Command {
 	}
 
 	public async handleRemove(interaction: CommandInteraction) {
-		const guildId = interaction.guildId!;
+		const guildId = interaction.guildId;
 		const channelArgument: GuildChannel = (interaction.options.getChannel('channel', false) ??
 			interaction.channel!) as GuildChannel;
 		const channelId = channelArgument.id;

@@ -85,7 +85,7 @@ export default class QuestSearchCommand extends BaseSearchCommand {
 				return interaction.editReply(`Could not find an item by the provided name '${nameArgument}'`);
 		}
 
-		switch (subcommand) {
+		switch (subcommand!) {
 			case 'pokemon':
 				({ title, color, thumbnail } = this.handlePokemon(nameArgument, pokemon!, dbQuestsAnd));
 				break;
