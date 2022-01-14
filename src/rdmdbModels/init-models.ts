@@ -63,6 +63,9 @@ import type { weatherAttributes, weatherCreationAttributes } from './weather';
 import { web_session } from './web_session';
 import type { web_sessionAttributes, web_sessionCreationAttributes } from './web_session';
 
+import { CommandChannelRestrictions } from './CommandChannelRestrictions';
+import type { CommandChannelRestrictionAttributes } from './CommandChannelRestrictions';
+
 export {
 	account,
 	assignment,
@@ -95,6 +98,7 @@ export {
 	users,
 	weather,
 	web_session,
+	CommandChannelRestrictions,
 };
 
 export type {
@@ -160,6 +164,7 @@ export type {
 	weatherCreationAttributes,
 	web_sessionAttributes,
 	web_sessionCreationAttributes,
+	CommandChannelRestrictionAttributes,
 };
 
 export function initModels(sequelize: Sequelize) {
@@ -194,6 +199,7 @@ export function initModels(sequelize: Sequelize) {
 	users.initModel(sequelize);
 	weather.initModel(sequelize);
 	web_session.initModel(sequelize);
+	CommandChannelRestrictions.initModel(sequelize);
 
 	device.belongsToMany(device_group, {
 		through: device_group_device,
@@ -270,5 +276,6 @@ export function initModels(sequelize: Sequelize) {
 		users: users,
 		weather: weather,
 		web_session: web_session,
+		CommandChannelRestrictions: CommandChannelRestrictions,
 	};
 }

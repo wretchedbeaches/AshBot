@@ -22,6 +22,7 @@ import {
 	ApplicationCommandPermissionType,
 	RESTPutAPIGuildApplicationCommandsPermissionsJSONBody,
 } from 'discord-api-types';
+import ChannelRestrictionsManager from '../util/ChannelRestrictionsManager';
 
 interface BotConfig {
 	token: string;
@@ -46,6 +47,7 @@ export default class AshBot extends BaseClient {
 	public trains: Collection<string, { longitude: number; latitude: number }>;
 	public logger: LogManager;
 	public rankingData: RankingDataManager;
+	public channelRestrictions: ChannelRestrictionsManager;
 
 	public constructor(config: BotConfig, options: BaseClientOptions) {
 		super({ ...options });
@@ -115,6 +117,7 @@ export default class AshBot extends BaseClient {
 			dataColumn: 'settings',
 		});
 		this.rankingData = new RankingDataManager(this);
+		this.channelRestrictions = new ChannelRestrictionsManager(this);
 	}
 
 	private async _init(): Promise<void> {
@@ -151,6 +154,7 @@ export default class AshBot extends BaseClient {
 		await manualdb.sync();
 		this.logger.info('[Bot] Connected to database');
 		await this.settings.init();
+		await this.channelRestrictions.init();
 	}
 
 	public async updateNestMigrationDate() {
