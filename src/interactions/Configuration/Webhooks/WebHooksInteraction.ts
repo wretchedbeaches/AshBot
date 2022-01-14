@@ -16,7 +16,7 @@ export default {
 					name: 'channel',
 					description: 'The channel to view configuration for, otherwise all of them.',
 					required: false,
-					channel_types: [0],
+					channel_types: [ChannelTypes.GUILD_TEXT],
 				},
 			],
 		},
