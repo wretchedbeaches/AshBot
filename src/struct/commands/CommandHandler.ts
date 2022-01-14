@@ -99,6 +99,11 @@ export default class CommandHandler extends BaseHandler {
 		const command = this.modules.get(commandName) as Command;
 
 		try {
+			if (!(await command.shouldExecute(interaction))) {
+				this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'shouldExecute' });
+				return false;
+			}
+
 			if (command.shouldDefer) {
 				const ephemeral =
 					typeof command.isEphemeral === 'boolean'
@@ -110,12 +115,8 @@ export default class CommandHandler extends BaseHandler {
 				return false;
 			}
 			if (await this.runInhibitors(interaction, command)) return false;
-			if (await command.shouldExecute(interaction)) {
-				await this.runCommand(interaction, command);
-				return true;
-			}
-			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, { interaction, command, reason: 'shouldExecute' });
-			return false;
+			await this.runCommand(interaction, command);
+			return true;
 		} catch (error) {
 			this.emitError(error, interaction, command);
 			return null;
