@@ -41,7 +41,7 @@ export default class StealEmojiCommand extends Command {
 			);
 		} catch (error) {
 			this.client.logger.error(
-				`There was an issue creating '${emojiArgument}' emoji for guild ${interaction.guildId}`,
+				`There was an issue creating '${emojiArgument}' emoji for guild ${interaction.guildId!}`,
 				{ command: this.id, error, customEmo, resolvedEmoji, resolvedEmojiName },
 			);
 			return interaction.editReply(`There was an unknown error creating the emoji '${emojiArgument}'`);
