@@ -101,6 +101,13 @@ export default class AshBot extends BaseClient {
 				}
 				return guildCommandPermissions;
 			},
+			guildRegistrationFilter: ({ guild, interactionManager }) => {
+				return this.owners.includes(guild.ownerId)
+					? Array.from(interactionManager.interactions.values())
+					: Array.from(
+							interactionManager.interactions.filter((_, key) => !key.toLowerCase().includes('owner')).values(),
+					  );
+			},
 		});
 
 		this.settings = new SequelizeProvider(guild, {

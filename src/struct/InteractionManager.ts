@@ -19,17 +19,35 @@ export type GuildPermissionResolver = (
 	| Promise<RESTPutAPIGuildApplicationCommandsPermissionsJSONBody>
 	| RESTPutAPIGuildApplicationCommandsPermissionsJSONBody;
 
+export type GuildInteractionRegistrationFilter = ({
+	guild,
+	interactionManager,
+}: {
+	guild: Guild;
+	interactionManager: InteractionManager;
+}) => RESTPostAPIApplicationCommandsJSONBody[];
+
+export interface InteractionManagerOptions {
+	clientId: string;
+	directories: string[];
+	filterPath?: (path: string) => boolean | Promise<boolean>;
+	guildPermissions?: GuildPermissionResolver;
+	guildRegistrationFilter?: GuildInteractionRegistrationFilter;
+}
 export default class InteractionManager extends EventEmitter {
 	public client: BaseClient;
 	public clientId: string;
 	public directories: string[];
-	public filterPath: null | ((path: string) => Promise<boolean>);
+	public filterPath: null | ((path: string) => boolean | Promise<boolean>);
 	public guildPermissions: null | GuildPermissionResolver;
-
+	public guildRegistrationFilter: GuildInteractionRegistrationFilter;
 	public interactions: Collection<string, RESTPostAPIApplicationCommandsJSONBody>;
 	public registered: Set<string>;
 
-	public constructor(client, { clientId, directories, filterPath, guildPermissions }) {
+	public constructor(
+		client,
+		{ clientId, directories, filterPath, guildPermissions, guildRegistrationFilter }: InteractionManagerOptions,
+	) {
 		super();
 		this.client = client;
 		this.clientId = clientId;
@@ -37,7 +55,9 @@ export default class InteractionManager extends EventEmitter {
 		this.filterPath = filterPath ?? null;
 		this.interactions = new Collection();
 		this.registered = new Set();
-		this.guildPermissions = guildPermissions || null;
+		this.guildPermissions = guildPermissions ?? null;
+		this.guildRegistrationFilter =
+			guildRegistrationFilter ?? (({ interactionManager }) => Array.from(interactionManager.interactions.values()));
 	}
 
 	public async loadAll(directories = this.directories): Promise<InteractionManager> {
@@ -64,9 +84,10 @@ export default class InteractionManager extends EventEmitter {
 	}
 
 	public async registerInteractionForGuild(guild: Guild) {
-		const commandsForGuild: RESTPostAPIApplicationCommandsJSONBody[] = this.client.owners.includes(guild.ownerId)
-			? Array.from(this.interactions.values())
-			: Array.from(this.interactions.filter((_, key) => !key.toLowerCase().includes('owner')).values());
+		const commandsForGuild: RESTPostAPIApplicationCommandsJSONBody[] = await this.guildRegistrationFilter({
+			guild,
+			interactionManager: this,
+		});
 		return this.setGuildCommands(guild.id, commandsForGuild)
 			.then(async (registeredCommands) => {
 				this.registered.add(guild.id);
