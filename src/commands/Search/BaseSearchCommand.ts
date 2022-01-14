@@ -1,9 +1,10 @@
 import sequelize from 'sequelize';
-import Command, { CommandOptions } from '../../struct/commands/Command';
+import { CommandOptions } from '../../struct/commands/Command';
 import config from '../../config.json';
 import { CommandInteraction } from 'discord.js';
+import BaseChannelRestrictedCommand from '../BaseChannelRestrictedCommand';
 
-export default class BaseSearchCommand extends Command {
+export default class BaseSearchCommand extends BaseChannelRestrictedCommand {
 	public static getDistanceQuery(type: string, center: { lat: number; long: number } | null) {
 		if (center === null) return null;
 		return sequelize.literal(

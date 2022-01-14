@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { movesData } from '../../data/Data';
 import { RankingData } from '../../data/PvPokeData';
-import Command from '../../struct/commands/Command';
 import COMMAND_NAMES from '../../util/CommandNames';
 import { RankingDataCollection } from '../../util/RankingDataManager';
+import BaseChannelRestrictedCommand from '../BaseChannelRestrictedCommand';
 
 type LeagueIdentifier = 1500 | 2500 | 10000;
 type LeagueName = 'great' | 'ultra' | 'master';
@@ -11,7 +11,7 @@ type LeagueName = 'great' | 'ultra' | 'master';
 type LeagueMap = {
 	[key in LeagueIdentifier]: LeagueName;
 };
-export default class RankSearchCommand extends Command {
+export default class RankSearchCommand extends BaseChannelRestrictedCommand {
 	public static LeagueMap: LeagueMap = {
 		1500: 'great',
 		2500: 'ultra',

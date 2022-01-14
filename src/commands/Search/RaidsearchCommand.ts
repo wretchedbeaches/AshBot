@@ -91,7 +91,7 @@ export default class RaidSearchCommand extends BaseSearchCommand {
 		await interaction.channel!.send(confirmation);
 		if (dbRaids.length > 0) {
 			// creating and sending paginated embed with results
-			const embeds = dbRaids.map((raid) => parseRaidDb(raid, interaction.guildId));
+			const embeds = dbRaids.map((raid) => parseRaidDb(raid, interaction.guildId!));
 			const messageOptionsResolver = ({ newIdentifiers, paginator }) => {
 				return {
 					content: `Page ${(newIdentifiers.pageIdentifier as number) + 1} of ${

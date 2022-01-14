@@ -1,11 +1,11 @@
 import { CommandInteraction } from 'discord.js';
 import axios from 'axios';
 import { stripIndents } from 'common-tags';
-import Command from '../../struct/commands/Command';
 import { WeatherApiData, WeatherApiDataError } from '../../data/DataTypes';
 import COMMAND_NAMES from '../../util/CommandNames';
+import BaseChannelRestrictedCommand from '../BaseChannelRestrictedCommand';
 
-export default class Weather2Command extends Command {
+export default class Weather2Command extends BaseChannelRestrictedCommand {
 	private readonly mapApiKey: string;
 
 	public constructor() {

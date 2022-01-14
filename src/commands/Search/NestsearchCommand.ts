@@ -2,12 +2,12 @@ import { CommandInteraction, MessageEmbed } from 'discord.js';
 import ntim from '../../util/name_to_id_map.json';
 import { nests } from '../../manualdbModels/nests';
 import { parseNestDb } from '../../util/parse';
-import Command from '../../struct/commands/Command';
 import { ButtonPaginator } from '@psibean/discord.js-pagination';
 import { pokemonData, pokemonTypesData } from '../../data/Data';
 import COMMAND_NAMES from '../../util/CommandNames';
+import BaseChannelRestrictedCommand from '../BaseChannelRestrictedCommand';
 
-export default class NestSearchCommand extends Command {
+export default class NestSearchCommand extends BaseChannelRestrictedCommand {
 	public constructor() {
 		super(COMMAND_NAMES.SEARCH.NEST, {
 			description: {
