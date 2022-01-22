@@ -88,6 +88,9 @@ export default class CommandHandler extends BaseHandler {
 
 	public async loadAll(directories = this.directories): Promise<CommandHandler> {
 		await super.loadAll(directories);
+		for (const command of this.modules.values()) {
+			command.client = this.client;
+		}
 		this.ownerOnlyCommands = this.modules.filter((value) => value.ownerOnly).values();
 		return this;
 	}
